@@ -1,0 +1,17 @@
+These are notes for data files.
+
+Units of measure:
+
+alpha: hours-minutes-seconds
+delta: degrees-minutes-seconds
+par: mas
+Vr: km s^{-1}
+mu_x: mas yr^{-1}
+mu_y: mas yr^{-1}
+
+Files:
+
+hmsfr.dat - data for HMSFRs* (1 objects).
+non_hmsfr.dat - data for Non-HMSFRs* (8 objects).
+
+* HMSFR is an abbreviation for high-mass star forming regions.

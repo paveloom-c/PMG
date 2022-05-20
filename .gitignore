@@ -1,1 +1,6 @@
+# Artifacts
+data/output
+plots
+
+# Radicle
 .gitsigners

@@ -1,0 +1,104 @@
+This is a summary of recent papers (as of May, 2022)
+related to masers that have parallaxes and proper motions.
+
+Previous catalogs:
+
+1. VizieR Online Data Catalog: ~200 high-mass SFR plx & proper motion with VLBI (Reid+, 2019)
+https://ui.adsabs.harvard.edu/abs/2021yCat..18850131R/abstract
+
+2. The First VERA Astrometry Catalog
+https://ui.adsabs.harvard.edu/abs/2020PASJ...72...50V/abstract
+
+Extension:
+
+o 1. Trigonometric Parallaxes of Four Star-forming Regions in the Distant Inner Galaxy
+https://ui.adsabs.harvard.edu/abs/2021ApJS..253....1X/abstract
+
+  Four H2O masers associated with distant massive
+  young stars in the inner regions of the Galaxy:
+  G019.60−0.23,
+  G020.08−0.13,
+  G020.77−0.05,
+  G026.50+0.28
+
+o 2. VERA astrometry toward the Perseus arm gap
+https://ui.adsabs.harvard.edu/abs/2022PASJ...74..209S/abstract
+
+  Four H20 22-GHz astrometric results for sources expected to be
+  associated with the Perseus arm gap (little star formation activity):
+  G050.28-00.39,
+  G053.14+00.07,
+  G070.33+01.59,
+  G079.08+01.33
+
+o 3. Parallax of Star-forming Region G027.22+0.14
+https://ui.adsabs.harvard.edu/abs/2022AJ....163...54B/abstract
+
+  One 6.7 GHz methanol maser toward a distant HMSFR:
+  G027.22+0.14
+
+x 4. Astrometric observations of water maser sources toward the Galactic Center with VLBI
+https://ui.adsabs.harvard.edu/abs/2021JPhCS2145a2011S/abstract
+
+  Already present in the catalogue 2
+
+x 5. Parallax and Proper Motions Measurement of 22 GHz Water Maser Sources Toward the CMZ With VLBI Astrometric Observations
+https://ui.adsabs.harvard.edu/abs/2021ASPC..528..107S/abstract
+
+  Already present in the catalogue 2
+
+x 6. Vertical structure and kinematics of the Galactic outer disk
+https://ui.adsabs.harvard.edu/abs/2020PASJ...72...53S/abstract
+
+  Already present in the catalogue 2
+
+x 7. VEDA: VERA data analysis software for VLBI phase-referencing astrometry
+https://ui.adsabs.harvard.edu/abs/2020PASJ...72...51N/abstract
+
+  Already present in the catalogue 2
+
+x 8. Astrometry of H2O masers in the W 48 A (G35.20-01.74) H II region with VERA: A compact disk outflow inside core H-2a
+https://ui.adsabs.harvard.edu/abs/2020PASJ...72...54C/abstract
+
+  Already present in the catalogue 2
+
+x 9. VizieR Online Data Catalog: Distances to molecular clouds in SFR (Zucker+, 2020)
+https://ui.adsabs.harvard.edu/abs/2019yCat..36330051Z/abstract
+
+  Already present in the catalogue 2
+
+x 10. Resolving the distance controversy for Sharpless 269. A possible kink in the outer arm
+https://ui.adsabs.harvard.edu/abs/2019A%26A...625A..70Q/abstract
+
+  Already present in the catalogue 2
+
+x 11. Parallaxes for Star-forming Regions in the Inner Perseus Spiral Arm
+https://ui.adsabs.harvard.edu/abs/2019AJ....157..200Z/abstract
+
+  Already present in the catalogue 1
+
+x 12. Resolving the distance controversy for Sharpless 269. A possible kink in the outer arm
+https://ui.adsabs.harvard.edu/abs/2019A%26A...625A..70Q/abstract
+
+  Already present in the catalogue 1
+
+x 13. Trigonometric Parallaxes of Star-forming Regions beyond the Tangent Point of the Sagittarius Spiral Arm
+https://ui.adsabs.harvard.edu/abs/2019ApJ...874...94W/abstract
+
+  Already present in the catalogue 1
+
+x 14. VizieR Online Data Catalog: Spiral structure of the Milky Way (Xu+, 2018)
+https://ui.adsabs.harvard.edu/abs/2019yCatp040001806X/abstract
+
+  Already present in the catalogue 1
+
+Notes:
+
+1. Sakai et al. (2022PASJ...74..209S) state two options for the LSR velocity of G079.08+01.33:
+   −18 ± 5 and −64 ± 1. Authors prefer the latter option due to consistency with other data
+   (in particular, because the objects G073.65+00.19 and G075.29+01.32 have similar velocities
+   in Reid et al. 2019)
+
+2. In two papers of Sakai et al. (2021JPhCS2145a2011S and 2021ASPC..528..107S), there are different
+   values of proper motions in galactic coordinates of H2O masers in the Sgr B2 region. The latter
+   paper here is actually dated 2019.
