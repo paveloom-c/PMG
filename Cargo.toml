@@ -1,0 +1,29 @@
+[package]
+name = "pmg"
+version = "0.1.0"
+authors = ["Pavel Sobolev <paveloom@riseup.net>"]
+edition = "2021"
+rust-version = "1.61"
+description = "Using a parametric model of the Galaxy to infer its parameters"
+documentation = "https://github.com/paveloom-c/PMG"
+readme = "README.md"
+homepage = "https://github.com/paveloom-c/PMG"
+repository = "https://github.com/paveloom-c/PMG"
+license-file = "LICENSE.md"
+keywords = ["astronomy", "simulation"]
+categories = ["simulation", "command-line-utilities"]
+
+[profile.release]
+codegen-units = 1
+lto = true
+panic = 'abort'
+strip = true
+
+[dependencies]
+anyhow = "=1.0.57"
+csv = "=1.1.6"
+itertools = "=0.10.3"
+lazy_static = "=1.4.0"
+num = "=0.4.0"
+numeric_literals = "0.2.0"
+serde = {version = "=1.0.137", features = ["derive"] }

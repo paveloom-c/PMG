@@ -4,6 +4,7 @@
 
 2. Make sure you have the following installed:
 
+- [Rust](https://www.rust-lang.org)
 - [Julia](https://julialang.org)
 - [TexLive](https://tug.org/texlive)
 
@@ -16,13 +17,13 @@
 4. Convert the data to the Galactic heliocentric Cartesian system and plot the projections in each plane:
 
    ```bash
-   julia --project=. scripts/xyz.jl
+   julia --project=. scripts/coords.jl
    ```
 
    *or*
 
    ```bash
-   ./julia.bash scripts/xyz.jl
+   ./julia.bash scripts/coords.jl
    ```
 
 ### Notices
@@ -34,6 +35,27 @@ Repository:
 - [GitHub](https://github.com/paveloom-c/PMG)
 - [GitLab](https://gitlab.com/paveloom-g/complex/PMG)
 - [Radicle](https://app.radicle.network/seeds/pine.radicle.garden/rad:git:hnrkfwgg3khhx8keec53drptixg16xqhud3oo)
+
+Reference:
+- [GitHub Pages](https://paveloom-c.github.io/PMG)
+- [GitLab Pages](https://paveloom-g.gitlab.io/complex/PMG)
+
+#### Rust
+
+This project provides [Rust](https://www.rust-lang.org) crates. To build them, use [Cargo](https://doc.rust-lang.org/cargo).
+
+#### Tests
+
+To run tests, consider using [`nextest`](https://nexte.st).
+
+#### KaTeX
+
+To build a crate's documentation with [KaTeX](https://katex.org) support, run:
+
+```bash
+cargo doc
+RUSTDOCFLAGS="--html-in-header assets/katex-header.html" cargo doc --no-deps --open
+```
 
 #### Julia
 

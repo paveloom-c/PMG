@@ -26,6 +26,7 @@ default(
     dpi=300,
     size=(300, 300),
     markersize=2.5,
+    legend=:topright,
 )
 
 # Define the paths
@@ -51,7 +52,7 @@ end
 
 "Convert a string that holds an angle to a tuple"
 function str2tuple(str::S)::Tuple{F, F, F} where S <: AbstractString
-    return tuple([parse(F, p) for p in split(str)]...)
+    return tuple([parse(F, p) for p in split(str, ':')]...)
 end
 
 "The right ascension of the north galactic pole"
@@ -108,8 +109,9 @@ for data_file in data_files
     # Read the data
     file = CSV.File(
         data_file,
-        delim=" "^4,
+        delim=' ',
         skipto=2,
+        types=String,
         stringtype=String,
         header=[
             "name",
@@ -149,18 +151,9 @@ end
 println(" "^pad, "> Writing the results...")
 
 # Write the results
-open(joinpath(OUTPUT_DATA_DIR, "xyz.dat"), "w") do io
-    delim = " "^4
-    println(
-        io,
-        "Name",
-        " "^(length(names[1]) - 4) * delim,
-        "X",
-        " "^(length("$(X[1])") - 1) * delim,
-        "Y",
-        " "^(length("$(Y[1])") - 1) * delim,
-        "Z",
-    )
+open(joinpath(OUTPUT_DATA_DIR, "coords (julia).dat"), "w") do io
+    delim = ' '
+    println(io, "name x y z")
     for (name, x, y, z) in zip(names, X, Y, Z)
         println(io, name, delim, x, delim, y, delim, z)
     end
