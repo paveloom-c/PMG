@@ -7,11 +7,17 @@ use num::Float;
 
 lazy_static! {
     /// The right ascension of the north galactic pole
+    ///
+    /// Source: Reid et al. (2009)
     static ref ALPHA_NGP: f64 = hms2rad(12., 51., 26.2817);
     /// The declination of the north galactic pole
+    ///
+    /// Source: Reid et al. (2009)
     static ref DELTA_NGP: f64 = dms2rad(27., 7., 42.013);
     /// The longitude of the north celestial pole
-    static ref L_NCP: f64 = 122.932;
+    ///
+    /// Source: Reid et al. (2009)
+    static ref L_NCP: f64 = 122.932.to_radians();
 }
 
 /// The right ascension of the north galactic pole
@@ -36,6 +42,8 @@ fn l_ncp<F: Float>() -> F {
 }
 
 /// Convert the equatorial coordinates to spherical heliocentric Galactic coordinates
+///
+/// Source: [Wikipedia](https://en.wikipedia.org/wiki/Galactic_coordinate_system#Conversion_between_equatorial_and_galactic_coordinates)
 pub(super) fn to_spherical<F: Float>(alpha: F, delta: F) -> (F, F) {
     let phi = F::atan2(
         F::cos(delta) * F::sin(alpha - alpha_ngp()),

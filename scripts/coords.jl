@@ -62,7 +62,7 @@ end
 δ_NGP = dms2rad((27., 7., 42.013))
 
 "The longitude of the north celestial pole"
-l_NCP = 122.932
+l_NCP = deg2rad(122.932)
 
 """
 Convert the coordinates in the equatorial spherical system (right ascension
@@ -168,7 +168,6 @@ scatter(
     xlabel=L"X \; \mathrm{[kpc]}",
     ylabel=L"Y \; \mathrm{[kpc]}",
     label=data_names[1],
-    legend=:topleft,
 )
 scatter!(
     X[o[1]+1:end],
@@ -199,6 +198,7 @@ scatter(
     xlabel=L"Y \; \mathrm{[kpc]}",
     ylabel=L"Z \; \mathrm{[kpc]}",
     label=data_names[1],
+    legend=:topleft,
 )
 scatter!(
     Y[o[1]+1:end],
