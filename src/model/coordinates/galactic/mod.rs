@@ -11,6 +11,7 @@ use itertools::izip;
 use num::Float;
 
 /// Galactic heliocentric Cartesian coordinates
+#[derive(Debug)]
 pub(in crate::model) struct Galactic<F: Float> {
     /// X coordinates
     pub(in crate::model) x: Vec<F>,

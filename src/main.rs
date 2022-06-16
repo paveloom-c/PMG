@@ -19,13 +19,9 @@ use anyhow::{Context, Result};
 /// - couldn't write the model data
 pub fn main() -> Result<()> {
     // Initialize a model from the input data
-    let hmsfr_path = Path::new("data/input/hmsfr.dat");
-    let non_hmsfr_path = Path::new("data/input/non-hmsfr.dat");
-    let mut model = Model::<f64>::try_from(hmsfr_path)
-        .with_context(|| format!("Couldn't load the data from {hmsfr_path:?}"))?;
-    model
-        .extend(non_hmsfr_path)
-        .with_context(|| format!("Couldn't load the data from {non_hmsfr_path:?}"))?;
+    let data_path = Path::new("data/input/data.dat");
+    let model = Model::<f64>::try_from(data_path)
+        .with_context(|| format!("Couldn't load the data from {data_path:?}"))?;
     // Write the model data to files in the directory
     model
         .write_to(Path::new("data/output"))

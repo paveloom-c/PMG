@@ -10,11 +10,19 @@
 
 3. Instantiate the project
 
-    ```bash
-    julia --project=. -e "using Pkg; Pkg.instantiate()"
-    ```
+   ```bash
+   cargo build -r
+   julia --project=. -e "using Pkg; Pkg.instantiate()"
+   ```
 
-4. Convert the data to the Galactic heliocentric Cartesian system and plot the projections in each plane:
+4. Convert the data from the equatorial coordinate system
+   to the Galactic heliocentric Cartesian system
+
+   ```bash
+   cargo run -r
+   ```
+
+5. Plot the projections in each plane:
 
    ```bash
    julia --project=. scripts/coords.jl
@@ -42,7 +50,8 @@ Reference:
 
 #### Rust
 
-This project provides [Rust](https://www.rust-lang.org) crates. To build them, use [Cargo](https://doc.rust-lang.org/cargo).
+This project provides [Rust](https://www.rust-lang.org) crates.
+To build them, use [Cargo](https://doc.rust-lang.org/cargo).
 
 #### Tests
 
@@ -59,14 +68,16 @@ RUSTDOCFLAGS="--html-in-header assets/katex-header.html" cargo doc --no-deps --o
 
 #### Julia
 
-This project provides [Julia](https://julialang.org) scripts. Make sure to use the project files (`Project.toml`) when running them:
+This project provides [Julia](https://julialang.org) scripts. Make sure to use
+the project files (`Project.toml`) when running them:
 
 ```bash
 julia --project=. -e "using Pkg; Pkg.instantiate()"
 julia --project=. scripts/script.jl
 ```
 
-Alternatively, you can use the `julia.bash` script, which starts a [daemon](https://github.com/dmolina/DaemonMode.jl) and runs scripts through it:
+Alternatively, you can use the `julia.bash` script, which starts a
+[daemon](https://github.com/dmolina/DaemonMode.jl) and runs scripts through it:
 
 ```bash
 julia --project=. -e "using Pkg; Pkg.instantiate()"

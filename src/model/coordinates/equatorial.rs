@@ -1,6 +1,7 @@
 //! Equatorial coordinates
 
 use std::error::Error;
+use std::fmt::Debug;
 use std::str::FromStr;
 
 use crate::model::io::input::Record;
@@ -10,6 +11,7 @@ use anyhow::{Context, Result};
 use num::Float;
 
 /// Equatorial spherical coordinates
+#[derive(Debug)]
 pub(in crate::model) struct Equatorial<F: Float> {
     /// Right ascensions (radians)
     pub(super) alpha: Vec<F>,

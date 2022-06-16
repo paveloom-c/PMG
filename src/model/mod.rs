@@ -21,12 +21,18 @@ use serde::{de::DeserializeOwned, Serialize};
 /// Type for names of the objects
 pub type Names = Vec<String>;
 
+/// Type for types of the objects
+pub type ObjTypes = Vec<String>;
+
 /// Model of the Galaxy
+#[derive(Debug)]
 pub struct Model<F: Float> {
     /// Names of the objects
     names: Names,
     /// Coordinates (in the Galactic heliocentric Cartesian system)
     coords: Galactic<F>,
+    /// Types of the objects
+    obj_types: ObjTypes,
 }
 
 impl<F: Float> Model<F> {
@@ -35,6 +41,7 @@ impl<F: Float> Model<F> {
         Self {
             names: Names::new(),
             coords: Galactic::new(),
+            obj_types: ObjTypes::new(),
         }
     }
     /// Extend the model by parsing and appending the data
@@ -53,6 +60,7 @@ impl<F: Float> Model<F> {
         // Extend the model
         self.names.extend(data.names);
         self.coords.extend(Galactic::from(data.coords));
+        self.obj_types.extend(data.obj_types);
         Ok(())
     }
     /// Write the model data to files inside the directory
@@ -76,13 +84,20 @@ impl<F: Float> Model<F> {
             .from_path(path)
             .with_context(|| format!("Couldn't write to the file {path:?}"))?;
         // For each object
-        for (name, x, y, z) in izip!(&self.names, &self.coords.x, &self.coords.y, &self.coords.z) {
+        for (name, x, y, z, obj_type) in izip!(
+            &self.names,
+            &self.coords.x,
+            &self.coords.y,
+            &self.coords.z,
+            &self.obj_types
+        ) {
             // Serialize and write a record
             wtr.serialize(Record {
                 name: name.clone(),
                 x: *x,
                 y: *y,
                 z: *z,
+                obj_type: obj_type.clone(),
             })
             .with_context(|| {
                 format!("Couldn't write serialize a record while writing to {path:?}")

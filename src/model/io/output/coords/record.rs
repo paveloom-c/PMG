@@ -14,4 +14,6 @@ pub(in crate::model) struct Record<F: Float> {
     pub(in crate::model) y: F,
     /// Z coordinate
     pub(in crate::model) z: F,
+    /// Type of the object
+    pub(in crate::model) obj_type: String,
 }

@@ -28,6 +28,8 @@ pub(in crate::model) struct Record<F: Float> {
     pub(in crate::model) mu_y: F,
     /// Standard error of the proper motion in the Y coordinate
     pub(in crate::model) sigma_mu_y: F,
+    /// Type of the object
+    pub(in crate::model) obj_type: String,
     /// Source reference
     pub(in crate::model) reference: String,
 }

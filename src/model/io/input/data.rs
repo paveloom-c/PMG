@@ -2,7 +2,7 @@
 
 use super::Record;
 use crate::model::coordinates::Equatorial;
-use crate::model::Names;
+use crate::model::{Names, ObjTypes};
 
 use std::error::Error;
 use std::fmt::Debug;
@@ -15,11 +15,14 @@ use num::Float;
 use serde::de::DeserializeOwned;
 
 /// Input data
+#[derive(Debug)]
 pub(in crate::model) struct Data<F: Float> {
     /// Names of the objects
     pub(in crate::model) names: Names,
     /// Coordinates (in the equatorial system)
     pub(in crate::model) coords: Equatorial<F>,
+    /// Types of the objects
+    pub(in crate::model) obj_types: ObjTypes,
 }
 
 impl<F> TryFrom<&Path> for Data<F>
@@ -38,6 +41,7 @@ where
         // Prepare storage
         let mut names = Names::new();
         let mut coords = Equatorial::<F>::new();
+        let mut obj_types = ObjTypes::new();
         // For each record in the reader
         for result in rdr.deserialize() {
             // Try to deserialize the record
@@ -45,7 +49,12 @@ where
             // Push the data to the according storage
             names.push(record.name.clone());
             coords.push(&record)?;
+            obj_types.push(record.obj_type.clone());
         }
-        Ok(Data { names, coords })
+        Ok(Data {
+            names,
+            coords,
+            obj_types,
+        })
     }
 }
