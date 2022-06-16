@@ -5,6 +5,8 @@ mod convert;
 use crate::model::coordinates::Equatorial;
 use convert::to_galactic;
 
+use std::fmt::Debug;
+
 use itertools::izip;
 use num::Float;
 
@@ -35,7 +37,7 @@ impl<F: Float> Galactic<F> {
     }
 }
 
-impl<F: Float> From<Equatorial<F>> for Galactic<F> {
+impl<F: Float + Debug> From<Equatorial<F>> for Galactic<F> {
     /// Convert the equatorial coordinates to
     /// the Galactic coordinates and push them
     #[allow(clippy::many_single_char_names)]

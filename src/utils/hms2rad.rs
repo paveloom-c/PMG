@@ -18,7 +18,7 @@ fn test() -> Result<()> {
     let a = super::dms2rad(187., 13., 57.750);
     let b = hms2rad(12., 28., 55.85);
     ensure!(
-        (a - b) < f64::epsilon(),
+        (a - b).abs() < f64::epsilon(),
         "The result should be the same: {a:?} vs. {b:?}"
     );
     Ok(())
