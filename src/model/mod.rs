@@ -9,10 +9,10 @@ use coordinates::Galactic;
 
 use std::error::Error;
 use std::fmt::Debug;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use anyhow::{ensure, Context, Result};
+use anyhow::{Context, Result};
 use csv::WriterBuilder;
 use itertools::izip;
 use num::Float;
@@ -75,8 +75,6 @@ impl<F: Float> Model<F> {
     where
         F: Serialize,
     {
-        // Check if it's actually a directory
-        ensure!(dir.is_dir(), "The path isn't a directory");
         // Create a writer for the coordinates
         let path = &dir.join("coords.dat");
         let mut wtr = WriterBuilder::new()
@@ -107,18 +105,22 @@ impl<F: Float> Model<F> {
     }
 }
 
-impl<F> TryFrom<&Path> for Model<F>
+impl<F> TryFrom<Vec<PathBuf>> for Model<F>
 where
     F: Float + Debug + FromStr + DeserializeOwned,
     <F as FromStr>::Err: Error + Send + Sync + 'static,
 {
     type Error = anyhow::Error;
 
-    fn try_from(path: &Path) -> Result<Self> {
+    fn try_from(paths: Vec<PathBuf>) -> Result<Self> {
         // Initialize an empty model
         let mut model = Model::new();
-        // Extend it using the data from the path
-        model.extend(path)?;
+        // Extend it using the data from the files
+        for path in paths {
+            model
+                .extend(&path)
+                .with_context(|| format!("Couldn't load the data from the file {path:?}"))?;
+        }
         // Return the result
         Ok(model)
     }

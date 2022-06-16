@@ -2,6 +2,27 @@
 # Galactic heliocentric Cartesian system and plots
 # the projections in each plane
 
+# Prepare color codes
+RESET = "\e[0m"
+GREEN = "\e[32m"
+YELLOW = "\e[33m"
+
+# Check for required arguments
+if length(ARGS) != 1
+    println("""
+        $(YELLOW)USAGE:$(RESET)
+            { julia --project=. | ./julia.bash } scripts/coords.jl <OUTPUT>
+
+        $(YELLOW)ARGS:$(RESET)
+            $(GREEN)<OUTPUT>$(RESET)    Output directory with data files
+                        (relative to the root of the repository)"""
+    )
+    exit(1)
+end
+
+# Define the output directory
+OUTPUT_DIR = ARGS[end]
+
 "Padding in the output"
 pad = 4
 
@@ -30,8 +51,7 @@ default(
 CURRENT_DIR = @__DIR__
 ROOT_DIR = dirname(CURRENT_DIR)
 PLOTS_DIR = joinpath(ROOT_DIR, "plots")
-OUTPUT_DATA_DIR = joinpath(ROOT_DIR, "data", "output")
-COORDS_DATA_PATH = joinpath(OUTPUT_DATA_DIR, "coords.dat")
+COORDS_DATA_PATH = joinpath(ROOT_DIR, OUTPUT_DIR, "coords.dat")
 
 # Make sure the needed directories exist
 mkpath(PLOTS_DIR)

@@ -19,5 +19,5 @@ else
     julia \
         --startup-file=no \
         --project="${ROOT_PATH}" \
-        -e "cd(\"${ROOT_PATH}/scripts\"); using DaemonMode; runargs(${PORT})" "$(realpath -s "$1")"
+        -e "cd(\"${ROOT_PATH}/scripts\"); using DaemonMode; runargs(${PORT})" "$(realpath -s "$1")" "${@:2}"
 fi

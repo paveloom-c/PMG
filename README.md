@@ -19,19 +19,19 @@
    to the Galactic heliocentric Cartesian system
 
    ```bash
-   cargo run -r
+   cargo run -r -- -o data/output data/input/data.dat
    ```
 
 5. Plot the projections in each plane:
 
    ```bash
-   julia --project=. scripts/coords.jl
+   julia --project=. scripts/coords.jl data/output/
    ```
 
    *or*
 
    ```bash
-   ./julia.bash scripts/coords.jl
+   ./julia.bash scripts/coords.jl data/output/
    ```
 
 ### Notices
