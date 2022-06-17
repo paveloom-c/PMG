@@ -9,7 +9,7 @@ use num::Float;
 /// Convert from equatorial coordinates to
 /// Galactic heliocentric Cartesian coordinates
 #[allow(clippy::many_single_char_names)]
-pub(in super::super) fn to_galactic<F>(alpha: F, delta: F, par: F) -> (F, F, F)
+pub fn to_galactic<F>(alpha: F, delta: F, par: F) -> (F, F, F)
 where
     F: Float + Debug,
 {
