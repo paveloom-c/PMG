@@ -4,16 +4,18 @@ mod coordinates;
 mod io;
 
 use crate::model::io::input::Data;
-use crate::model::io::output::coords::Record;
+use crate::model::io::output;
 use coordinates::Galactic;
 
 use std::error::Error;
 use std::fmt::Debug;
+use std::fs::{create_dir_all, File};
+use std::io::BufWriter;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
-use csv::WriterBuilder;
+use bincode::Options;
 use itertools::izip;
 use num::Float;
 use serde::{de::DeserializeOwned, Serialize};
@@ -75,31 +77,41 @@ impl<F: Float> Model<F> {
     where
         F: Serialize,
     {
-        // Create a writer for the coordinates
-        let path = &dir.join("coords.dat");
-        let mut wtr = WriterBuilder::new()
+        // Make sure the output directories exist
+        let dat_dir = &dir.join("dat");
+        let bin_dir = &dir.join("bin");
+        create_dir_all(dat_dir)
+            .with_context(|| format!("Couldn't create the output directory {dat_dir:?}"))?;
+        create_dir_all(bin_dir)
+            .with_context(|| format!("Couldn't create the output directory {bin_dir:?}"))?;
+        // Define paths to the text and the binary files
+        let dat_path = &dat_dir.join("coords.dat");
+        let bin_path = &bin_dir.join("coords.bin");
+        // Create a writer for the text file
+        let mut dat_wtr = csv::WriterBuilder::new()
             .delimiter(b' ')
-            .from_path(path)
-            .with_context(|| format!("Couldn't write to the file {path:?}"))?;
-        // For each object
-        for (name, x, y, z, obj_type) in izip!(
-            &self.names,
-            &self.coords.x,
-            &self.coords.y,
-            &self.coords.z,
-            &self.obj_types
-        ) {
-            // Serialize and write a record
-            wtr.serialize(Record {
-                name: name.clone(),
-                x: *x,
-                y: *y,
-                z: *z,
-                obj_type: obj_type.clone(),
-            })
-            .with_context(|| {
-                format!("Couldn't write serialize a record while writing to {path:?}")
-            })?;
+            .from_path(dat_path)
+            .with_context(|| format!("Couldn't write to the file {dat_path:?}"))?;
+        // Create a writer for the binary file
+        let mut bin_wtr = BufWriter::new(
+            File::create(&bin_path).with_context(|| "Couldn't write to the file {bin_path:?}")?,
+        );
+        // Create an options struct for `bincode`
+        let bin_options = bincode::DefaultOptions::new()
+            .with_little_endian()
+            .with_fixint_encoding();
+        // Create a vector of records
+        let records = output::coords::Records::from(self);
+        // Write the records in the binary format
+        bin_options
+            .serialize_into(&mut bin_wtr, &records)
+            .with_context(|| format!("Couldn't write a record to {bin_path:?}"))?;
+        // For each record
+        for record in records {
+            // Write it in the text format
+            dat_wtr
+                .serialize(&record)
+                .with_context(|| format!("Couldn't write a record to {dat_path:?}"))?;
         }
         Ok(())
     }

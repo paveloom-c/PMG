@@ -29,9 +29,11 @@ pad = 4
 "Floating point type used across the script"
 F = Float64
 
+"Integer type used across the script"
+I = UInt64
+
 println('\n', " "^pad, "> Loading the packages...")
 
-using CSV
 using LaTeXStrings
 using Plots
 
@@ -51,7 +53,7 @@ default(
 CURRENT_DIR = @__DIR__
 ROOT_DIR = dirname(CURRENT_DIR)
 PLOTS_DIR = joinpath(ROOT_DIR, "plots")
-COORDS_DATA_PATH = joinpath(ROOT_DIR, OUTPUT_DIR, "coords.dat")
+COORDS_DATA_PATH = joinpath(ROOT_DIR, OUTPUT_DIR, "bin", "coords.bin")
 
 # Make sure the needed directories exist
 mkpath(PLOTS_DIR)
@@ -59,12 +61,49 @@ mkpath(PLOTS_DIR)
 # Define the paths to the data files
 println(" "^pad, "> Loading the data...")
 
+struct Data
+    names::Vector{String}
+    x::Vector{F}
+    y::Vector{F}
+    z::Vector{F}
+    obj_type::Vector{String}
+end
+
+"Read binary files in the `bincode` format"
+function read_bincode(path::AbstractString)::Data
+    open(path, "r") do io
+        # Read the number of objects
+        n = read(io, I)
+        # Get the fields and their types
+        fields = fieldnames(Data)
+        types = eltype.(fieldtypes(Data))
+        # Initialize the data struct
+        data = Data(ntuple(_ -> [], length(fields))...)
+        # For each object
+        for _ in 1:n
+            # For each field
+            for (field, type) in zip(fields, types)
+                # If the type is a string
+                v = if type == String
+                    # Read the number of bytes
+                    nbytes = read(io, I)
+                    # Read the string
+                    String(read(io, nbytes))
+                # Otherwise,
+                else
+                    # Read the value
+                    read(io, type)
+                end
+                # Save the value
+                push!(getfield(data, field), v)
+            end
+        end
+        data
+    end
+end
+
 # Read the data
-data = CSV.File(
-    COORDS_DATA_PATH,
-    delim=' ',
-    types=[String, F, F, F, String],
-)
+data = read_bincode(COORDS_DATA_PATH)
 
 println(" "^pad, "> Plotting the scatter plots...")
 
