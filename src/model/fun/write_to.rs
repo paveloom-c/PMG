@@ -52,12 +52,12 @@ impl<F: Float> Model<F> {
         let bin_path = &bin_dir.join("coords.bin");
         // Open files for writing
         let mut dat_file = File::create(&dat_path)
-            .with_context(|| "Couldn't open the file {dat_path:?} in write-only mode")?;
+            .with_context(|| format!("Couldn't open the file {dat_path:?} in write-only mode"))?;
         let bin_file = File::create(&bin_path)
-            .with_context(|| "Couldn't open the file {bin_path:?} in write-only mode")?;
+            .with_context(|| format!("Couldn't open the file {bin_path:?} in write-only mode"))?;
         // Write the header to the text file
         write!(&mut dat_file, "{}", COORDS_CSV_HEADER)
-            .with_context(|| "Couldn't write the header to {dat_path:?}")?;
+            .with_context(|| format!("Couldn't write the header to {dat_path:?}"))?;
         // Create a CSV writer for the text file
         let mut dat_wtr = csv::WriterBuilder::default()
             .delimiter(b' ')

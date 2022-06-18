@@ -6,6 +6,8 @@ use numeric_literals::replace_float_literals;
 
 /// Convert the heliocentric Galactic coordinates
 /// from the spherical to the Cartesian coordinate system
+///
+/// Angles must be in radians.
 #[allow(clippy::many_single_char_names)]
 #[allow(clippy::unwrap_used)]
 #[replace_float_literals(F::from(literal).unwrap())]
