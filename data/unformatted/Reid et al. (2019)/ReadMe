@@ -1,0 +1,149 @@
+J/ApJ/885/131   ~200 high-mass SFR plx & proper motion with VLBI   (Reid+, 2019)
+================================================================================
+Trigonometric parallaxes of high-mass star-forming regions: our view of the
+Milky Way.
+    Reid M.J., Menten K.M., Brunthaler A., Zheng X.W., Dame T.M., Xu Y., Li J.,
+    Sakai N., Wu Y., Immer K., Zhang B., Sanna A., Moscadelli L., Rygl K.L.J.,
+    Bartkiewicz A., Hu B., Quiroga-nunez L.H., Van Langevelde H.J.
+   <Astrophys. J., 885, 131-131 (2019)>
+   =2019ApJ...885..131R    (SIMBAD/NED BibCode)
+================================================================================
+ADC_Keywords: Milky Way; Star Forming Region; Parallaxes, trigonometric;
+              Proper motions; Interferometry
+Keywords: Milky Way; Milky Way dynamics; Milky Way rotation
+          Trigonometric parallax; Star formation; Gravitational wave sources
+
+Abstract:
+    We compile and analyze approximately 200 trigonometric parallaxes and
+    proper motions of molecular masers associated with very young
+    high-mass stars. Most of the measurements come from the BeSSeL Survey
+    using the VLBA and the Japanese VERA project. These measurements
+    strongly suggest that the Milky Way is a four-arm spiral, with some
+    extra arm segments and spurs. Fitting log-periodic spirals to the
+    locations of the masers, allowing for "kinks" in the spirals and using
+    well-established arm tangencies in the fourth Galactic quadrant,
+    allows us to significantly expand our view of the structure of the
+    Milky Way. We present an updated model for its spiral structure and
+    incorporate it into our previously published parallax-based
+    distance-estimation program for sources associated with spiral arms.
+    Modeling the three-dimensional space motions yields estimates of the
+    distance to the Galactic center, R_0_=8.15{+/-}0.15kpc, the circular
+    rotation speed at the Sun's position, {Theta}_0_=236{+/-}7km/s, and
+    the nature of the rotation curve. Our data strongly constrain the full
+    circular velocity of the Sun, {Theta}_0_+V{odot}=247{+/-}4km/s, and
+    its angular velocity,
+    ({Theta}_0_+V{odot})/R_0_=30.32{+/-}0.27km/s/kpc. Transforming the
+    measured space motions to a Galactocentric frame which rotates with
+    the Galaxy, we find non-circular velocity components typically
+    <~10km/s. However, near the Galactic bar and in a portion of the
+    Perseus arm we find significantly larger non-circular motions. Young
+    high-mass stars within 7kpc of the Galactic center have a scale height
+    of only 19pc, and thus are well suited to define the Galactic plane.
+    We find that the orientation of the plane is consistent with the
+    IAU-defined plane to within {+/-}0.1{deg}, and that the Sun is offset
+    toward the north Galactic pole by Z{odot}=5.5{+/-}5.8pc. Accounting
+    for this offset places the central supermassive black hole, Sgr A*, in
+    the midplane of the Galaxy. The measured motions perpendicular to the
+    plane of the Galaxy limit precession of the plane to <~4km/s at the
+    radius of the Sun. Using our improved Galactic parameters, we predict
+    the Hulse-Taylor binary pulsar to be at a distance of
+    6.54{+/-}0.24kpc, assuming its orbital decay from gravitational
+    radiation follows general relativity.
+
+Description:
+    Very Long Baseline Interferometry (VLBI) arrays have been used to
+    measure parallaxes and proper motions for about 200 maser sources
+    associated with young massive stars. They include results from the
+    National Radio Astronomy Observatory's Very Long Baseline Array
+    (VLBA), the Japanese VLBI Exploration of Radio Astrometry (VERA)
+    project, the European VLBI Network, and the Australian Long Baseline
+    Array.
+
+File Summary:
+--------------------------------------------------------------------------------
+ FileName    Lrecl    Records    Explanations
+--------------------------------------------------------------------------------
+ReadMe          80          .    This file
+table1.dat     129        199    Parallaxes & proper motions of high-mass star
+                                  forming regions
+refs.dat        93         78    References used
+--------------------------------------------------------------------------------
+
+See also:
+ V/112 : Catalog of Star-Forming Regions in the Galaxy (Avedisova, 2002)
+ J/ApJ/720/1055 : VBLA observations of W51 Main/South (Sato+, 2010)
+ J/ApJ/783/130  : Parallaxes of high mass star forming regions (Reid+, 2014)
+ J/ApJ/834/142  : Gould's Belt Distances Survey (GOBELINS). II. (Kounkel+, 2017)
+ J/ApJ/864/136  : Massive star-forming regions multiwave. study (Binder+, 2018)
+ J/ApJ/874/16   : SOFIA Massive Star Formation Survey. II. (Liu+, 2019)
+
+Byte-by-byte Description of file: table1.dat
+--------------------------------------------------------------------------------
+   Bytes Format Units    Label  Explanations
+--------------------------------------------------------------------------------
+   1- 13 A13    ---      Name   Source name
+  16- 30 A15    ---      OName  Other name
+  32- 33 I2     h        RAh    [0/24] Hour of Right Ascension (J2000)
+  35- 36 I2     min      RAm    Minute of Right Ascension (J2000)
+  38- 44 F7.4   s        RAs    Second of Right Ascension (J2000)
+      47 A1     ---      DE-    [+/-] Sign of the Declination (J2000)
+  48- 49 I2     deg      DEd    Degree of Declination (J2000)
+  51- 52 I2     arcmin   DEm    Arcminute of Declination (J2000)
+  54- 59 F6.3   arcsec   DEs    Arcsecond of Declination (J2000)
+  63- 67 F5.3   mas      plx    [0.04/2.43] Trigonometric Parallax (1)
+  69- 73 F5.3   mas    e_plx    [0.005/0.2] Uncertainty in plx
+  77- 82 F6.2   mas/yr   pmE    [-6.9/3.13] Eastward Proper Motion (2)
+  84- 87 F4.2   mas/yr e_pmE    [0.06/3.1] Uncertainty in pmE
+  91- 96 F6.2   mas/yr   pmN    [-9.36/2.67] Northward Proper Motion (3)
+  98-101 F4.2   mas/yr e_pmN    [0.1/3.8] Uncertainty in pmN
+ 105-108 I4     km/s     VLSR   [-76/121] Local Standard of Rest velocity (3)
+ 110-111 I2     km/s   e_VLSR   [3/40] Uncertainty in VLSR
+ 114-116 A3     ---      Arm    Spiral arm designator (4)
+ 119-129 A11    ---      Ref    Reference designators
+--------------------------------------------------------------------------------
+Note (1): Parallax uncertainties for sources with multiple (N) maser spots
+          have been adjusted upwards by sqrt(N), if not done so in the
+          original publications.
+Note (2): Motion in RA multiplied by cos(Dec)
+Note (3): Some parameter values listed here are preliminary ones and may be
+          slightly different from final values appearing in published papers.
+          Motion components and their uncertainties are meant to reflect that
+          of the central star that excites the masers, and may be larger than
+          formal measurement uncertainties quoted in some papers.
+Note (4): Designators as follows:
+    GC  = Galactic Center region (3 occurrences)
+    Con = Connecting arm (1 occurrence)
+    3kN = 3-kpc arms near (5 occurrences)
+    3kF = 3-kpc arms far (1 occurrence)
+    Nor = Norma arm (12 occurrences)
+    Out = Outer arm (11 occurrences)
+    ScF = Scutum arm far (12 occurrences)
+    ScN = Scutum arm near (30 occurrences)
+    CtN = Centaurus arm near (4 occurrences)
+    OSC = Outer Scutum Centaurus arm (1 occurrence)
+    SgN = Sagittarius arm near (19 occurrences)
+    SgF = Sagittarius arm far (19 occurrences)
+    CrN = Carina arm near (1 occurrence)
+    Loc = Local arm (28 occurrences)
+    Per = Perseus arm (41 occurrences)
+    LoS = Local arm spur (5 occurrences)
+    AqS = Aquarius spur (3 occurrences)
+    ??? = Unassigned (3 occurrences)
+--------------------------------------------------------------------------------
+
+Byte-by-byte Description of file: refs.dat
+--------------------------------------------------------------------------------
+   Bytes Format Units   Label     Explanations
+--------------------------------------------------------------------------------
+   1-  2  I2    ---     Ref       [1/78] Reference number
+   4- 32  A29   ---     Autor     Main autor
+  34- 52  A19   ---     BIB       BIBcode
+  54- 67  A14   ---     Cat       Catalog reference
+  69- 93  A25   ---     Note      Note or comment
+--------------------------------------------------------------------------------
+
+History:
+    From electronic version of the journal
+
+================================================================================
+(End)                          Prepared by [AAS], Coralie Fix [CDS], 16-Sep-2021

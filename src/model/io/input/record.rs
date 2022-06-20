@@ -14,31 +14,34 @@ pub(in crate::model) struct Record<F: Float> {
     pub(in crate::model) delta: String,
     /// Parallax
     pub(in crate::model) par: F,
-    /// Standard error of the parallax
+    /// Uncertainty in `par`
     #[allow(dead_code)]
-    pub(in crate::model) sigma_par: F,
-    /// Radial velocity
+    pub(in crate::model) e_par: F,
+    /// Local Standard of Rest velocity
     #[allow(dead_code)]
     pub(in crate::model) v: F,
-    /// Standard error of the radial velocity
+    /// Uncertainty in `v`
     #[allow(dead_code)]
-    pub(in crate::model) sigma_v: F,
-    /// Proper motion in the X coordinate
+    pub(in crate::model) e_v: F,
+    /// Eastward proper motion
     #[allow(dead_code)]
     pub(in crate::model) mu_x: F,
-    /// Standard error of the proper motion in the X coordinate
+    /// Uncertainty in `mu_x`
     #[allow(dead_code)]
-    pub(in crate::model) sigma_mu_x: F,
-    /// Proper motion in the Y coordinate
+    pub(in crate::model) e_mu_x: F,
+    /// Northward proper motion
     #[allow(dead_code)]
     pub(in crate::model) mu_y: F,
-    /// Standard error of the proper motion in the Y coordinate
+    /// Uncertainty in `mu_y`
     #[allow(dead_code)]
-    pub(in crate::model) sigma_mu_y: F,
+    pub(in crate::model) e_mu_y: F,
     /// Type of the object
     #[allow(dead_code)]
     pub(in crate::model) obj_type: String,
-    /// Source reference
+    /// Sources of the data
+    #[allow(dead_code)]
+    pub(in crate::model) source: String,
+    /// Reference(s)
     #[allow(dead_code)]
     pub(in crate::model) reference: String,
 }

@@ -10,11 +10,14 @@ use std::fmt::Debug;
 
 use num::Float;
 
-/// Type for names of the objects
+/// Names of the objects
 pub type Names = Vec<String>;
 
-/// Type for types of the objects
+/// Types of the objects
 pub type ObjTypes = Vec<String>;
+
+/// Sources of the data
+pub type Sources = Vec<String>;
 
 /// Model of the Galaxy
 #[derive(Debug)]
@@ -25,4 +28,6 @@ pub struct Model<F: Float> {
     coords: Galactic<F>,
     /// Types of the objects
     obj_types: ObjTypes,
+    /// Sources of the data
+    sources: Sources,
 }

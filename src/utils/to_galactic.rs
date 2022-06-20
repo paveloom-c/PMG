@@ -49,12 +49,9 @@ cfg_if::cfg_if! {
             /// Parallax
             #[allow(dead_code)]
             par: F,
-            /// Standard error of the parallax
+            /// Uncertainty in `par`
             #[allow(dead_code)]
-            s_par: F,
-            /// Object type
-            #[allow(dead_code)]
-            obj_type: String,
+            e_par: F,
         }
 
 
@@ -70,15 +67,12 @@ cfg_if::cfg_if! {
             /// Parallax
             #[allow(dead_code)]
             par: F,
-            /// Standard error of the parallax
+            /// Uncertainty in `par`
             #[allow(dead_code)]
-            s_par: F,
+            e_par: F,
             /// Name of the object
             #[allow(dead_code)]
             name: String,
-            /// Type of the object
-            #[allow(dead_code)]
-            obj_type: String,
         }
     } else {}
 }

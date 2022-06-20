@@ -14,16 +14,21 @@ impl<F: Float> From<&Model<F>> for Records<F> {
             &model.coords.y,
             &model.coords.z,
             model.obj_types.iter().cloned(),
+            model.sources.iter().cloned(),
         )
-        .fold(Self::default(), |mut acc, (name, &x, &y, &z, obj_type)| {
-            acc.push(Record {
-                name,
-                x,
-                y,
-                z,
-                obj_type,
-            });
-            acc
-        })
+        .fold(
+            Self::default(),
+            |mut acc, (name, &x, &y, &z, obj_type, source)| {
+                acc.push(Record {
+                    name,
+                    x,
+                    y,
+                    z,
+                    obj_type,
+                    source,
+                });
+                acc
+            },
+        )
     }
 }

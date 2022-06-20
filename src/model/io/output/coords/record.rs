@@ -16,4 +16,6 @@ pub(in crate::model) struct Record<F: Float> {
     pub(in crate::model) z: F,
     /// Type of the object
     pub(in crate::model) obj_type: String,
+    /// Source of the data
+    pub(in crate::model) source: String,
 }

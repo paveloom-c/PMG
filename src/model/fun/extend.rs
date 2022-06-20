@@ -32,6 +32,7 @@ impl<F: Float> Model<F> {
         self.names.extend(data.names);
         self.coords.extend(Galactic::from(data.coords));
         self.obj_types.extend(data.obj_types);
+        self.sources.extend(data.sources);
         Ok(())
     }
 }

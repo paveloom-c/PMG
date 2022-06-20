@@ -24,6 +24,7 @@ const COORDS_CSV_HEADER: &str = indoc! {"
     # y: Y coordinate [kpc] [f64]
     # z: Z coordinate [kpc] [f64]
     # obj_type: Type of the object
+    # source: Source of the data
     #\n
 "};
 

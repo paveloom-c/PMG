@@ -2,20 +2,63 @@
 # Galactic heliocentric Cartesian system and plots
 # the projections in each plane
 
+"Check if the value of the option is the last argument"
+function check_last(i)
+    if i == length(ARGS)
+        println("The last argument is reserved.")
+        exit(1)
+    end
+end
+
+"Parse the string, taking more arguments if it's quoted"
+function parse_quoted_string(i)::String
+    j = i
+    while !endswith(ARGS[j], "'")
+        j += 1
+    end
+    check_last(j)
+    chop(join(ARGS[i:j], ' '), head=1, tail=1)
+end
+
+# Define default values for optional arguments
+LEGEND_SHOW_SOURCES = false
+POSTFIX = ""
+
+# Parse the options
+for i in eachindex(ARGS)
+    # Show sources on the legend instead of types
+    if ARGS[i] == "-s"
+        check_last(i)
+        global LEGEND_SHOW_SOURCES = true
+    end
+    # A postfix for the names of output files
+    if ARGS[i] == "--postfix"
+        try
+            global POSTFIX = " ($(parse_quoted_string(i+1)))"
+        catch
+            println("Couldn't parse the value of the `--postfix` argument.")
+            exit(1)
+        end
+    end
+end
+
 # Prepare color codes
 RESET = "\e[0m"
 GREEN = "\e[32m"
 YELLOW = "\e[33m"
 
 # Check for required arguments
-if length(ARGS) != 1
+if length(ARGS) <= 1
     println("""
         $(YELLOW)USAGE:$(RESET)
-            { julia --project=. | ./julia.bash } scripts/coords.jl <OUTPUT>
+            { julia --project=. | ./julia.bash } scripts/coords.jl [-s] <OUTPUT>
 
         $(YELLOW)ARGS:$(RESET)
             $(GREEN)<OUTPUT>$(RESET)    Output directory with data files
-                        (relative to the root of the repository)"""
+                        (relative to the root of the repository)
+
+        $(YELLOW)OPTIONS:$(RESET)
+            $(GREEN)-s$(RESET)    Show sources on the legend instead of types"""
     )
     exit(1)
 end
@@ -46,7 +89,7 @@ default(
     dpi=300,
     size=(300, 300),
     markersize=2.5,
-    legend=:topright,
+    legend=:outertopright,
 )
 
 # Define the paths
@@ -67,6 +110,7 @@ struct Data
     y::Vector{F}
     z::Vector{F}
     obj_type::Vector{String}
+    source::Vector{String}
 end
 
 "Read binary files in the `bincode` format"
@@ -105,37 +149,39 @@ end
 # Read the data
 data = read_bincode(COORDS_DATA_PATH)
 
+# Prepare a group for the data
+group = LEGEND_SHOW_SOURCES ? data.source : data.obj_type
+
 println(" "^pad, "> Plotting the scatter plots...")
 
 # Plot a scatter plot in the (X, Y) plane
 scatter(
     data.x,
-    data.y,
+    data.y;
     xlabel=L"X \; \mathrm{[kpc]}",
     ylabel=L"Y \; \mathrm{[kpc]}",
-    group=data.obj_type,
+    group,
 )
-savefig(joinpath(PLOTS_DIR, "XY.pdf"))
+savefig(joinpath(PLOTS_DIR, "XY$(POSTFIX).pdf"))
 
 # Plot a scatter plot in the (X, Z) plane
 scatter(
     data.x,
-    data.z,
+    data.z;
     xlabel=L"X \; \mathrm{[kpc]}",
     ylabel=L"Z \; \mathrm{[kpc]}",
-    group=data.obj_type,
+    group,
 )
-savefig(joinpath(PLOTS_DIR, "XZ.pdf"))
+savefig(joinpath(PLOTS_DIR, "XZ$(POSTFIX).pdf"))
 
 # Plot a scatter plot in the (Y, Z) plane
 scatter(
     data.y,
-    data.z,
+    data.z;
     xlabel=L"Y \; \mathrm{[kpc]}",
     ylabel=L"Z \; \mathrm{[kpc]}",
-    group=data.obj_type,
-    legend=:topleft,
+    group,
 )
-savefig(joinpath(PLOTS_DIR, "YZ.pdf"))
+savefig(joinpath(PLOTS_DIR, "YZ$(POSTFIX).pdf"))
 
 println()

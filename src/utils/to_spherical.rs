@@ -85,12 +85,9 @@ cfg_if::cfg_if! {
             /// Parallax
             #[allow(dead_code)]
             par: F,
-            /// Standard error of the parallax
+            /// Uncertainty in `par`
             #[allow(dead_code)]
-            s_par: F,
-            /// Object type
-            #[allow(dead_code)]
-            obj_type: String,
+            e_par: F,
         }
     } else {}
 }
