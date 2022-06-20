@@ -1,6 +1,6 @@
 //! Output data records
 
-mod fun;
+mod from;
 
 use super::Record;
 

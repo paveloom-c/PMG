@@ -1,5 +1,7 @@
 //! Output data record
 
+mod from;
+
 use num::Float;
 use serde::Serialize;
 

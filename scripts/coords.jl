@@ -12,12 +12,26 @@ end
 
 "Parse the string, taking more arguments if it's quoted"
 function parse_quoted_string(i)::String
+    # Start from the first argument after the flag
     j = i
-    while !endswith(ARGS[j], "'")
-        j += 1
+    # If the arguments starts with an apostrophe,
+    s = if startswith(ARGS[i], "'")
+        # Find the index of the argument
+        # which ends with an apostrophe
+        while !endswith(ARGS[j], "'")
+            j += 1
+        end
+        # Join the arguments in one string
+        # and remove the apostrophes
+        chop(join(ARGS[i:j], ' '), head=1, tail=1)
+    # Otherwise,
+    else
+        # Return the next argument
+        ARGS[i]
     end
+    # Check for the last argument
     check_last(j)
-    chop(join(ARGS[i:j], ' '), head=1, tail=1)
+    return s
 end
 
 # Define default values for optional arguments

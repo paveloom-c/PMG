@@ -1,9 +1,7 @@
 //! Extend the model by parsing and appending the data
 //! from the file, doing conversions where necessary
 
-use crate::model::coordinates::Galactic;
-use crate::model::io::input::Data;
-use crate::model::Model;
+use crate::model::{Model, Objects};
 
 use std::error::Error;
 use std::fmt::Debug;
@@ -27,12 +25,9 @@ impl<F: Float> Model<F> {
         <F as FromStr>::Err: Error + Send + Sync + 'static,
     {
         // Parse the data from the file
-        let data = Data::try_from(path).with_context(|| "Couldn't parse the data")?;
+        let objects = Objects::try_from(path).with_context(|| "Couldn't parse the data")?;
         // Extend the model
-        self.names.extend(data.names);
-        self.coords.extend(Galactic::from(data.coords));
-        self.obj_types.extend(data.obj_types);
-        self.sources.extend(data.sources);
+        self.objects.extend(objects);
         Ok(())
     }
 }

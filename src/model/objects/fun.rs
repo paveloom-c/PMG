@@ -1,4 +1,6 @@
 //! Associated functions and methods
 
 mod default;
-mod push;
+mod extend;
+mod iter;
+mod try_from;
