@@ -120,6 +120,8 @@ println(" "^pad, "> Loading the data...")
 
 struct Data
     names::Vector{String}
+    l::Vector{F}
+    b::Vector{F}
     x::Vector{F}
     y::Vector{F}
     z::Vector{F}

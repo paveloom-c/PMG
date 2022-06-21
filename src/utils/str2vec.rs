@@ -7,10 +7,6 @@ use anyhow::{Context, Result};
 use num::Float;
 
 /// Parse a string for a vector of floats, splitting by colons
-///
-/// # Errors
-///
-/// Will return `Err` if parsing the string wasn't successful
 pub fn str2vec<F>(str: &str) -> Result<Vec<F>>
 where
     F: Float + FromStr,

@@ -11,16 +11,15 @@ use num::Float;
 #[derive(Debug)]
 pub(in crate::model) struct Object<F: Float> {
     /// Name of the object
-    pub(in crate::model) name: String,
+    name: Option<String>,
     /// Equatorial spherical coordinates
-    #[allow(dead_code)]
-    pub(in crate::model) equatorial_s: EquatorialSpherical<F>,
+    equatorial_s: Option<EquatorialSpherical<F>>,
     /// Galactic heliocentric spherical coordinates
-    pub(in crate::model) galactic_s: GalacticSpherical<F>,
+    galactic_s: Option<GalacticSpherical<F>>,
     /// Galactic heliocentric Cartesian coordinates
-    pub(in crate::model) galactic_c: GalacticCartesian<F>,
+    galactic_c: Option<GalacticCartesian<F>>,
     /// Type of the object
-    pub(in crate::model) obj_type: String,
+    obj_type: Option<String>,
     /// Source of the data
-    pub(in crate::model) source: String,
+    source: Option<String>,
 }

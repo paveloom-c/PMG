@@ -29,4 +29,6 @@ lint = [
     "clippy::default_numeric_fallback",
     "-A",
     "clippy::single_char_lifetime_names",
+    "-A",
+    "clippy::missing_errors_doc",
 ]

@@ -15,23 +15,26 @@
    julia --project=. -e "using Pkg; Pkg.instantiate()"
    ```
 
-4. Convert the data from the equatorial coordinate system
-   to the Galactic heliocentric Cartesian system
+4. Convert the equatorial spherical coordinates
+   to the Galactic heliocentric spherical and
+   Cartesian coordinates
 
    ```bash
-   cargo run -r -- -o data/output data/input/data.dat
+   cargo run -r -- -o data/output --goals coords -i data/input/data.dat
    ```
 
 5. Plot the projections in each plane:
 
    ```bash
-   julia --project=. scripts/coords.jl data/output/
+   julia --project=. scripts/coords.jl --postfix "'All by type'" data/output/
+   julia --project=. scripts/coords.jl -s --postfix "'All by source'" data/output/
    ```
 
    *or*
 
    ```bash
-   ./julia.bash scripts/coords.jl data/output/
+   ./julia.bash scripts/coords.jl --postfix "'All by type'" data/output/
+   ./julia.bash scripts/coords.jl -s --postfix "'All by source'" data/output/
    ```
 
 ### Notices

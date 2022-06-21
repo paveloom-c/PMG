@@ -15,10 +15,6 @@ use serde::de::DeserializeOwned;
 impl<F: Float> Model<F> {
     /// Extend the model by parsing and appending the data
     /// from the file, doing conversions where necessary
-    ///
-    /// # Errors
-    ///
-    /// Will return `Err` if deserializing data from the file wasn't successful
     pub fn extend(&mut self, path: &Path) -> Result<()>
     where
         F: Float + Debug + FromStr + DeserializeOwned,

@@ -3,13 +3,20 @@
 use crate::model::io::output::coords::{Record, Records};
 use crate::model::Model;
 
+use anyhow::{Context, Result};
 use num::Float;
 
-impl<F: Float> From<&Model<F>> for Records<F> {
-    fn from(model: &Model<F>) -> Self {
+impl<'a, F: Float> TryFrom<&'a Model<F>> for Records<'a, F> {
+    type Error = anyhow::Error;
+
+    fn try_from(model: &'a Model<F>) -> Result<Self> {
         model
             .objects
             .iter()
-            .map(|object| { Record::from(object) }).collect()
+            .map(|object| {
+                Record::try_from(object)
+                    .with_context(|| "Couldn't construct a record from the object")
+            })
+            .collect()
     }
 }

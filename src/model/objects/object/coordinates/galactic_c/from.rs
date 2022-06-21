@@ -4,12 +4,10 @@
 use super::super::{GalacticCartesian, GalacticSpherical};
 use crate::utils::to_cartesian;
 
-use std::fmt::Debug;
-
 use num::Float;
 
 #[allow(clippy::many_single_char_names)]
-impl<F: Float + Debug> From<&GalacticSpherical<F>> for GalacticCartesian<F> {
+impl<F: Float> From<&GalacticSpherical<F>> for GalacticCartesian<F> {
     fn from(galactic_s: &GalacticSpherical<F>) -> Self {
         // Unpack the data
         let l = galactic_s.l;

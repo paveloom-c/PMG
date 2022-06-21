@@ -3,10 +3,10 @@
 # Descriptions:
 #
 # name: Name of the object
-# alpha: Right ascension [decimal angle]
-# delta: Declination [decimal angle]
-# l: Longitude [decimal angle]
-# b: Latitude [decimal angle]
+# alpha: Right ascension [deg]
+# delta: Declination [deg]
+# l: Longitude [deg]
+# b: Latitude [deg]
 # par: Parallax [mas]
 # e_par: Uncertainty in `par` [mas]
 #

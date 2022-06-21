@@ -7,9 +7,13 @@ use serde::Serialize;
 
 /// Output data record
 #[derive(Serialize)]
-pub(in crate::model) struct Record<F: Float> {
+pub(in crate::model) struct Record<'a, F: Float> {
     /// Name
-    pub(in crate::model) name: String,
+    pub(in crate::model) name: &'a String,
+    /// Longitude
+    pub(in crate::model) l: F,
+    /// Latitude
+    pub(in crate::model) b: F,
     /// X coordinate
     pub(in crate::model) x: F,
     /// Y coordinate
@@ -17,7 +21,7 @@ pub(in crate::model) struct Record<F: Float> {
     /// Z coordinate
     pub(in crate::model) z: F,
     /// Type of the object
-    pub(in crate::model) obj_type: String,
+    pub(in crate::model) obj_type: &'a String,
     /// Source of the data
-    pub(in crate::model) source: String,
+    pub(in crate::model) source: &'a String,
 }
