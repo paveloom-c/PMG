@@ -27,4 +27,6 @@ lint = [
     "clippy::separated_literal_suffix",
     "-A",
     "clippy::default_numeric_fallback",
+    "-A",
+    "clippy::single_char_lifetime_names",
 ]

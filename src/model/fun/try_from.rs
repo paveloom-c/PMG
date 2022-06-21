@@ -1,6 +1,6 @@
 //! Construct a model from a path to a file with data
 
-use crate::model::Model;
+use super::super::Model;
 
 use std::error::Error;
 use std::fmt::Debug;

@@ -46,7 +46,7 @@ fn l_ncp<F: Float>() -> F {
 /// Angles must be in radians, then radians returned.
 ///
 /// Source: [Wikipedia](https://en.wikipedia.org/wiki/Galactic_coordinate_system#Conversion_between_equatorial_and_galactic_coordinates)
-pub(super) fn to_spherical<F: Float>(alpha: F, delta: F) -> (F, F) {
+pub fn to_spherical<F: Float>(alpha: F, delta: F) -> (F, F) {
     let phi = F::atan2(
         F::cos(delta) * F::sin(alpha - alpha_ngp()),
         F::cos(delta_ngp()) * F::sin(delta)

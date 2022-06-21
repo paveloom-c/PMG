@@ -1,6 +1,6 @@
 //! Get an object from the input record
 
-use super::super::coordinates::{EquatorialSpherical, GalacticCartesian};
+use super::super::coordinates::{EquatorialSpherical, GalacticCartesian, GalacticSpherical};
 use super::super::Object;
 use crate::model::io::input;
 
@@ -22,13 +22,15 @@ where
         // Unpack the data
         let equatorial_s = EquatorialSpherical::try_from(&record)
             .with_context(|| "Couldn't parse the equatorial coordinates")?;
-        let galactic_c = GalacticCartesian::from(&equatorial_s);
+        let galactic_s = GalacticSpherical::from(&equatorial_s);
+        let galactic_c = GalacticCartesian::from(&galactic_s);
         let name = record.name;
         let obj_type = record.obj_type;
         let source = record.source;
         Ok(Self {
             name,
             equatorial_s,
+            galactic_s,
             galactic_c,
             obj_type,
             source,

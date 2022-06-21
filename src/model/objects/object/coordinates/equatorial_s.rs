@@ -13,6 +13,6 @@ pub(in crate::model) struct EquatorialSpherical<F: Float> {
     pub(super) alpha: F,
     /// Declination (radians)
     pub(super) delta: F,
-    /// Parallax (radians)
+    /// Parallax (mas)
     pub(super) par: F,
 }

@@ -3,7 +3,7 @@
 mod coordinates;
 mod fun;
 
-use coordinates::{EquatorialSpherical, GalacticCartesian};
+use coordinates::{EquatorialSpherical, GalacticCartesian, GalacticSpherical};
 
 use num::Float;
 
@@ -15,6 +15,8 @@ pub(in crate::model) struct Object<F: Float> {
     /// Equatorial spherical coordinates
     #[allow(dead_code)]
     pub(in crate::model) equatorial_s: EquatorialSpherical<F>,
+    /// Galactic heliocentric spherical coordinates
+    pub(in crate::model) galactic_s: GalacticSpherical<F>,
     /// Galactic heliocentric Cartesian coordinates
     pub(in crate::model) galactic_c: GalacticCartesian<F>,
     /// Type of the object

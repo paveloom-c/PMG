@@ -1,7 +1,7 @@
 //! Write the model data to files inside the directory
 
+use super::super::Model;
 use crate::model::io::output;
-use crate::model::Model;
 
 use std::fs::{create_dir_all, File};
 use std::io::{BufWriter, Write};

@@ -1,17 +1,22 @@
-//! Convert the equatorial coordinates to
-//! the Galactic coordinates and push them
+//! Convert the Galactic spherical coordinates
+//! to the Galactic Cartesian coordinates
 
-use super::super::{EquatorialSpherical, GalacticCartesian};
-use crate::utils::to_galactic;
+use super::super::{GalacticCartesian, GalacticSpherical};
+use crate::utils::to_cartesian;
 
 use std::fmt::Debug;
 
 use num::Float;
 
-impl<F: Float + Debug> From<&EquatorialSpherical<F>> for GalacticCartesian<F> {
-    fn from(equatorial: &EquatorialSpherical<F>) -> Self {
+#[allow(clippy::many_single_char_names)]
+impl<F: Float + Debug> From<&GalacticSpherical<F>> for GalacticCartesian<F> {
+    fn from(galactic_s: &GalacticSpherical<F>) -> Self {
+        // Unpack the data
+        let l = galactic_s.l;
+        let b = galactic_s.b;
+        let par = galactic_s.par;
         // Convert to the Galactic heliocentric Cartesian coordinate system
-        let (x, y, z) = to_galactic(equatorial.alpha, equatorial.delta, equatorial.par);
-        GalacticCartesian { x, y, z }
+        let (x, y, z) = to_cartesian(l, b, par);
+        Self { x, y, z }
     }
 }

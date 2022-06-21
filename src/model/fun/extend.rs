@@ -1,7 +1,7 @@
 //! Extend the model by parsing and appending the data
 //! from the file, doing conversions where necessary
 
-use crate::model::{Model, Objects};
+use super::super::{Model, Objects};
 
 use std::error::Error;
 use std::fmt::Debug;
