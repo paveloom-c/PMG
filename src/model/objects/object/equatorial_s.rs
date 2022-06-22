@@ -1,15 +1,23 @@
-//! Parse values from the record and push them to the storage
-
-use super::super::EquatorialSpherical;
-
-use std::error::Error;
-use std::str::FromStr;
+//! Equatorial spherical coordinates
 
 use crate::model::io::input;
 use crate::utils::{dms2rad, hms2rad, str2vec};
 
+use std::error::Error;
+use std::fmt::Debug;
+use std::str::FromStr;
+
 use anyhow::{bail, Context, Result};
 use num::Float;
+
+/// Equatorial spherical coordinates
+#[derive(Debug)]
+pub(in crate::model) struct EquatorialSpherical<F: Float> {
+    /// Right ascension (radians)
+    pub(in crate::model) alpha: F,
+    /// Declination (radians)
+    pub(in crate::model) delta: F,
+}
 
 impl<F> TryFrom<&input::Record<F>> for EquatorialSpherical<F>
 where
@@ -33,8 +41,12 @@ where
             [degrees, minutes, seconds] => dms2rad(degrees, minutes, seconds),
             _ => bail!("Three values were expected"),
         };
-        // Get the parallax
-        let par = record.par;
-        Ok(Self { alpha, delta, par })
+        Ok(Self { alpha, delta })
+    }
+}
+
+impl<F: Float> From<&EquatorialSpherical<F>> for (F, F) {
+    fn from(s: &EquatorialSpherical<F>) -> Self {
+        (s.alpha, s.delta)
     }
 }

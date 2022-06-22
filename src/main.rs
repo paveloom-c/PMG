@@ -3,7 +3,7 @@
 
 mod cli;
 mod goal;
-pub mod model;
+mod model;
 mod utils;
 
 use goal::Goal;
@@ -22,7 +22,8 @@ pub fn main() -> Result<()> {
     model
         .compute(&args.goals)
         .with_context(|| "Couldn't perform computations")?;
-    // Write the model data to files in the output directory based on the goals
+    // Write the model data to files in the
+    // output directory based on the goals
     model
         .write_to(&args.output, &args.goals)
         .with_context(|| "Couldn't write the model data")?;
