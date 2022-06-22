@@ -12,7 +12,7 @@ use clap::{builder::EnumValueParser, Parser};
 #[clap(author, version, about)]
 pub struct Args {
     /// Output directory
-    #[clap(short, required = true, validator = Self::validate_output)]
+    #[clap(short, required = true)]
     pub output: PathBuf,
     /// Computation goals
     #[clap(long, multiple_values = true, required = true, value_parser = EnumValueParser::<Goal>::new())]
@@ -29,14 +29,6 @@ impl Args {
             Ok(())
         } else {
             Err(anyhow!("Input must be an existing file"))
-        }
-    }
-    /// Check if the path to the output directory is valid
-    fn validate_output(s: &str) -> Result<()> {
-        if Path::new(s).is_dir() {
-            Ok(())
-        } else {
-            Err(anyhow!("Output must be an existing directory"))
         }
     }
 }

@@ -21,6 +21,7 @@ const COORDS_CSV_HEADER: &str = indoc! {"
     # name: Name of the object
     # l: Longitude [deg]
     # b: Latitude [deg]
+    # r: Distance [kpc]
     # x: X coordinate [kpc]
     # y: Y coordinate [kpc]
     # z: Z coordinate [kpc]

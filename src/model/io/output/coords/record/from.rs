@@ -14,6 +14,7 @@ impl<'a, F: Float> TryFrom<&'a Object<F>> for Record<'a, F> {
             name: object.name()?,
             l: object.galactic_s()?.l.to_degrees(),
             b: object.galactic_s()?.b.to_degrees(),
+            r: object.galactic_s()?.r,
             x: object.galactic_c()?.x,
             y: object.galactic_c()?.y,
             z: object.galactic_c()?.z,

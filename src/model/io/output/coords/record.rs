@@ -14,6 +14,8 @@ pub(in crate::model) struct Record<'a, F: Float> {
     pub(in crate::model) l: F,
     /// Latitude
     pub(in crate::model) b: F,
+    /// Distance
+    pub(in crate::model) r: F,
     /// X coordinate
     pub(in crate::model) x: F,
     /// Y coordinate

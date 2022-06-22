@@ -15,4 +15,6 @@ pub(in crate::model) struct GalacticSpherical<F: Float> {
     pub(in crate::model) b: F,
     /// Parallax (mas)
     pub(in crate::model) par: F,
+    /// Distance (kpc)
+    pub(in crate::model) r: F,
 }

@@ -20,21 +20,24 @@
    Cartesian coordinates
 
    ```bash
-   cargo run -r -- -o data/output --goals coords -i data/input/data.dat
+   cargo run -r -- -o data/output/all --goals coords -i data/input/all.dat
+   cargo run -r -- -o data/output/hmsfrs --goals coords -i data/input/hmsfrs.dat
    ```
 
 5. Plot the projections in each plane:
 
    ```bash
-   julia --project=. scripts/coords.jl --postfix "'All by type'" data/output/
-   julia --project=. scripts/coords.jl -s --postfix "'All by source'" data/output/
+   julia --project=. scripts/coords.jl -o "'All by type'" data/output/all/
+   julia --project=. scripts/coords.jl -s -o "'All by source'" data/output/all/
+   julia --project=. scripts/coords.jl -s -o "HMSFRs" data/output/hmsfrs/
    ```
 
    *or*
 
    ```bash
-   ./julia.bash scripts/coords.jl --postfix "'All by type'" data/output/
-   ./julia.bash scripts/coords.jl -s --postfix "'All by source'" data/output/
+   ./julia.bash scripts/coords.jl -o "'All by type'" data/output/all/
+   ./julia.bash scripts/coords.jl -s -o "'All by source'" data/output/all/
+   ./julia.bash scripts/coords.jl -s -o "HMSFRs" data/output/hmsfrs/
    ```
 
 ### Notices
