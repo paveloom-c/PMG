@@ -125,10 +125,11 @@ struct Data
     names::Vector{String}
     l::Vector{F}
     b::Vector{F}
-    r::Vector{F}
     x::Vector{F}
     y::Vector{F}
     z::Vector{F}
+    r_h::Vector{F}
+    r_g::Vector{F}
     obj_type::Vector{String}
     source::Vector{String}
 end
@@ -241,7 +242,7 @@ p = scatter(data.y, data.z, L"Y \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
 pgfsave(joinpath(PLOTS_DIR, "YZ$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (R, Z) plane
-p = scatter(data.r, data.z, L"R \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
+p = scatter(data.r_g, data.z, L"R \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
 pgfsave(joinpath(PLOTS_DIR, "RZ$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (l, b) plane

@@ -14,10 +14,11 @@ impl<'a, F: Float> TryFrom<&'a Object<F>> for Record<'a, F> {
             name: object.name()?,
             l: object.galactic_s()?.l.to_degrees(),
             b: object.galactic_s()?.b.to_degrees(),
-            r: object.galactic_s()?.r,
             x: object.galactic_c()?.x,
             y: object.galactic_c()?.y,
             z: object.galactic_c()?.z,
+            r_h: object.galactic_s()?.r_h,
+            r_g: object.galactic_s()?.r_g,
             obj_type: object.obj_type()?,
             source: object.source()?,
         })

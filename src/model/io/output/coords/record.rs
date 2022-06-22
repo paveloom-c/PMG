@@ -14,14 +14,16 @@ pub(in crate::model) struct Record<'a, F: Float> {
     pub(in crate::model) l: F,
     /// Latitude
     pub(in crate::model) b: F,
-    /// Distance
-    pub(in crate::model) r: F,
     /// X coordinate
     pub(in crate::model) x: F,
     /// Y coordinate
     pub(in crate::model) y: F,
     /// Z coordinate
     pub(in crate::model) z: F,
+    /// Heliocentric distance
+    pub(in crate::model) r_h: F,
+    /// Galactocentric distance
+    pub(in crate::model) r_g: F,
     /// Type of the object
     pub(in crate::model) obj_type: &'a String,
     /// Source of the data

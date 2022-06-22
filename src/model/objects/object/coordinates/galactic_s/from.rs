@@ -2,6 +2,7 @@
 //! to the Galactic spherical coordinates
 
 use super::super::{EquatorialSpherical, GalacticSpherical};
+use crate::utils::compute_r_g;
 use crate::utils::to_spherical;
 
 use num::Float;
@@ -15,10 +16,18 @@ impl<F: Float> From<&EquatorialSpherical<F>> for GalacticSpherical<F> {
         let alpha = equatorial_s.alpha;
         let delta = equatorial_s.delta;
         let par = equatorial_s.par;
-        // Compute the distance
-        let r = 1. / par;
         // Convert to the Galactic heliocentric spherical coordinate system
         let (l, b) = to_spherical(alpha, delta);
-        Self { l, b, par, r }
+        // Compute the heliocentric distance
+        let r_h = 1. / par;
+        // Compute the Galactocentric distance
+        let r_g = compute_r_g(l, b, r_h);
+        Self {
+            l,
+            b,
+            par,
+            r_h,
+            r_g,
+        }
     }
 }

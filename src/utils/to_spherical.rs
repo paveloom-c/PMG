@@ -6,35 +6,35 @@ use lazy_static::lazy_static;
 use num::Float;
 
 lazy_static! {
-    /// The right ascension of the north galactic pole
+    /// The right ascension of the north galactic pole (radians)
     ///
     /// Source: Reid et al. (2009)
     static ref ALPHA_NGP: f64 = hms2rad(12., 51., 26.2817);
-    /// The declination of the north galactic pole
+    /// The declination of the north galactic pole (radians)
     ///
     /// Source: Reid et al. (2009)
     static ref DELTA_NGP: f64 = dms2rad(27., 7., 42.013);
-    /// The longitude of the north celestial pole
+    /// The longitude of the north celestial pole (radians)
     ///
     /// Source: Reid et al. (2009)
     static ref L_NCP: f64 = 122.932.to_radians();
 }
 
-/// The right ascension of the north galactic pole
+/// The right ascension of the north galactic pole (radians)
 #[allow(clippy::unwrap_used)]
 #[inline]
 fn alpha_ngp<F: Float>() -> F {
     F::from(*ALPHA_NGP).unwrap()
 }
 
-/// The declination of the north galactic pole
+/// The declination of the north galactic pole (radians)
 #[allow(clippy::unwrap_used)]
 #[inline]
 fn delta_ngp<F: Float>() -> F {
     F::from(*DELTA_NGP).unwrap()
 }
 
-/// The longitude of the north celestial pole
+/// The longitude of the north celestial pole (radians)
 #[allow(clippy::unwrap_used)]
 #[inline]
 fn l_ncp<F: Float>() -> F {

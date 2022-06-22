@@ -10,9 +10,9 @@ use num::Float;
 #[derive(Debug)]
 pub(in crate::model) struct EquatorialSpherical<F: Float> {
     /// Right ascension (radians)
-    pub(super) alpha: F,
+    pub(in crate::model) alpha: F,
     /// Declination (radians)
-    pub(super) delta: F,
+    pub(in crate::model) delta: F,
     /// Parallax (mas)
-    pub(super) par: F,
+    pub(in crate::model) par: F,
 }
