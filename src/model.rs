@@ -14,7 +14,7 @@ use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use bincode::Options;
 use num::Float;
 use serde::{de::DeserializeOwned, Serialize};
@@ -100,8 +100,9 @@ impl<F: Float + Debug> Model<F> {
             .with_context(|| format!("Couldn't create the output directory {dat_dir:?}"))?;
         create_dir_all(bin_dir)
             .with_context(|| format!("Couldn't create the output directory {bin_dir:?}"))?;
-        match goals[..] {
-            [Goal::Coords] => Model::<F>::serialize_to(
+        // Write the coordinates if that was a goal
+        if goals.contains(&Goal::Coords) {
+            Model::<F>::serialize_to(
                 dat_dir,
                 bin_dir,
                 "coords",
@@ -109,8 +110,19 @@ impl<F: Float + Debug> Model<F> {
                 output::coords::Records::try_from(self)
                     .with_context(|| "Couldn't construct records from objects")?,
             )
-            .with_context(|| "Couldn't write the Galactic coordinates to a file")?,
-            _ => bail!("This combination of goals wasn't expected."),
+            .with_context(|| "Couldn't write the Galactic coordinates to a file")?;
+        };
+        // Write the rotation curve if that was a goal
+        if goals.contains(&Goal::RotationCurve) {
+            Model::<F>::serialize_to(
+                dat_dir,
+                bin_dir,
+                "rotcurve",
+                output::rotcurve::ROTCURVE_CSV_HEADER,
+                output::rotcurve::Records::try_from(self)
+                    .with_context(|| "Couldn't construct records from objects")?,
+            )
+            .with_context(|| "Couldn't write the Galactic coordinates to a file")?;
         };
         Ok(())
     }

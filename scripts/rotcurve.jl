@@ -1,4 +1,4 @@
-# This script plots the projections in each plane
+# This script plots the rotation curve
 
 "Check if the value of the option is the last argument"
 function check_last(i)
@@ -73,7 +73,7 @@ YELLOW = "\e[33m"
 if length(ARGS) <= 1
     println("""
         $(YELLOW)USAGE:$(RESET)
-        { julia --project=. | ./julia.bash } scripts/coords.jl [-s] [-o <OUTPUT_DIR>] [--postfix <POSTFIX>] <INPUT_DIR>
+        { julia --project=. | ./julia.bash } scripts/rotcurve.jl [-s] [-o <OUTPUT_DIR>] [--postfix <POSTFIX>] <INPUT_DIR>
 
         $(YELLOW)ARGS:$(RESET)
         $(GREEN)<INPUT_DIR>$(RESET)    Input directory (relative to the root of the repository)
@@ -111,7 +111,7 @@ cmap = ColorSchemes.tol_light[2:end]
 CURRENT_DIR = @__DIR__
 ROOT_DIR = dirname(CURRENT_DIR)
 PLOTS_DIR = joinpath(ROOT_DIR, "plots", OUTPUT_DIR)
-DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "bin", "coords.bin")
+DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "bin", "rotcurve.bin")
 
 # Make sure the needed directories exist
 mkpath(PLOTS_DIR)
@@ -121,23 +121,8 @@ println(pad, "> Loading the data...")
 
 struct Data
     name::Vector{String}
-    l::Vector{F}
-    b::Vector{F}
-    X::Vector{F}
-    ep_X::Vector{F}
-    em_X::Vector{F}
-    Y::Vector{F}
-    ep_Y::Vector{F}
-    em_Y::Vector{F}
-    Z::Vector{F}
-    ep_Z::Vector{F}
-    em_Z::Vector{F}
-    r::Vector{F}
-    ep_r::Vector{F}
-    em_r::Vector{F}
+    theta::Vector{F}
     R::Vector{F}
-    ep_R::Vector{F}
-    em_R::Vector{F}
     type::Vector{String}
     source::Vector{String}
 end
@@ -190,7 +175,7 @@ label = [ dictionary[k] for k in group ]
 println(pad, "> Plotting the scatter plots...")
 
 "Create a scatter plot"
-function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y = F[], axis_equal=false)
+function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y = F[])
     table = if isempty(ep_x) && isempty(em_x) && isempty(ep_y) && isempty(em_y)
         @pgf Table(
             {
@@ -237,7 +222,6 @@ function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y 
                 line_width = 0.1,
                 opacity = 0.25,
             },
-            axis_equal = axis_equal,
             axis_line_style = { line_width = 1 },
             "axis_lines*" = "left",
             legend_image_post_style = { mark_size = 2, line_width = 0.4 },
@@ -269,175 +253,14 @@ function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y 
     )
 end
 
-# Plot a scatter plot in the (X, Y) plane
-println(pad, "    for XY...")
-p = scatter(
-    data.X,
-    data.Y,
-    L"X \; \mathrm{[kpc]}",
-    L"Y \; \mathrm{[kpc]}";
-    axis_equal=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "XY$(POSTFIX).pdf"), p)
-
-# Plot a scatter plot in the (X, Y) plane with errors
-println(pad, "    for XY (errors)...")
-p = scatter(
-    data.X,
-    data.Y,
-    L"X \; \mathrm{[kpc]}",
-    L"Y \; \mathrm{[kpc]}";
-    ep_x=data.ep_X,
-    em_x=data.em_X,
-    ep_y=data.ep_Y,
-    em_y=data.em_Y,
-    axis_equal=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "XY (errors)$(POSTFIX).pdf"), p)
-
-# Plot a scatter plot in the (X, Z) plane
-println(pad, "    for XZ...")
-p = scatter(data.X, data.Z, L"X \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
-pgfsave(joinpath(PLOTS_DIR, "XZ$(POSTFIX).pdf"), p)
-
-# Plot a scatter plot in the (X, Z) plane with equal axes
-println(pad, "    for XZ (equal axes)...")
-p = scatter(
-    data.X,
-    data.Z,
-    L"X \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}";
-    axis_equal=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "XZ (equal axes)$(POSTFIX).pdf"), p)
-
-# Plot a scatter plot in the (X, Z) plane with errors
-println(pad, "    for XZ (errors)...")
-p = scatter(
-    data.X,
-    data.Z,
-    L"X \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}";
-    ep_x=data.ep_X,
-    em_x=data.em_X,
-    ep_y=data.ep_Z,
-    em_y=data.em_Z,
-)
-pgfsave(joinpath(PLOTS_DIR, "XZ (errors)$(POSTFIX).pdf"), p)
-
-# Plot a scatter plot in the (X, Z) plane with errors and equal axes
-println(pad, "    for XZ (equal axes, errors)...")
-p = scatter(
-    data.X,
-    data.Z,
-    L"X \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}";
-    ep_x=data.ep_X,
-    em_x=data.em_X,
-    ep_y=data.ep_Z,
-    em_y=data.em_Z,
-    axis_equal=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "XZ (equal axes, errors)$(POSTFIX).pdf"), p)
-
-# Plot a scatter plot in the (Y, Z) plane
-println(pad, "    for YZ...")
-p = scatter( data.Y, data.Z, L"Y \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
-pgfsave(joinpath(PLOTS_DIR, "YZ$(POSTFIX).pdf"), p)
-
-# Plot a scatter plot in the (Y, Z) plane with equal axes
-p = scatter(
-    data.Y,
-    data.Z,
-    L"Y \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    axis_equal=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "YZ (equal axes)$(POSTFIX).pdf"), p)
-
-# Plot a scatter plot in the (Y, Z) plane with errors
-println(pad, "    for YZ (errors)...")
-p = scatter(
-    data.Y,
-    data.Z,
-    L"Y \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    ep_x=data.ep_Y,
-    em_x=data.em_Y,
-    ep_y=data.ep_Z,
-    em_y=data.em_Z,
-)
-pgfsave(joinpath(PLOTS_DIR, "YZ (errors)$(POSTFIX).pdf"), p)
-
-# Plot a scatter plot in the (Y, Z) plane with errors and equal axes
-println(pad, "    for YZ (equal axes, errors)...")
-p = scatter(
-    data.Y,
-    data.Z,
-    L"Y \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    ep_x=data.ep_Y,
-    em_x=data.em_Y,
-    ep_y=data.ep_Z,
-    em_y=data.em_Z,
-    axis_equal=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "YZ (equal axes, errors)$(POSTFIX).pdf"), p)
-
-# Plot a scatter plot in the (R, Z) plane
-println(pad, "    for RZ...")
-p = scatter(data.R, data.Z, L"R \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
-pgfsave(joinpath(PLOTS_DIR, "RZ$(POSTFIX).pdf"), p)
-
-# Plot a scatter plot in the (R, Z) plane with equal axes
-println(pad, "    for RZ (equal axes)...")
+# Plot the rotation curve
+println(pad, "    for Rotation curve...")
 p = scatter(
     data.R,
-    data.Z,
+    data.theta,
     L"R \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    axis_equal=true,
+    L"\theta \; \mathrm{[km \; s^{-1}]}";
 )
-pgfsave(joinpath(PLOTS_DIR, "RZ (equal axes)$(POSTFIX).pdf"), p)
-
-# Plot a scatter plot in the (R, Z) plane with errors
-println(pad, "    for RZ (errors)...")
-p = scatter(
-    data.R,
-    data.Z,
-    L"R \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    ep_x=data.ep_R,
-    em_x=data.em_R,
-    ep_y=data.ep_Z,
-    em_y=data.em_Z,
-)
-pgfsave(joinpath(PLOTS_DIR, "RZ (errors)$(POSTFIX).pdf"), p)
-
-# Plot a scatter plot in the (R, Z) plane with errors and equal axes
-println(pad, "    for RZ (equal axes, errors)...")
-p = scatter(
-    data.R,
-    data.Z,
-    L"R \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    ep_x=data.ep_R,
-    em_x=data.em_R,
-    ep_y=data.ep_Z,
-    em_y=data.em_Z,
-    axis_equal=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "RZ (equal axes, errors)$(POSTFIX).pdf"), p)
-
-# Plot a scatter plot in the (l, b) plane
-println(pad, "    for lb...")
-p = scatter(
-    data.l,
-    data.b,
-    L"l \; \mathrm{[deg]}",
-    L"b \; \mathrm{[deg]}",
-    axis_equal=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "lb$(POSTFIX).pdf"), p)
+pgfsave(joinpath(PLOTS_DIR, "Rotation curve$(POSTFIX).pdf"), p)
 
 println()

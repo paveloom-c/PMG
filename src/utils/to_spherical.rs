@@ -23,23 +23,26 @@ lazy_static! {
 }
 
 /// The right ascension of the north galactic pole (radians)
+#[allow(clippy::inline_always)]
 #[allow(clippy::unwrap_used)]
-#[inline]
-fn alpha_ngp<F: Float + Debug>() -> F {
+#[inline(always)]
+pub(super) fn alpha_ngp<F: Float + Debug>() -> F {
     F::from(*ALPHA_NGP).unwrap()
 }
 
 /// The declination of the north galactic pole (radians)
+#[allow(clippy::inline_always)]
 #[allow(clippy::unwrap_used)]
-#[inline]
-fn delta_ngp<F: Float + Debug>() -> F {
+#[inline(always)]
+pub(super) fn delta_ngp<F: Float + Debug>() -> F {
     F::from(*DELTA_NGP).unwrap()
 }
 
 /// The longitude of the north celestial pole (radians)
+#[allow(clippy::inline_always)]
 #[allow(clippy::unwrap_used)]
-#[inline]
-fn l_ncp<F: Float + Debug>() -> F {
+#[inline(always)]
+pub(super) fn l_ncp<F: Float + Debug>() -> F {
     F::from(*L_NCP).unwrap()
 }
 
@@ -49,15 +52,20 @@ fn l_ncp<F: Float + Debug>() -> F {
 ///
 /// Source: [Wikipedia](https://en.wikipedia.org/wiki/Galactic_coordinate_system#Conversion_between_equatorial_and_galactic_coordinates)
 pub fn to_spherical<F: Float + Debug>(alpha: F, delta: F) -> (F, F) {
+    // Wrap the constants
+    let alpha_ngp: F = alpha_ngp();
+    let delta_ngp: F = delta_ngp();
+    let l_ncp: F = l_ncp();
+    // Compute the angles
     let phi = F::atan2(
-        F::cos(delta) * F::sin(alpha - alpha_ngp()),
-        F::cos(delta_ngp()) * F::sin(delta)
-            - F::sin(delta_ngp()) * F::cos(delta) * F::cos(alpha - alpha_ngp()),
+        F::cos(delta) * F::sin(alpha - alpha_ngp),
+        F::cos(delta_ngp) * F::sin(delta)
+            - F::sin(delta_ngp) * F::cos(delta) * F::cos(alpha - alpha_ngp),
     );
-    let l = l_ncp::<F>() - phi;
+    let l = l_ncp - phi;
     let b = F::asin(
-        F::sin(delta_ngp()) * F::sin(delta)
-            + F::cos(delta_ngp()) * F::cos(delta) * F::cos(alpha - alpha_ngp()),
+        F::sin(delta_ngp) * F::sin(delta)
+            + F::cos(delta_ngp) * F::cos(delta) * F::cos(alpha - alpha_ngp),
     );
     (l, b)
 }

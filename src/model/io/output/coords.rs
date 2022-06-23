@@ -1,4 +1,4 @@
-//! Galactic heliocentric coordinates in the Cartesian system
+//! Galactic heliocentric coordinates of the objects
 
 use crate::model::{Model, Object};
 
@@ -11,7 +11,7 @@ use serde::Serialize;
 
 /// Header of the `coords.dat` file
 pub(in crate::model) const COORDS_CSV_HEADER: &str = indoc! {"
-    # Galactic coordinates of the objects
+    # Galactic heliocentric coordinates of the objects
     #
     # Descriptions:
     #
