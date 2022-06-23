@@ -16,12 +16,12 @@ pub(in crate::model) const COORDS_CSV_HEADER: &str = indoc! {"
     # name: Name of the object
     # l: Longitude [deg]
     # b: Latitude [deg]
-    # x: X coordinate [kpc]
-    # y: Y coordinate [kpc]
-    # z: Z coordinate [kpc]
-    # r_h: Heliocentric distance [kpc]
-    # r_g: Galactocentric distance [kpc]
-    # obj_type: Type of the object
+    # X: X coordinate [kpc]
+    # Y: Y coordinate [kpc]
+    # Z: Z coordinate [kpc]
+    # r: Heliocentric distance [kpc]
+    # R: Galactocentric distance [kpc]
+    # type: Type of the object
     # source: Source of the data
     #\n
 "};
@@ -36,16 +36,22 @@ pub(in crate::model) struct Record<'a, F: Float> {
     /// Latitude (deg)
     pub(in crate::model) b: F,
     /// X coordinate (kpc)
+    #[serde(rename = "X")]
     pub(in crate::model) x: F,
     /// Y coordinate (kpc)
+    #[serde(rename = "Y")]
     pub(in crate::model) y: F,
     /// Z coordinate (kpc)
+    #[serde(rename = "Z")]
     pub(in crate::model) z: F,
     /// Heliocentric distance (kpc)
+    #[serde(rename = "r")]
     pub(in crate::model) r_h: F,
     /// Galactocentric distance (kpc)
+    #[serde(rename = "R")]
     pub(in crate::model) r_g: F,
     /// Type of the object
+    #[serde(rename = "type")]
     pub(in crate::model) obj_type: &'a String,
     /// Source of the data
     pub(in crate::model) source: &'a String,

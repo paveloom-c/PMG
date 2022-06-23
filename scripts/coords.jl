@@ -122,15 +122,15 @@ mkpath(PLOTS_DIR)
 println(" "^pad, "> Loading the data...")
 
 struct Data
-    names::Vector{String}
+    name::Vector{String}
     l::Vector{F}
     b::Vector{F}
-    x::Vector{F}
-    y::Vector{F}
-    z::Vector{F}
-    r_h::Vector{F}
-    r_g::Vector{F}
-    obj_type::Vector{String}
+    X::Vector{F}
+    Y::Vector{F}
+    Z::Vector{F}
+    r::Vector{F}
+    R::Vector{F}
+    type::Vector{String}
     source::Vector{String}
 end
 
@@ -171,7 +171,7 @@ end
 data = read_bincode(DATA_PATH)
 
 # Prepare a group for the data
-group = LEGEND_SHOW_SOURCES ? data.source : data.obj_type
+group = LEGEND_SHOW_SOURCES ? data.source : data.type
 
 # Prepare labels
 markers = ["a", "b", "c", "d", "e", "g"]
@@ -230,19 +230,19 @@ function scatter(x, y, xlabel, ylabel)
 end
 
 # Plot a scatter plot in the (X, Y) plane
-p = scatter(data.x, data.y, L"X \; \mathrm{[kpc]}", L"Y \; \mathrm{[kpc]}")
+p = scatter(data.X, data.Y, L"X \; \mathrm{[kpc]}", L"Y \; \mathrm{[kpc]}")
 pgfsave(joinpath(PLOTS_DIR, "XY$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (X, Z) plane
-p = scatter(data.x, data.z, L"X \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
+p = scatter(data.X, data.Z, L"X \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
 pgfsave(joinpath(PLOTS_DIR, "XZ$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (Y, Z) plane
-p = scatter(data.y, data.z, L"Y \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
+p = scatter(data.Y, data.Z, L"Y \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
 pgfsave(joinpath(PLOTS_DIR, "YZ$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (R, Z) plane
-p = scatter(data.r_g, data.z, L"R \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
+p = scatter(data.R, data.Z, L"R \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
 pgfsave(joinpath(PLOTS_DIR, "RZ$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (l, b) plane

@@ -14,7 +14,7 @@
 #  9 e_mu_x: Uncertainty in `mu_x` [mas/yr]
 # 10 mu_y: Northward proper motion [mas/yr]
 # 11 e_mu_x: Uncertainty in `mu_y` [mas/yr]
-# 12 obj_type: Type of the object (3)
+# 12 type: Type of the object (3)
 # 13 source: Source of the data (2)
 # 14 reference: Reference(s)
 #
@@ -41,7 +41,7 @@
 #       IRAS 19312+1950: SFR -> AGB
 #   4. VERA catalogue: the data in each line is from the last mentioned reference
 #
-name alpha delta par e_par mu_x e_mu_x mu_y e_mu_y v e_v obj_type source reference
+name alpha delta par e_par mu_x e_mu_x mu_y e_mu_y v e_v type source reference
 #
 # New data (as of June 2022)
 #

@@ -29,6 +29,7 @@ pub(in crate::model) struct Record<F: Float> {
     /// Uncertainty in `mu_y`
     pub(in crate::model) e_mu_y: F,
     /// Type of the object
+    #[serde(rename = "type")]
     pub(in crate::model) obj_type: String,
     /// Sources of the data
     pub(in crate::model) source: String,
