@@ -25,7 +25,7 @@ use num::Float;
 
 /// Data object
 #[derive(Debug)]
-pub(in crate::model) struct Object<F: Float> {
+pub(in crate::model) struct Object<F: Float + Debug> {
     /// Name of the object
     name: Option<String>,
     /// Equatorial spherical coordinates
@@ -52,7 +52,7 @@ pub(in crate::model) struct Object<F: Float> {
     source: Option<String>,
 }
 
-impl<F: Float> Default for Object<F> {
+impl<F: Float + Debug> Default for Object<F> {
     fn default() -> Self {
         Self {
             name: Option::default(),
@@ -71,7 +71,7 @@ impl<F: Float> Default for Object<F> {
     }
 }
 
-impl<F: Float> Object<F> {
+impl<F: Float + Debug> Object<F> {
     /// Unwrap the name of the object
     pub(in crate::model) fn name(&self) -> Result<&String> {
         self.name
@@ -152,19 +152,22 @@ impl<F: Float> Object<F> {
                 // heliocentric spherical coordinates
                 self.compute_galactic_s()
                     .with_context(|| "Couldn't compute the Galactic spherical coordinates")?;
+                // Compute the distances
+                self.compute_distances()
+                    .with_context(|| "Couldn't compute the distances")?;
                 // Convert equatorial coordinates to Galactic
                 // heliocentric Cartesian coordinates
                 self.compute_galactic_c()
                     .with_context(|| "Couldn't compute the Galactic Cartesian coordinates")?;
-                // Compute the distances
-                self.compute_distances()
-                    .with_context(|| "Couldn't compute the distances")?;
             }
             [Goal::RotationCurve] => {
                 // Convert equatorial coordinates to Galactic
                 // heliocentric spherical coordinates
                 self.compute_galactic_s()
                     .with_context(|| "Couldn't compute the Galactic spherical coordinates")?;
+                // Compute the distances
+                self.compute_distances()
+                    .with_context(|| "Couldn't compute the distances")?;
                 // Compute the rotation curve
                 self.compute_rotation_c()
                     .with_context(|| "Couldn't compute the rotation curve")?;
@@ -174,13 +177,13 @@ impl<F: Float> Object<F> {
                 // heliocentric spherical coordinates
                 self.compute_galactic_s()
                     .with_context(|| "Couldn't compute the Galactic spherical coordinates")?;
+                // Compute the distances
+                self.compute_distances()
+                    .with_context(|| "Couldn't compute the distances")?;
                 // Convert equatorial coordinates to Galactic
                 // heliocentric Cartesian coordinates
                 self.compute_galactic_c()
                     .with_context(|| "Couldn't compute the Galactic Cartesian coordinates")?;
-                // Compute the distances
-                self.compute_distances()
-                    .with_context(|| "Couldn't compute the distances")?;
                 // Compute the rotation curve
                 self.compute_rotation_c()
                     .with_context(|| "Couldn't compute the rotation curve")?;
@@ -233,19 +236,31 @@ where
         object.name.replace(record.name);
         object.par.replace(Measurement {
             v: record.par,
-            e: record.e_par,
+            v_u: record.par + record.e_par,
+            v_l: record.par - record.e_par,
+            e_p: record.e_par,
+            e_m: record.e_par,
         });
         object.v.replace(Measurement {
             v: record.v,
-            e: record.e_v,
+            v_u: record.v + record.e_v,
+            v_l: record.v - record.e_v,
+            e_p: record.e_v,
+            e_m: record.e_v,
         });
         object.mu_x.replace(Measurement {
             v: record.mu_x,
-            e: record.e_mu_x,
+            v_u: record.mu_x + record.e_mu_x,
+            v_l: record.mu_x - record.e_mu_x,
+            e_p: record.e_mu_x,
+            e_m: record.e_mu_x,
         });
         object.mu_y.replace(Measurement {
             v: record.mu_y,
-            e: record.e_mu_y,
+            v_u: record.mu_y + record.e_mu_y,
+            v_l: record.mu_y - record.e_mu_y,
+            e_p: record.e_mu_y,
+            e_m: record.e_mu_y,
         });
         object.obj_type.replace(record.obj_type);
         object.source.replace(record.source);

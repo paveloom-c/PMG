@@ -1,6 +1,7 @@
 //! Parse a string for a vector of floats
 
 use std::error::Error;
+use std::fmt::Debug;
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
@@ -9,7 +10,7 @@ use num::Float;
 /// Parse a string for a vector of floats, splitting by colons
 pub fn str2vec<F>(str: &str) -> Result<Vec<F>>
 where
-    F: Float + FromStr,
+    F: Float + Debug + FromStr,
     <F as FromStr>::Err: Error + Send + Sync + 'static,
 {
     // Split a string by colons

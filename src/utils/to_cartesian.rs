@@ -1,6 +1,8 @@
 //! Convert heliocentric Galactic coordinates from
 //! the spherical to the Cartesian coordinate system
 
+use std::fmt::Debug;
+
 use num::Float;
 use numeric_literals::replace_float_literals;
 
@@ -11,13 +13,11 @@ use numeric_literals::replace_float_literals;
 #[allow(clippy::many_single_char_names)]
 #[allow(clippy::unwrap_used)]
 #[replace_float_literals(F::from(literal).unwrap())]
-pub fn to_cartesian<F: Float>(l: F, b: F, par: F) -> (F, F, F) {
-    // Compute the distance in `kpc`
-    let d = 1. / par;
+pub fn to_cartesian<F: Float + Debug>(l: F, b: F, r: F) -> (F, F, F) {
     // Convert to the Galactic heliocentric Cartesian system
-    let x = d * F::cos(b) * F::cos(l);
-    let y = d * F::cos(b) * F::sin(l);
-    let z = d * F::sin(b);
+    let x = r * F::cos(b) * F::cos(l);
+    let y = r * F::cos(b) * F::sin(l);
+    let z = r * F::sin(b);
     (x, y, z)
 }
 
@@ -34,7 +34,7 @@ cfg_if::cfg_if! {
 
         /// Data record
         #[derive(Deserialize)]
-        struct DataRecord<F: Float> {
+        struct DataRecord<F: Float + Debug> {
             /// Name of the object
             #[allow(dead_code)]
             name: String,
@@ -59,7 +59,7 @@ cfg_if::cfg_if! {
 
         /// Coordinates record
         #[derive(Deserialize)]
-        struct CoordsRecord<F: Float> {
+        struct CoordsRecord<F: Float + Debug> {
             /// X coordinate
             x: F,
             /// Y coordinate
@@ -118,7 +118,7 @@ fn test() -> Result<()> {
         let (gs_l, gs_b) = to_spherical(data.alpha.to_radians(), data.delta.to_radians());
         // Compare the data
         let a = (coords.x, coords.y, coords.z);
-        let b = to_cartesian(gs_l, gs_b, data.par);
+        let b = to_cartesian(gs_l, gs_b, 1. / data.par);
         ensure!(
             izip!([a.0, a.1, a.2], [b.0, b.1, b.2])
                 .all(|(v1, v2)| (v1 - v2).abs() < f64::from(f32::epsilon() * 10.)),

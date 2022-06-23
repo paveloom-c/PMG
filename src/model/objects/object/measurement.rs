@@ -1,14 +1,20 @@
-//! Parallax data
+//! Measurement data
 
 use std::fmt::Debug;
 
 use num::Float;
 
-/// Parallax data
+/// Measurement data
 #[derive(Debug)]
-pub(in crate::model) struct Measurement<F: Float> {
-    /// Value
+pub(in crate::model) struct Measurement<F: Float + Debug> {
+    /// Nominal value
     pub(in crate::model) v: F,
-    /// Uncertainty
-    pub(in crate::model) e: F,
+    /// Upper bound of the value
+    pub(in crate::model) v_u: F,
+    /// Lower bound of the value
+    pub(in crate::model) v_l: F,
+    /// Uncertainty plus
+    pub(in crate::model) e_p: F,
+    /// Uncertainty minus
+    pub(in crate::model) e_m: F,
 }

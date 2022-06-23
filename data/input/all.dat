@@ -23,9 +23,9 @@
 #   2. Source is a group label:
 #     New = New data (as of June 2022) (10 total)
 #     VERA = The first VERA catalogue (2020) (63 selected out of 99 total)
-#     Reid = Reid et al. (2019) (199 total)
+#     Reid = Reid et al. (2019) (196 selected out of 199 total)
 #   3. Masers are divided into the following groups by type:
-#     - HMSFRs (high-mass star-forming regions) (206 total)
+#     - HMSFRs (high-mass star-forming regions) (203 selected out of 206 total)
 #     - Non-HMSFRs (specific subtypes are specified where
 #       it was possible) (66 selected out of 102 total):
 #       - SFRs (star-forming regions) (32 selected out of 66 total, excluding LMSFRs)
@@ -171,12 +171,15 @@ W3(H2O) 02:27:04.6800 61:52:24.566 0.527 0.016 0.27 0.29 -1.24 0.15 -55.6 1.2 SF
 #
 # From Reid et al. (2019)
 #
+# Huge errors:
+# - in parallaxes:
+# G001.00-00.23 17:48:55.2845 -28:11:48.240 0.090 0.057 -3.87 0.28 -6.23 0.56 2 5 HMSFR "Reid" "Zhang et al. (2019)"
+# G001.14-00.12 17:48:48.5410 -28:01:11.350 0.194 0.161 0.82 0.33 -3.59 0.69 -16 3 HMSFR "Reid" "Zhang et al. (2019)"
+# G002.70+00.04 17:51:45.9766 -26:35:57.070 0.101 0.105 -3.13 0.87 -9.36 1.24 93 5 HMSFR "Reid" "Zhang et al. (2019)"
+#
 G000.31-00.20 17:47:09.1092 -28:46:16.278 0.342 0.042 0.21 0.39 -1.76 0.64 18 3 HMSFR "Reid" "J. Li et al. (in preparation)"
 G000.37+00.03 17:46:21.4012 -28:35:39.821 0.125 0.047 -0.77 0.28 -2.67 0.40 37 10 HMSFR "Reid" "Sanna et al. (2014)"
 G000.67-00.03 17:47:20.0000 -28:22:40.000 0.129 0.012 -0.78 0.40 -4.26 0.40 62 5 HMSFR "Reid" "Reid et al. (2009)"
-G001.00-00.23 17:48:55.2845 -28:11:48.240 0.090 0.057 -3.87 0.28 -6.23 0.56 2 5 HMSFR "Reid" "Zhang et al. (2019)"
-G001.14-00.12 17:48:48.5410 -28:01:11.350 0.194 0.161 0.82 0.33 -3.59 0.69 -16 3 HMSFR "Reid" "Zhang et al. (2019)"
-G002.70+00.04 17:51:45.9766 -26:35:57.070 0.101 0.105 -3.13 0.87 -9.36 1.24 93 5 HMSFR "Reid" "Zhang et al. (2019)"
 G005.88-00.39 18:00:30.2801 -24:04:04.576 0.334 0.020 0.18 0.34 -2.26 0.34 9 5 HMSFR "Reid" "Sato et al. (2014)"
 G006.79-00.25 18:01:57.7525 -23:12:34.245 0.288 0.021 -0.30 0.30 -1.30 0.31 22 5 HMSFR "Reid" "A. Sanna et al. (in preparation)"
 G007.47+00.05 18:02:13.1823 -22:27:58.981 0.049 0.006 -2.43 0.10 -4.43 0.16 -14 10 HMSFR "Reid" "Yamauchiet et al. (2016), Sanna et al. (2017)"

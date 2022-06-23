@@ -21,12 +21,12 @@ use serde::{de::DeserializeOwned, Serialize};
 
 /// Model of the Galaxy
 #[derive(Debug)]
-pub struct Model<F: Float> {
+pub struct Model<F: Float + Debug> {
     /// Data objects
     objects: Objects<F>,
 }
 
-impl<F: Float> Model<F> {
+impl<F: Float + Debug> Model<F> {
     /// Perform computations based on goals
     pub fn compute(&mut self, goals: &[Goal]) -> Result<()> {
         self.objects.compute(goals)?;
@@ -116,7 +116,7 @@ impl<F: Float> Model<F> {
     }
 }
 
-impl<F: Float> Default for Model<F> {
+impl<F: Float + Debug> Default for Model<F> {
     fn default() -> Self {
         Self {
             objects: Objects::default(),

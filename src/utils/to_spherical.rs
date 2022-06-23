@@ -2,6 +2,8 @@
 
 use crate::utils::{dms2rad, hms2rad};
 
+use std::fmt::Debug;
+
 use lazy_static::lazy_static;
 use num::Float;
 
@@ -23,21 +25,21 @@ lazy_static! {
 /// The right ascension of the north galactic pole (radians)
 #[allow(clippy::unwrap_used)]
 #[inline]
-fn alpha_ngp<F: Float>() -> F {
+fn alpha_ngp<F: Float + Debug>() -> F {
     F::from(*ALPHA_NGP).unwrap()
 }
 
 /// The declination of the north galactic pole (radians)
 #[allow(clippy::unwrap_used)]
 #[inline]
-fn delta_ngp<F: Float>() -> F {
+fn delta_ngp<F: Float + Debug>() -> F {
     F::from(*DELTA_NGP).unwrap()
 }
 
 /// The longitude of the north celestial pole (radians)
 #[allow(clippy::unwrap_used)]
 #[inline]
-fn l_ncp<F: Float>() -> F {
+fn l_ncp<F: Float + Debug>() -> F {
     F::from(*L_NCP).unwrap()
 }
 
@@ -46,7 +48,7 @@ fn l_ncp<F: Float>() -> F {
 /// Angles must be in radians, then radians returned.
 ///
 /// Source: [Wikipedia](https://en.wikipedia.org/wiki/Galactic_coordinate_system#Conversion_between_equatorial_and_galactic_coordinates)
-pub fn to_spherical<F: Float>(alpha: F, delta: F) -> (F, F) {
+pub fn to_spherical<F: Float + Debug>(alpha: F, delta: F) -> (F, F) {
     let phi = F::atan2(
         F::cos(delta) * F::sin(alpha - alpha_ngp()),
         F::cos(delta_ngp()) * F::sin(delta)
@@ -70,7 +72,7 @@ cfg_if::cfg_if! {
 
         /// Data record
         #[derive(Deserialize)]
-        struct DataRecord<F: Float> {
+        struct DataRecord<F: Float + Debug> {
             /// Name of the object
             #[allow(dead_code)]
             name: String,

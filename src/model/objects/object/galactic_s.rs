@@ -1,6 +1,6 @@
 //! Galactic heliocentric spherical coordinates
 
-use super::super::Object;
+use super::Object;
 use crate::utils::to_spherical;
 
 use std::fmt::Debug;
@@ -11,7 +11,7 @@ use numeric_literals::replace_float_literals;
 
 /// Galactic heliocentric spherical coordinates
 #[derive(Debug)]
-pub(in crate::model) struct GalacticSpherical<F: Float> {
+pub(in crate::model) struct GalacticSpherical<F: Float + Debug> {
     /// Longitude (radians)
     pub(in crate::model) l: F,
     /// Latitude (radians)
@@ -21,7 +21,7 @@ pub(in crate::model) struct GalacticSpherical<F: Float> {
 #[allow(clippy::unwrap_in_result)]
 #[allow(clippy::unwrap_used)]
 #[replace_float_literals(F::from(literal).unwrap())]
-impl<F: Float> TryFrom<&Object<F>> for GalacticSpherical<F> {
+impl<F: Float + Debug> TryFrom<&Object<F>> for GalacticSpherical<F> {
     type Error = anyhow::Error;
 
     fn try_from(object: &Object<F>) -> Result<Self> {
@@ -33,7 +33,7 @@ impl<F: Float> TryFrom<&Object<F>> for GalacticSpherical<F> {
     }
 }
 
-impl<F: Float> From<&GalacticSpherical<F>> for (F, F) {
+impl<F: Float + Debug> From<&GalacticSpherical<F>> for (F, F) {
     fn from(s: &GalacticSpherical<F>) -> Self {
         (s.l, s.b)
     }

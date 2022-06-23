@@ -92,7 +92,7 @@ end
 INPUT_DIR = ARGS[end]
 
 "Padding in the output"
-pad = 4
+pad = " "^4
 
 "Floating point type used across the script"
 F = Float64
@@ -100,7 +100,7 @@ F = Float64
 "Integer type used across the script"
 I = UInt64
 
-println('\n', " "^pad, "> Loading the packages...")
+println('\n', pad, "> Loading the packages...")
 
 using ColorSchemes
 using LaTeXStrings
@@ -119,17 +119,27 @@ DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "bin", "coords.bin")
 mkpath(PLOTS_DIR)
 
 # Define the paths to the data files
-println(" "^pad, "> Loading the data...")
+println(pad, "> Loading the data...")
 
 struct Data
     name::Vector{String}
     l::Vector{F}
     b::Vector{F}
     X::Vector{F}
+    ep_X::Vector{F}
+    em_X::Vector{F}
     Y::Vector{F}
+    ep_Y::Vector{F}
+    em_Y::Vector{F}
     Z::Vector{F}
+    ep_Z::Vector{F}
+    em_Z::Vector{F}
     r::Vector{F}
+    ep_r::Vector{F}
+    em_r::Vector{F}
     R::Vector{F}
+    ep_R::Vector{F}
+    em_R::Vector{F}
     type::Vector{String}
     source::Vector{String}
 end
@@ -179,10 +189,37 @@ keys = unique(group)
 dictionary = Dict([ (k, markers[i]) for (i, k) in enumerate(keys) ])
 label = [ dictionary[k] for k in group ]
 
-println(" "^pad, "> Plotting the scatter plots...")
+println(pad, "> Plotting the scatter plots...")
 
 "Create a scatter plot"
-function scatter(x, y, xlabel, ylabel)
+function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y = F[], axis_equal=false)
+    table = if isempty(ep_x) && isempty(em_x) && isempty(ep_y) && isempty(em_y)
+        @pgf Table(
+            {
+                meta = "label",
+            },
+            x = x,
+            y = y,
+            label = label,
+        )
+    else
+        @pgf Table(
+            {
+                meta = "label",
+                x_error_plus = "ep_x",
+                x_error_minus = "em_x",
+                y_error_plus = "ep_y",
+                y_error_minus = "em_y",
+            },
+            x = x,
+            y = y,
+            label = label,
+            ep_x = ep_x,
+            em_x = em_x,
+            ep_y = ep_y,
+            em_y = em_y,
+        )
+    end
     return @pgf Axis(
         {
             xlabel = xlabel,
@@ -195,6 +232,14 @@ function scatter(x, y, xlabel, ylabel)
             major_grid_style = { opacity = 0.5 },
             tick_label_style = { font = "\\small" },
             tick_style = { line_width = 0.4, color = "black" },
+            "error bars/error bar style" = { line_width = 0.1, opacity = 0.25 },
+            "error bars/error mark options" = {
+                rotate = 90,
+                mark_size = 0.5,
+                line_width = 0.1,
+                opacity = 0.25,
+            },
+            axis_equal = axis_equal,
             axis_line_style = { line_width = 1 },
             "axis_lines*" = "left",
             legend_image_post_style = { mark_size = 2, line_width = 0.4 },
@@ -215,38 +260,186 @@ function scatter(x, y, xlabel, ylabel)
                 scatter,
                 "only marks",
                 "scatter src" = "explicit symbolic",
+                "error bars/x dir=both",
+                "error bars/y dir=both",
+                "error bars/x explicit",
+                "error bars/y explicit",
             },
-            Table(
-                {
-                    meta = "label",
-                },
-                x = x,
-                y = y,
-                label = label,
-            ),
+            table,
         ),
         Legend(keys),
     )
 end
 
 # Plot a scatter plot in the (X, Y) plane
-p = scatter(data.X, data.Y, L"X \; \mathrm{[kpc]}", L"Y \; \mathrm{[kpc]}")
+println(pad, "    for XY...")
+p = scatter(
+    data.X,
+    data.Y,
+    L"X \; \mathrm{[kpc]}",
+    L"Y \; \mathrm{[kpc]}";
+    axis_equal=true,
+)
 pgfsave(joinpath(PLOTS_DIR, "XY$(POSTFIX).pdf"), p)
 
+# Plot a scatter plot in the (X, Y) plane with errors
+println(pad, "    for XY (errors)...")
+p = scatter(
+    data.X,
+    data.Y,
+    L"X \; \mathrm{[kpc]}",
+    L"Y \; \mathrm{[kpc]}";
+    ep_x=data.ep_X,
+    em_x=data.em_X,
+    ep_y=data.ep_Y,
+    em_y=data.em_Y,
+    axis_equal=true,
+)
+pgfsave(joinpath(PLOTS_DIR, "XY (errors)$(POSTFIX).pdf"), p)
+
 # Plot a scatter plot in the (X, Z) plane
+println(pad, "    for XZ...")
 p = scatter(data.X, data.Z, L"X \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
 pgfsave(joinpath(PLOTS_DIR, "XZ$(POSTFIX).pdf"), p)
 
+# Plot a scatter plot in the (X, Z) plane with equal axes
+println(pad, "    for XZ (equal axes)...")
+p = scatter(
+    data.X,
+    data.Z,
+    L"X \; \mathrm{[kpc]}",
+    L"Z \; \mathrm{[kpc]}";
+    axis_equal=true,
+)
+pgfsave(joinpath(PLOTS_DIR, "XZ (equal axes)$(POSTFIX).pdf"), p)
+
+# Plot a scatter plot in the (X, Z) plane with errors
+println(pad, "    for XZ (errors)...")
+p = scatter(
+    data.X,
+    data.Z,
+    L"X \; \mathrm{[kpc]}",
+    L"Z \; \mathrm{[kpc]}";
+    ep_x=data.ep_X,
+    em_x=data.em_X,
+    ep_y=data.ep_Z,
+    em_y=data.em_Z,
+)
+pgfsave(joinpath(PLOTS_DIR, "XZ (errors)$(POSTFIX).pdf"), p)
+
+# Plot a scatter plot in the (X, Z) plane with errors and equal axes
+println(pad, "    for XZ (equal axes, errors)...")
+p = scatter(
+    data.X,
+    data.Z,
+    L"X \; \mathrm{[kpc]}",
+    L"Z \; \mathrm{[kpc]}";
+    ep_x=data.ep_X,
+    em_x=data.em_X,
+    ep_y=data.ep_Z,
+    em_y=data.em_Z,
+    axis_equal=true,
+)
+pgfsave(joinpath(PLOTS_DIR, "XZ (equal axes, errors)$(POSTFIX).pdf"), p)
+
 # Plot a scatter plot in the (Y, Z) plane
-p = scatter(data.Y, data.Z, L"Y \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
+println(pad, "    for YZ...")
+p = scatter( data.Y, data.Z, L"Y \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
 pgfsave(joinpath(PLOTS_DIR, "YZ$(POSTFIX).pdf"), p)
 
+# Plot a scatter plot in the (Y, Z) plane with equal axes
+p = scatter(
+    data.Y,
+    data.Z,
+    L"Y \; \mathrm{[kpc]}",
+    L"Z \; \mathrm{[kpc]}",
+    axis_equal=true,
+)
+pgfsave(joinpath(PLOTS_DIR, "YZ (equal axes)$(POSTFIX).pdf"), p)
+
+# Plot a scatter plot in the (Y, Z) plane with errors
+println(pad, "    for YZ (errors)...")
+p = scatter(
+    data.Y,
+    data.Z,
+    L"Y \; \mathrm{[kpc]}",
+    L"Z \; \mathrm{[kpc]}",
+    ep_x=data.ep_Y,
+    em_x=data.em_Y,
+    ep_y=data.ep_Z,
+    em_y=data.em_Z,
+)
+pgfsave(joinpath(PLOTS_DIR, "YZ (errors)$(POSTFIX).pdf"), p)
+
+# Plot a scatter plot in the (Y, Z) plane with errors and equal axes
+println(pad, "    for YZ (equal axes, errors)...")
+p = scatter(
+    data.Y,
+    data.Z,
+    L"Y \; \mathrm{[kpc]}",
+    L"Z \; \mathrm{[kpc]}",
+    ep_x=data.ep_Y,
+    em_x=data.em_Y,
+    ep_y=data.ep_Z,
+    em_y=data.em_Z,
+    axis_equal=true,
+)
+pgfsave(joinpath(PLOTS_DIR, "YZ (equal axes, errors)$(POSTFIX).pdf"), p)
+
 # Plot a scatter plot in the (R, Z) plane
+println(pad, "    for RZ...")
 p = scatter(data.R, data.Z, L"R \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
 pgfsave(joinpath(PLOTS_DIR, "RZ$(POSTFIX).pdf"), p)
 
+# Plot a scatter plot in the (R, Z) plane with equal axes
+println(pad, "    for RZ (equal axes)...")
+p = scatter(
+    data.R,
+    data.Z,
+    L"R \; \mathrm{[kpc]}",
+    L"Z \; \mathrm{[kpc]}",
+    axis_equal=true,
+)
+pgfsave(joinpath(PLOTS_DIR, "RZ (equal axes)$(POSTFIX).pdf"), p)
+
+# Plot a scatter plot in the (R, Z) plane with errors
+println(pad, "    for RZ (errors)...")
+p = scatter(
+    data.R,
+    data.Z,
+    L"R \; \mathrm{[kpc]}",
+    L"Z \; \mathrm{[kpc]}",
+    ep_x=data.ep_R,
+    em_x=data.em_R,
+    ep_y=data.ep_Z,
+    em_y=data.em_Z,
+)
+pgfsave(joinpath(PLOTS_DIR, "RZ (errors)$(POSTFIX).pdf"), p)
+
+# Plot a scatter plot in the (R, Z) plane with errors and equal axes
+println(pad, "    for RZ (equal axes, errors)...")
+p = scatter(
+    data.R,
+    data.Z,
+    L"R \; \mathrm{[kpc]}",
+    L"Z \; \mathrm{[kpc]}",
+    ep_x=data.ep_R,
+    em_x=data.em_R,
+    ep_y=data.ep_Z,
+    em_y=data.em_Z,
+    axis_equal=true,
+)
+pgfsave(joinpath(PLOTS_DIR, "RZ (equal axes, errors)$(POSTFIX).pdf"), p)
+
 # Plot a scatter plot in the (l, b) plane
-p = scatter(data.l, data.b, L"l \; \mathrm{[deg]}", L"b \; \mathrm{[deg]}")
+println(pad, "    for lb...")
+p = scatter(
+    data.l,
+    data.b,
+    L"l \; \mathrm{[deg]}",
+    L"b \; \mathrm{[deg]}",
+    axis_equal=true,
+)
 pgfsave(joinpath(PLOTS_DIR, "lb$(POSTFIX).pdf"), p)
 
 println()

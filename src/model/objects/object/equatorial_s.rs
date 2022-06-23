@@ -12,7 +12,7 @@ use num::Float;
 
 /// Equatorial spherical coordinates
 #[derive(Debug)]
-pub(in crate::model) struct EquatorialSpherical<F: Float> {
+pub(in crate::model) struct EquatorialSpherical<F: Float + Debug> {
     /// Right ascension (radians)
     pub(in crate::model) alpha: F,
     /// Declination (radians)
@@ -21,7 +21,7 @@ pub(in crate::model) struct EquatorialSpherical<F: Float> {
 
 impl<F> TryFrom<&input::Record<F>> for EquatorialSpherical<F>
 where
-    F: Float + FromStr,
+    F: Float + Debug + FromStr,
     <F as FromStr>::Err: Error + Send + Sync + 'static,
 {
     type Error = anyhow::Error;
@@ -45,7 +45,7 @@ where
     }
 }
 
-impl<F: Float> From<&EquatorialSpherical<F>> for (F, F) {
+impl<F: Float + Debug> From<&EquatorialSpherical<F>> for (F, F) {
     fn from(s: &EquatorialSpherical<F>) -> Self {
         (s.alpha, s.delta)
     }

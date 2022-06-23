@@ -19,9 +19,9 @@ use serde::de::DeserializeOwned;
 
 /// Data objects
 #[derive(Debug)]
-pub struct Objects<F: Float>(Vec<Object<F>>);
+pub struct Objects<F: Float + Debug>(Vec<Object<F>>);
 
-impl<F: Float> Objects<F> {
+impl<F: Float + Debug> Objects<F> {
     /// Perform computations based on goals
     pub(in crate::model) fn compute(&mut self, goals: &[Goal]) -> Result<()> {
         // Perform computations for each object
@@ -47,7 +47,7 @@ impl<F: Float> Objects<F> {
     }
 }
 
-impl<F: Float> Default for Objects<F> {
+impl<F: Float + Debug> Default for Objects<F> {
     fn default() -> Self {
         Self(Vec::default())
     }

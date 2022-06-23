@@ -10,7 +10,7 @@ use num::Float;
 
 /// Rotation curve
 #[derive(Debug)]
-pub(in crate::model) struct RotationCurve<F: Float> {
+pub(in crate::model) struct RotationCurve<F: Float + Debug> {
     /// Azimuthal velocity (km/s)
     pub(in crate::model) theta: F,
     /// Galactocentric distance (kpc)
@@ -21,7 +21,7 @@ pub(in crate::model) struct RotationCurve<F: Float> {
     pub(in crate::model) r: F,
 }
 
-impl<F: Float> TryFrom<&Object<F>> for RotationCurve<F> {
+impl<F: Float + Debug> TryFrom<&Object<F>> for RotationCurve<F> {
     type Error = anyhow::Error;
 
     fn try_from(object: &Object<F>) -> Result<Self> {
