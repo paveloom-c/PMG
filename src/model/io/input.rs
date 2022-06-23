@@ -19,9 +19,9 @@ pub(in crate::model) struct Record<F: Float + Debug> {
     /// Uncertainty in `par`
     pub(in crate::model) e_par: F,
     /// Local Standard of Rest velocity
-    pub(in crate::model) v: F,
-    /// Uncertainty in `v`
-    pub(in crate::model) e_v: F,
+    pub(in crate::model) v_lsr: F,
+    /// Uncertainty in `v_lsr`
+    pub(in crate::model) e_v_lsr: F,
     /// Eastward proper motion
     pub(in crate::model) mu_x: F,
     /// Uncertainty in `mu_x`

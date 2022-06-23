@@ -122,7 +122,10 @@ println(pad, "> Loading the data...")
 struct Data
     name::Vector{String}
     theta::Vector{F}
+    e_theta::Vector{F}
     R::Vector{F}
+    ep_R::Vector{F}
+    em_R::Vector{F}
     type::Vector{String}
     source::Vector{String}
 end
@@ -174,8 +177,22 @@ label = [ dictionary[k] for k in group ]
 
 println(pad, "> Plotting the scatter plots...")
 
+"Compute the limits from the collection"
+function max_min(c; factor=0.1)
+    max = maximum(c)
+    min = minimum(c)
+    len = max - min
+    max = max + factor * len
+    min = min - factor * len
+    return max, min
+end
+
 "Create a scatter plot"
 function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y = F[])
+    # Compute the limits
+    x_max, x_min = max_min(x)
+    y_max, y_min = max_min(y)
+    # Prepare a table
     table = if isempty(ep_x) && isempty(em_x) && isempty(ep_y) && isempty(em_y)
         @pgf Table(
             {
@@ -207,10 +224,14 @@ function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y 
         {
             xlabel = xlabel,
             ylabel = ylabel,
+            xmax = x_max,
+            xmin = x_min,
+            ymax = y_max,
+            ymin = y_min,
             height = 200,
             width = 200,
             grid = "both",
-            minor_tick_num = 5,
+            minor_tick_num = 4,
             minor_grid_style = { opacity = 0.25 },
             major_grid_style = { opacity = 0.5 },
             tick_label_style = { font = "\\small" },
@@ -259,8 +280,21 @@ p = scatter(
     data.R,
     data.theta,
     L"R \; \mathrm{[kpc]}",
-    L"\theta \; \mathrm{[km \; s^{-1}]}";
+    L"\theta \; \mathrm{[km \; s^{-1}]}",
 )
 pgfsave(joinpath(PLOTS_DIR, "Rotation curve$(POSTFIX).pdf"), p)
+
+println(pad, "    for Rotation curve (errors)...")
+p = scatter(
+    data.R,
+    data.theta,
+    L"R \; \mathrm{[kpc]}",
+    L"\theta \; \mathrm{[km \; s^{-1}]}",
+    ep_x=data.ep_R,
+    em_x=data.em_R,
+    ep_y=data.e_theta,
+    em_y=data.e_theta,
+)
+pgfsave(joinpath(PLOTS_DIR, "Rotation curve (errors)$(POSTFIX).pdf"), p)
 
 println()

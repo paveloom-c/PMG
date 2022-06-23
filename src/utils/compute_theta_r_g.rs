@@ -1,16 +1,12 @@
 //! Compute the azimuthal velocity and Galactocentric distance
 
+use super::compute_r_g::{compute_r_g_2, r_0_2};
 use super::to_spherical::{alpha_ngp, delta_ngp};
 
 use std::fmt::Debug;
 
 use num::Float;
 use numeric_literals::replace_float_literals;
-
-/// Galactocentric distance to the Sun (kpc)
-///
-/// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-const R_0: f64 = 8.15;
 
 /// Standard value of the U component of the
 /// peculiar velocity of the Sun (km/s)
@@ -45,14 +41,6 @@ const THETA_SUN: f64 = 247.;
 ///
 /// Sources: Gromov, Nikiforov (2021)
 const K: f64 = 4.7406;
-
-#[allow(clippy::inline_always)]
-#[allow(clippy::unwrap_used)]
-#[inline(always)]
-/// Galactocentric distance to the Sun (kpc)
-fn r_0<F: Float + Debug>() -> F {
-    F::from(R_0).unwrap()
-}
 
 #[allow(clippy::inline_always)]
 #[allow(clippy::unwrap_used)]
@@ -118,7 +106,7 @@ pub fn compute_theta_r_g<F: Float + Debug>(
     delta: F,
     l: F,
     b: F,
-    r_h: F,
+    par: F,
     v_lsr: F,
     mu_x: F,
     mu_y: F,
@@ -126,7 +114,6 @@ pub fn compute_theta_r_g<F: Float + Debug>(
     // Wrap the constants
     let alpha_ngp: F = alpha_ngp();
     let delta_ngp: F = delta_ngp();
-    let r_0: F = r_0();
     let u_sun: F = u_sun();
     let theta_sun: F = theta_sun();
     let u_sun_standard: F = u_sun_standard();
@@ -144,6 +131,8 @@ pub fn compute_theta_r_g<F: Float + Debug>(
     let c_2 = delta_ngp.cos() * F::sin(alpha - alpha_ngp);
     let mu_l = (c_1 * mu_x + c_2 * mu_y) / b.cos().powi(2);
     let mu_b = (c_1 * mu_y - c_2 * mu_x) / b.cos();
+    // Compute the heliocentric distance
+    let r_h = 1. / par;
     // Compute the velocity components
     let v_l = k * r_h * mu_l * b.cos();
     let v_b = k * r_h * mu_b;
@@ -156,11 +145,10 @@ pub fn compute_theta_r_g<F: Float + Debug>(
     let u_g = u + u_sun;
     let v_g = v + theta_sun;
     // Compute the Galactocentric distance
-    let r_g =
-        F::sqrt(r_0.powi(2) + r_h.powi(2) * b.cos().powi(2) - 2. * r_0 * r_h * l.cos() * b.cos());
+    let r_g = compute_r_g_2(l, b, r_h);
     // Compute the azimuthal velocity
     let sin_beta = r_h * b.cos() * l.sin() / r_g;
-    let cos_beta = (r_0 - r_h * b.cos() * l.cos()) / r_g;
+    let cos_beta = (r_0_2::<F>() - r_h * b.cos() * l.cos()) / r_g;
     let theta = v_g * cos_beta + u_g * sin_beta;
     (theta, r_g)
 }

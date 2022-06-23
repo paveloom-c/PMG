@@ -1,7 +1,7 @@
 //! Distances
 
 use super::{Measurement, Object};
-use crate::utils::compute_r_g;
+use crate::utils::compute_r_g_1;
 
 use std::fmt::Debug;
 
@@ -38,9 +38,9 @@ impl<F: Float + Debug> TryFrom<&Object<F>> for Distances<F> {
         let r_h_u = 1. / par.v_l;
         let r_h_l = 1. / par.v_u;
         // Compute the Galactocentric distance
-        let r_g = compute_r_g(l, b, r_h);
-        let r_g_u = compute_r_g(l, b, r_h_u);
-        let r_g_l = compute_r_g(l, b, r_h_l);
+        let r_g = compute_r_g_1(l, b, r_h);
+        let r_g_u = compute_r_g_1(l, b, r_h_u);
+        let r_g_l = compute_r_g_1(l, b, r_h_l);
         Ok(Self {
             r_h: Measurement {
                 v: r_h,

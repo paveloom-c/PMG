@@ -16,10 +16,13 @@ pub(in crate::model) const ROTCURVE_CSV_HEADER: &str = indoc! {"
     # Descriptions:
     #
     # 1 name: Name of the object
-    # 2 theta: Azimuthal velocity (km/s)
-    # 3 R: Galactocentric distance (kpc)
-    # 4 type: Type of the object
-    # 5 source: Source of the data
+    # 2 theta: Azimuthal velocity [km/s]
+    # 3 e_theta: Uncertainty in `theta` [km/s]
+    # 4 R: Galactocentric distance [kpc]
+    # 5 ep_R: Plus uncertainty in `R` [kpc]
+    # 6 em_R: Minus uncertainty in `R` [kpc]
+    # 7 type: Type of the object
+    # 8 source: Source of the data
     #\n
 "};
 
@@ -30,9 +33,17 @@ pub(in crate::model) struct Record<'a, F: Float + Debug> {
     pub(in crate::model) name: &'a String,
     /// Azimuthal velocity (km/s)
     pub(in crate::model) theta: F,
+    /// Uncertainty in `theta` (km/s)
+    pub(in crate::model) e_theta: F,
     /// Galactocentric distance (kpc)
     #[serde(rename = "R")]
     pub(in crate::model) r_g: F,
+    /// Plus uncertainty in `r_g` (km/s)
+    #[serde(rename = "ep_R")]
+    pub(in crate::model) e_p_r_g: F,
+    /// Minus uncertainty in `r_g` (km/s)
+    #[serde(rename = "em_R")]
+    pub(in crate::model) e_m_r_g: F,
     /// Type of the object
     #[serde(rename = "type")]
     pub(in crate::model) obj_type: &'a String,
@@ -51,8 +62,11 @@ impl<'a, F: Float + Debug> TryFrom<&'a Object<F>> for Record<'a, F> {
         let source = object.source()?;
         Ok(Self {
             name,
-            theta,
-            r_g,
+            theta: theta.v,
+            e_theta: theta.e_p,
+            r_g: r_g.v,
+            e_p_r_g: r_g.e_p,
+            e_m_r_g: r_g.e_m,
             obj_type,
             source,
         })

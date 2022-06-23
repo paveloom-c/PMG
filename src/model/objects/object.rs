@@ -33,7 +33,7 @@ pub(in crate::model) struct Object<F: Float + Debug> {
     /// Parallax (mas)
     par: Option<Measurement<F>>,
     /// Local Standard of Rest velocity (mas)
-    v: Option<Measurement<F>>,
+    v_lsr: Option<Measurement<F>>,
     /// Eastward proper motion (mas/yr)
     mu_x: Option<Measurement<F>>,
     /// Northward proper motion (mas/yr)
@@ -58,7 +58,7 @@ impl<F: Float + Debug> Default for Object<F> {
             name: Option::default(),
             equatorial_s: Option::default(),
             par: Option::default(),
-            v: Option::default(),
+            v_lsr: Option::default(),
             mu_x: Option::default(),
             mu_y: Option::default(),
             distances: Option::default(),
@@ -103,8 +103,8 @@ impl<F: Float + Debug> Object<F> {
             .ok_or_else(|| anyhow!("Couldn't unwrap the parallax"))
     }
     /// Unwrap the Local Standard of Rest velocity
-    pub(in crate::model) fn v(&self) -> Result<&Measurement<F>> {
-        self.v
+    pub(in crate::model) fn v_lsr(&self) -> Result<&Measurement<F>> {
+        self.v_lsr
             .as_ref()
             .ok_or_else(|| anyhow!("Couldn't unwrap the Local Standard of Rest velocity"))
     }
@@ -165,9 +165,6 @@ impl<F: Float + Debug> Object<F> {
                 // heliocentric spherical coordinates
                 self.compute_galactic_s()
                     .with_context(|| "Couldn't compute the Galactic spherical coordinates")?;
-                // Compute the distances
-                self.compute_distances()
-                    .with_context(|| "Couldn't compute the distances")?;
                 // Compute the rotation curve
                 self.compute_rotation_c()
                     .with_context(|| "Couldn't compute the rotation curve")?;
@@ -241,12 +238,12 @@ where
             e_p: record.e_par,
             e_m: record.e_par,
         });
-        object.v.replace(Measurement {
-            v: record.v,
-            v_u: record.v + record.e_v,
-            v_l: record.v - record.e_v,
-            e_p: record.e_v,
-            e_m: record.e_v,
+        object.v_lsr.replace(Measurement {
+            v: record.v_lsr,
+            v_u: record.v_lsr + record.e_v_lsr,
+            v_l: record.v_lsr - record.e_v_lsr,
+            e_p: record.e_v_lsr,
+            e_m: record.e_v_lsr,
         });
         object.mu_x.replace(Measurement {
             v: record.mu_x,

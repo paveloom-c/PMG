@@ -8,8 +8,8 @@
 #  3 delta: Declination [DMS angle]
 #  4 par: Trigonometric parallax [mas]
 #  5 e_par: Uncertainty in `par` [mas]
-#  6 v: Local Standard of Rest velocity [km/s]
-#  7 e_v: Uncertainty in `v` [km/s]
+#  6 v_lsr: Local Standard of Rest velocity [km/s]
+#  7 e_v_lsr: Uncertainty in `v_lsr` [km/s]
 #  8 mu_x: Eastward proper motion (1) [mas/yr]
 #  9 e_mu_x: Uncertainty in `mu_x` [mas/yr]
 # 10 mu_y: Northward proper motion [mas/yr]
@@ -41,7 +41,7 @@
 #       IRAS 19312+1950: SFR -> AGB
 #   4. VERA catalogue: the data in each line is from the last mentioned reference
 #
-name alpha delta par e_par mu_x e_mu_x mu_y e_mu_y v e_v type source reference
+name alpha delta par e_par mu_x e_mu_x mu_y e_mu_y v_lsr e_v_lsr type source reference
 #
 # New data (as of June 2022)
 #
