@@ -23,22 +23,17 @@
 #   2. Source is a group label:
 #     New = New data (as of June 2022) (10 total)
 #     VERA = The first VERA catalogue (2020) (63 selected out of 99 total)
-#     Reid = Reid et al. (2019) (196 selected out of 199 total)
+#     Reid = Reid et al. (2019) (199 total)
 #   3. Masers are divided into the following groups by type:
-#     - HMSFRs (high-mass star-forming regions) (203 selected out of 206 total)
+#     - HMSFRs (high-mass star-forming regions) (206 total)
 #     - Non-HMSFRs (specific subtypes are specified where
-#       it was possible) (66 selected out of 102 total):
-#       - SFRs (star-forming regions) (32 selected out of 66 total, excluding LMSFRs)
-#         - LMSFRs (low-mass star-forming regions) (4 total)
+#       it was possible) (66 selected out of 69 total):
+#       - SFRs (star-forming regions) (36 selected out of 39 total)
 #       - AGB (Asymptotic Giants Branch) (30 total)
-#       - RSG (Red Super Giants) (0 selected out of 2 total)
+#       - RSG (Red Super Giants) (0 total)
 #
 #     Changed types per object:
-#       B35: SFR -> LMSFR
-#       HH 12-15: SFR -> LMSFR
-#       L1641 S3: SFR -> LMSFR
-#       S76E: SFR -> LMSFR
-#       IRAS 19312+1950: SFR -> AGB
+#       IRAS 19312+1950: SFR -> AGB (described in the paper as such)
 #   4. VERA catalogue: the data in each line is from the last mentioned reference
 #
 name alpha delta par e_par mu_x e_mu_x mu_y e_mu_y v_lsr e_v_lsr type source reference
@@ -107,7 +102,7 @@ G079.08+01.33 20:27:20.2734 40:42:34.648 0.118 0.035 -2.49 0.14 -3.36 0.24 -64 1
 #
 G125.51+02.03 01:15:40.8027 64:46:40.766 0.145 0.023 -1.20 0.21 -0.33 0.27 -57.0 9.0 HMSFR "VERA" "Koide et al. (2019), Sakai et al. (2020b)"
 "IRAS 21379+5106" 21:39:40.5500 51:20:34.000 0.262 0.031 -2.74 0.08 -2.87 0.18 -42.3 0.2 HMSFR "VERA" "Nakanishi et al. (2015)"
-B35 05:44:29.2483 09:08:52.121 1.98 0.25 -2.30 0.53 -5.31 0.59 12.0 1.0 LMSFR "VERA" "VERA et al. (2020)"
+B35 05:44:29.2483 09:08:52.121 1.98 0.25 -2.30 0.53 -5.31 0.59 12.0 1.0 SFR "VERA" "VERA et al. (2020)"
 "BW Cam" 05:19:52.1643 63:15:54.684 0.749 0.189 7.55 1.19 -19.63 0.81 42.0 0.7 AGB "VERA" "VERA et al. (2020)"
 "BX Cam" 05:46:44.3251 69:58:24.408 1.73 0.03 13.48 0.14 -34.30 0.18 0.0 5.0 AGB "VERA" "Matsuno et al. (2020)"
 "BX Eri" 04:40:32.7762 -14:12:02.710 2.116 0.105 6.77 0.35 -10.79 0.25 -0.3 0.1 AGB "VERA" "VERA et al. (2020)"
@@ -122,7 +117,7 @@ G102.35+03.64 21:57:25.1841 59:21:56.614 0.154 0.021 -2.53 0.33 -2.14 0.33 -88.0
 G137.07+03.00 02:58:13.1793 62:20:32.915 0.187 0.016 -0.57 0.16 -0.01 0.16 -50.1 0.4 SFR "VERA" "Nagayama et al. (2020a)"
 G200.08-01.63 06:21:47.5742 10:39:22.811 0.200 0.017 0.32 0.14 -0.14 0.16 36.3 0.6 SFR "VERA" "Nagayama et al. (2020a)"
 G353.27+00.64 17:26:01.5883 -34:15:14.903 0.59 0.06 0.47 0.07 0.99 1.04 -5.0 5.0 SFR "VERA" "Motogi et al. (2016)"
-"HH 12-15" 06:10:50.1400 -06:11:45.600 1.61 0.36 -0.36 1.68 3.17 0.47 11.3 2.0 LMSFR "VERA" "VERA et al. (2020)"
+"HH 12-15" 06:10:50.1400 -06:11:45.600 1.61 0.36 -0.36 1.68 3.17 0.47 11.3 2.0 SFR "VERA" "VERA et al. (2020)"
 "HS UMa" 11:35:30.6878 34:52:04.006 2.816 0.095 -11.48 0.17 -10.86 0.65 1.6 0.3 AGB "VERA" "VERA et al. (2020)"
 "HU Pup" 07:55:40.1843 -28:38:54.608 0.308 0.042 -1.16 0.15 3.69 0.20 43.9 0.6 AGB "VERA" "VERA et al. (2020)"
 "IRAS 00259+5625" 00:28:43.5075 56:41:56.868 0.412 0.123 -2.48 0.32 -2.85 0.65 -38.3 3.1 SFR "VERA" "Sakai et al. (2014)"
@@ -134,7 +129,7 @@ G353.27+00.64 17:26:01.5883 -34:15:14.903 0.59 0.06 0.47 0.07 0.99 1.04 -5.0 5.0
 K3-35 19:27:44.0230 21:30:03.440 0.260 0.040 -3.34 0.10 -5.93 0.07 26.0 5.0 AGB "VERA" "Tafoya et al. (2011)"
 L1448C 03:25:38.8784 30:44:05.252 4.31 0.33 21.90 0.70 -23.10 3.30 5.0 5.0 SFR "VERA" "Hirota et al. (2011)"
 L1482 04:30:27.4008 35:09:17.649 1.879 0.096 3.07 0.06 -8.60 0.04 1.0 5.0 SFR "VERA" "Omodaka et al. (2020)"
-"L1641 S3" 05:39:56.0431 -07:30:27.988 2.114 0.127 -11.68 0.67 -7.74 0.36 6.8 4.2 LMSFR "VERA" "VERA et al. (2020)"
+"L1641 S3" 05:39:56.0431 -07:30:27.988 2.114 0.127 -11.68 0.67 -7.74 0.36 6.8 4.2 SFR "VERA" "VERA et al. (2020)"
 "NGC 1333 SVS13" 03:29:03.7247 31:16:03.802 4.25 0.32 14.25 2.58 -9.95 0.74 8.0 5.0 SFR "VERA" "Hirota et al. (2008a)"
 "NGC 2264" 06:41:09.8600 09:29:14.700 1.356 0.098 -1.08 0.58 -5.92 3.06 7.0 3.0 SFR "VERA" "Kamezaki et al. (2014a)"
 "NGC 6334I(N)" 17:20:55.1920 -35:45:03.770 0.789 0.161 -2.88 0.30 3.23 0.39 -2.8 0.5 SFR "VERA" "Chibueze et al. (2014a)"
@@ -152,7 +147,7 @@ ON1 20:10:09.2045 31:31:36.101 0.404 0.017 -3.10 0.18 -4.70 0.24 12.0 1.0 SFR "V
 S140 22:19:17.4657 63:18:39.851 1.154 0.069 -6.16 0.12 -4.74 0.11 -6.1 5.0 SFR "VERA" "VERA et al. (2020)"
 "S235AB MIR" 05:40:53.3800 35:41:48.500 0.639 0.033 0.08 0.12 -2.41 0.14 -17.0 5.0 SFR "VERA" "Burns et al. (2015)"
 S269 06:14:37.0800 13:49:36.700 0.189 0.008 -0.42 0.20 -0.12 0.20 18.0 5.0 SFR "VERA" "Asaki (2014), Honma et al. 2007"
-S76E 18:56:11.4413 07:53:17.608 0.521 0.024 -0.89 0.34 -2.27 0.56 31.9 1.7 LMSFR "VERA" "Chibueze et al. (2017)"
+S76E 18:56:11.4413 07:53:17.608 0.521 0.024 -0.89 0.34 -2.27 0.56 31.9 1.7 SFR "VERA" "Chibueze et al. (2017)"
 "SV Peg" 22:05:42.0850 35:20:54.536 3.00 0.06 11.59 0.54 -8.63 0.44 3.9 5.0 AGB "VERA" "Sudou et al. (2019)"
 "SY Aql" 20:07:05.4083 12:57:06.219 1.10 0.07 12.26 0.11 -15.93 0.22 -44.8 5.0 AGB "VERA" "VERA et al. (2020)"
 "SY Scl" 00:07:36.2476 -25:29:40.028 0.75 0.03 5.57 0.04 -7.32 0.12 22.0 5.0 AGB "VERA" "Nyu et al. (2011)"
