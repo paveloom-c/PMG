@@ -3,14 +3,18 @@
 use crate::model::{Model, Object};
 
 use std::fmt::Debug;
+use std::path::Path;
 
 use anyhow::{Context, Result};
 use indoc::indoc;
 use num::Float;
 use serde::Serialize;
 
-/// Header of the `coords.dat` file
-pub(in crate::model) const COORDS_CSV_HEADER: &str = indoc! {"
+/// Name of the files
+const NAME: &str = "coords";
+
+/// Header of the text file
+const HEADER: &str = indoc! {"
     # Galactic heliocentric coordinates of the objects
     #
     # Descriptions:
@@ -40,63 +44,63 @@ pub(in crate::model) const COORDS_CSV_HEADER: &str = indoc! {"
 
 /// Output data record
 #[derive(Serialize)]
-pub(in crate::model) struct Record<'a, F: Float + Debug> {
+struct Record<'a, F: Float + Debug> {
     /// Name
-    pub(in crate::model) name: &'a String,
+    name: &'a String,
     /// Longitude (deg)
-    pub(in crate::model) l: F,
+    l: F,
     /// Latitude (deg)
-    pub(in crate::model) b: F,
+    b: F,
     /// X coordinate (kpc)
     #[serde(rename = "X")]
-    pub(in crate::model) x: F,
+    x: F,
     /// Plus uncertainty in `x` (kpc)
     #[serde(rename = "ep_X")]
-    pub(in crate::model) e_p_x: F,
+    e_p_x: F,
     /// Minus uncertainty in `x` (kpc)
     #[serde(rename = "em_X")]
-    pub(in crate::model) e_m_x: F,
+    e_m_x: F,
     /// Y coordinate (kpc)
     #[serde(rename = "Y")]
-    pub(in crate::model) y: F,
+    y: F,
     /// Plus uncertainty in `y` (kpc)
     #[serde(rename = "ep_Y")]
-    pub(in crate::model) e_p_y: F,
+    e_p_y: F,
     /// Minus uncertainty in `y` (kpc)
     #[serde(rename = "em_Y")]
-    pub(in crate::model) e_m_y: F,
+    e_m_y: F,
     /// Z coordinate (kpc)
     #[serde(rename = "Z")]
-    pub(in crate::model) z: F,
+    z: F,
     /// Plus uncertainty in `z` (kpc)
     #[serde(rename = "ep_Z")]
-    pub(in crate::model) e_p_z: F,
+    e_p_z: F,
     /// Minus uncertainty in `z` (kpc)
     #[serde(rename = "em_Z")]
-    pub(in crate::model) e_m_z: F,
+    e_m_z: F,
     /// Heliocentric distance (kpc)
     #[serde(rename = "r")]
-    pub(in crate::model) r_h: F,
+    r_h: F,
     /// Plus uncertainty in `r_h` (kpc)
     #[serde(rename = "ep_r")]
-    pub(in crate::model) e_p_r_h: F,
+    e_p_r_h: F,
     /// Minus uncertainty in `r_h` (kpc)
     #[serde(rename = "em_r")]
-    pub(in crate::model) e_m_r_h: F,
+    e_m_r_h: F,
     /// Galactocentric distance (kpc)
     #[serde(rename = "R")]
-    pub(in crate::model) r_g: F,
+    r_g: F,
     /// Plus uncertainty in `r_g` (kpc)
     #[serde(rename = "ep_R")]
-    pub(in crate::model) e_p_r_g: F,
+    e_p_r_g: F,
     /// Minus uncertainty in `r_g` (kpc)
     #[serde(rename = "em_R")]
-    pub(in crate::model) e_m_r_g: F,
+    e_m_r_g: F,
     /// Type of the object
     #[serde(rename = "type")]
-    pub(in crate::model) obj_type: &'a String,
+    obj_type: &'a String,
     /// Source of the data
-    pub(in crate::model) source: &'a String,
+    source: &'a String,
 }
 
 #[allow(clippy::many_single_char_names)]
@@ -136,7 +140,7 @@ impl<'a, F: Float + Debug> TryFrom<&'a Object<F>> for Record<'a, F> {
 }
 
 /// Output data records
-pub(in crate::model) type Records<'a, F> = Vec<Record<'a, F>>;
+type Records<'a, F> = Vec<Record<'a, F>>;
 
 impl<'a, F: Float + Debug> TryFrom<&'a Model<F>> for Records<'a, F> {
     type Error = anyhow::Error;
@@ -151,4 +155,22 @@ impl<'a, F: Float + Debug> TryFrom<&'a Model<F>> for Records<'a, F> {
             })
             .collect()
     }
+}
+
+/// Serialize records to the files
+pub(in crate::model) fn serialize_to<F>(
+    dat_dir: &Path,
+    bin_dir: &Path,
+    model: &Model<F>,
+) -> Result<()>
+where
+    F: Float + Debug + Serialize,
+{
+    super::serialize_to(
+        dat_dir,
+        bin_dir,
+        NAME,
+        HEADER,
+        Records::try_from(model).with_context(|| "Couldn't construct records from the model")?,
+    )
 }

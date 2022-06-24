@@ -3,14 +3,18 @@
 use crate::model::{Model, Object};
 
 use std::fmt::Debug;
+use std::path::Path;
 
 use anyhow::{Context, Result};
 use indoc::indoc;
 use num::Float;
 use serde::Serialize;
 
-/// Header of the `rotcurve.dat` file
-pub(in crate::model) const ROTCURVE_CSV_HEADER: &str = indoc! {"
+/// Name of the files
+const NAME: &str = "rotcurve";
+
+/// Header of the text file
+const HEADER: &str = indoc! {"
     # Rotation curve
     #
     # Descriptions:
@@ -28,27 +32,27 @@ pub(in crate::model) const ROTCURVE_CSV_HEADER: &str = indoc! {"
 
 /// Output data record
 #[derive(Serialize)]
-pub(in crate::model) struct Record<'a, F: Float + Debug> {
+struct Record<'a, F: Float + Debug> {
     /// Name
-    pub(in crate::model) name: &'a String,
+    name: &'a String,
     /// Azimuthal velocity (km/s)
-    pub(in crate::model) theta: F,
+    theta: F,
     /// Uncertainty in `theta` (km/s)
-    pub(in crate::model) e_theta: F,
+    e_theta: F,
     /// Galactocentric distance (kpc)
     #[serde(rename = "R")]
-    pub(in crate::model) r_g: F,
+    r_g: F,
     /// Plus uncertainty in `r_g` (km/s)
     #[serde(rename = "ep_R")]
-    pub(in crate::model) e_p_r_g: F,
+    e_p_r_g: F,
     /// Minus uncertainty in `r_g` (km/s)
     #[serde(rename = "em_R")]
-    pub(in crate::model) e_m_r_g: F,
+    e_m_r_g: F,
     /// Type of the object
     #[serde(rename = "type")]
-    pub(in crate::model) obj_type: &'a String,
+    obj_type: &'a String,
     /// Source of the data
-    pub(in crate::model) source: &'a String,
+    source: &'a String,
 }
 
 #[allow(clippy::many_single_char_names)]
@@ -74,7 +78,7 @@ impl<'a, F: Float + Debug> TryFrom<&'a Object<F>> for Record<'a, F> {
 }
 
 /// Output data records
-pub(in crate::model) type Records<'a, F> = Vec<Record<'a, F>>;
+type Records<'a, F> = Vec<Record<'a, F>>;
 
 impl<'a, F: Float + Debug> TryFrom<&'a Model<F>> for Records<'a, F> {
     type Error = anyhow::Error;
@@ -89,4 +93,22 @@ impl<'a, F: Float + Debug> TryFrom<&'a Model<F>> for Records<'a, F> {
             })
             .collect()
     }
+}
+
+/// Serialize records to the files
+pub(in crate::model) fn serialize_to<F>(
+    dat_dir: &Path,
+    bin_dir: &Path,
+    model: &Model<F>,
+) -> Result<()>
+where
+    F: Float + Debug + Serialize,
+{
+    super::serialize_to(
+        dat_dir,
+        bin_dir,
+        NAME,
+        HEADER,
+        Records::try_from(model).with_context(|| "Couldn't construct records from the model")?,
+    )
 }
