@@ -32,7 +32,7 @@ pub(in crate::model) struct Object<F: Float + Debug> {
     equatorial_s: Option<EquatorialSpherical<F>>,
     /// Parallax (mas)
     par: Option<Measurement<F>>,
-    /// Local Standard of Rest velocity (mas)
+    /// Local Standard of Rest velocity (km/s)
     v_lsr: Option<Measurement<F>>,
     /// Eastward proper motion (mas/yr)
     mu_x: Option<Measurement<F>>,

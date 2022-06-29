@@ -32,14 +32,18 @@ pub(super) fn r_0_2<F: Float + Debug>() -> F {
 
 /// Compute the distance in the Galactocentric
 /// coordinate system associated with the object
-///
-/// Source: Nikiforov (2014)
 #[allow(clippy::module_name_repetitions)]
-#[allow(clippy::unwrap_used)]
-#[replace_float_literals(F::from(literal).unwrap())]
-pub fn compute_r_g_1<F: Float + Debug>(l: F, b: F, r: F) -> F {
+pub fn compute_r_g_1<F: Float + Debug>(l: F, b: F, r_h: F) -> F {
     let r_0: F = r_0_1();
-    F::sqrt(r_0.powi(2) + r.powi(2) * b.cos().powi(2) - 2. * r_0 * r * l.cos() * b.cos())
+    compute_r_g(l, b, r_h, r_0)
+}
+
+/// Compute the distance in the Galactocentric
+/// coordinate system associated with the object
+#[allow(clippy::module_name_repetitions)]
+pub fn compute_r_g_2<F: Float + Debug>(l: F, b: F, r_h: F) -> F {
+    let r_0: F = r_0_2();
+    compute_r_g(l, b, r_h, r_0)
 }
 
 /// Compute the distance in the Galactocentric
@@ -49,7 +53,9 @@ pub fn compute_r_g_1<F: Float + Debug>(l: F, b: F, r: F) -> F {
 #[allow(clippy::module_name_repetitions)]
 #[allow(clippy::unwrap_used)]
 #[replace_float_literals(F::from(literal).unwrap())]
-pub fn compute_r_g_2<F: Float + Debug>(l: F, b: F, r: F) -> F {
-    let r_0: F = r_0_2();
-    F::sqrt(r_0.powi(2) + r.powi(2) * b.cos().powi(2) - 2. * r_0 * r * l.cos() * b.cos())
+pub fn compute_r_g<F: Float + Debug>(l: F, b: F, r_h: F, r_0: F) -> F {
+    // Compute the projection of the heliocentric distance in the XY plane
+    let d = r_h * b.cos();
+    // Compute the Galactocentric distance
+    F::sqrt(r_0.powi(2) + d.powi(2) - 2. * r_0 * d * l.cos())
 }

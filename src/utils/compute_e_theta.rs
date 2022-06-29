@@ -1,18 +1,24 @@
 //! Compute the uncertainty of the azimuthal velocity
 
-use super::compute_theta_r_g;
+use super::compute_theta_r_g::compute_theta;
 
 use std::fmt::Debug;
 
 use autodiff::FT;
 use num::Float;
+use numeric_literals::replace_float_literals;
 
 /// Compute the uncertainty of the azimuthal velocity
 ///
 /// Sources: Gromov, Nikiforov, Ossipkov (2016)
 #[allow(clippy::indexing_slicing)]
+#[allow(clippy::many_single_char_names)]
+#[allow(clippy::shadow_reuse)]
 #[allow(clippy::shadow_unrelated)]
+#[allow(clippy::similar_names)]
 #[allow(clippy::too_many_arguments)]
+#[allow(clippy::unwrap_used)]
+#[replace_float_literals(F::from(literal).unwrap())]
 pub fn compute_e_theta<F: Float + Debug>(
     alpha: F,
     delta: F,
@@ -27,11 +33,9 @@ pub fn compute_e_theta<F: Float + Debug>(
     e_mu_x: F,
     e_mu_y: F,
 ) -> F {
-    // Define the object function
-    let f = |v: &[FT<F>]| compute_theta_r_g(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]).0;
     // Compute the partial derivative of the
     // azimuthal velocity by the parallax
-    let v = [
+    let v: [FT<F>; 8] = [
         FT::cst(alpha),
         FT::cst(delta),
         FT::cst(l),
@@ -41,10 +45,10 @@ pub fn compute_e_theta<F: Float + Debug>(
         FT::cst(mu_x),
         FT::cst(mu_y),
     ];
-    let d_theta_par = f(&v).deriv();
+    let d_theta_par = compute_theta(&v).deriv();
     // Compute the partial derivative of the azimuthal
     // velocity by the Local Standard of Rest velocity
-    let v = [
+    let v: [FT<F>; 8] = [
         FT::cst(alpha),
         FT::cst(delta),
         FT::cst(l),
@@ -54,10 +58,10 @@ pub fn compute_e_theta<F: Float + Debug>(
         FT::cst(mu_x),
         FT::cst(mu_y),
     ];
-    let d_theta_v_lsr = f(&v).deriv();
+    let d_theta_v_lsr = compute_theta(&v).deriv();
     // Compute the partial derivative of the azimuthal
     // velocity by the Eastward proper motion
-    let v = [
+    let v: [FT<F>; 8] = [
         FT::cst(alpha),
         FT::cst(delta),
         FT::cst(l),
@@ -67,10 +71,10 @@ pub fn compute_e_theta<F: Float + Debug>(
         FT::var(mu_x),
         FT::cst(mu_y),
     ];
-    let d_theta_mu_x = f(&v).deriv();
+    let d_theta_mu_x = compute_theta(&v).deriv();
     // Compute the partial derivative of the azimuthal
     // velocity by the Northward proper motion
-    let v = [
+    let v: [FT<F>; 8] = [
         FT::cst(alpha),
         FT::cst(delta),
         FT::cst(l),
@@ -80,7 +84,7 @@ pub fn compute_e_theta<F: Float + Debug>(
         FT::cst(mu_x),
         FT::var(mu_y),
     ];
-    let d_theta_mu_y = f(&v).deriv();
+    let d_theta_mu_y = compute_theta(&v).deriv();
     // Compute the uncertainty
     F::sqrt(
         d_theta_par.powi(2) * e_par.powi(2)
