@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["EquatorialSpherical","Equatorial spherical coordinates"]]});

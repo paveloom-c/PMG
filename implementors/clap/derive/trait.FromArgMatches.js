@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["pmg"] = [{"text":"impl <a class=\"trait\" href=\"clap/derive/trait.FromArgMatches.html\" title=\"trait clap::derive::FromArgMatches\">FromArgMatches</a> for <a class=\"struct\" href=\"pmg/cli/struct.Args.html\" title=\"struct pmg::cli::Args\">Args</a>","synthetic":false,"types":["pmg::cli::Args"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

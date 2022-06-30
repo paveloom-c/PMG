@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["deserialize","Parse a record into an object"]],"mod":[["object","Data object"]],"struct":[["Objects","Data objects"]]});

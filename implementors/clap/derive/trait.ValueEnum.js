@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["pmg"] = [{"text":"impl <a class=\"trait\" href=\"clap/derive/trait.ValueEnum.html\" title=\"trait clap::derive::ValueEnum\">ValueEnum</a> for <a class=\"enum\" href=\"pmg/goal/enum.Goal.html\" title=\"enum pmg::goal::Goal\">Goal</a>","synthetic":false,"types":["pmg::goal::Goal"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

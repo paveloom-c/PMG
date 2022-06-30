@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["RotationCurve","Rotation curve"]]});

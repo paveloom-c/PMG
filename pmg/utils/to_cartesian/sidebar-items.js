@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["to_cartesian","Convert the heliocentric Galactic coordinates from the spherical to the Cartesian coordinate system"]]});

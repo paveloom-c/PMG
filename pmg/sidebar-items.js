@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["main","Run the program"]],"mod":[["cli","Command-line interface"],["goal","Computation goal"],["model","Model of the Galaxy"],["utils","Utilities"]]});

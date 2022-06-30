@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["GalacticCartesian","Galactic heliocentric Cartesian coordinates"]]});

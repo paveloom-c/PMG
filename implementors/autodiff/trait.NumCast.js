@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["autodiff"] = [{"text":"impl&lt;V:&nbsp;<a class=\"trait\" href=\"autodiff/trait.NumCast.html\" title=\"trait autodiff::NumCast\">NumCast</a>, D:&nbsp;<a class=\"trait\" href=\"autodiff/trait.Zero.html\" title=\"trait autodiff::Zero\">Zero</a>&gt; <a class=\"trait\" href=\"autodiff/trait.NumCast.html\" title=\"trait autodiff::NumCast\">NumCast</a> for <a class=\"struct\" href=\"autodiff/forward_autodiff/struct.F.html\" title=\"struct autodiff::forward_autodiff::F\">F</a>&lt;V, D&gt;","synthetic":false,"types":["autodiff::forward_autodiff::F"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

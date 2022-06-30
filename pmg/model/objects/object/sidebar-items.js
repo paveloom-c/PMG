@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["distances","Distances"],["equatorial_s","Equatorial spherical coordinates"],["galactic_c","Galactic heliocentric Cartesian coordinates"],["galactic_s","Galactic heliocentric spherical coordinates"],["measurement","Measurement data"],["rotation_c","Rotation curve"]],"struct":[["Object","Data object"]]});

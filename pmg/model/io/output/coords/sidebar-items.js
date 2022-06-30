@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["HEADER","Header of the text file"],["NAME","Name of the files"]],"fn":[["serialize_to","Serialize records to the files"]],"struct":[["Record","Output data record"]],"type":[["Records","Output data records"]]});

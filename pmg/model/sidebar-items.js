@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["io","IO related"],["objects","Data objects"]],"struct":[["Model","Model of the Galaxy"]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["compute_e_theta","Compute the uncertainty of the azimuthal velocity"]]});

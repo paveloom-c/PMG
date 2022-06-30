@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["serialize_to","Serialize records to the files"]],"mod":[["coords","Galactic heliocentric coordinates of the objects"],["rotcurve","Rotation curve"]]});

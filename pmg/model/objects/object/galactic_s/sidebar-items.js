@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["GalacticSpherical","Galactic heliocentric spherical coordinates"]]});
