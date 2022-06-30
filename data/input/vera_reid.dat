@@ -1,0 +1,124 @@
+# Equatorial spherical coordinates of masers, their parallaxes,
+# proper motions in equatorial coordinates, and LSR velocities
+#
+# Descriptions:
+#
+#  1 name: Name of the object
+#  2 alpha: Right ascension [HMS angle]
+#  3 delta: Declination [DMS angle]
+#  4 par: Trigonometric parallax [mas]
+#  5 e_par: Uncertainty in `par` [mas]
+#  6 v_lsr: Local Standard of Rest velocity [km/s]
+#  7 e_v_lsr: Uncertainty in `v_lsr` [km/s]
+#  8 mu_x: Eastward proper motion (1) [mas/yr]
+#  9 e_mu_x: Uncertainty in `mu_x` [mas/yr]
+# 10 mu_y: Northward proper motion [mas/yr]
+# 11 e_mu_x: Uncertainty in `mu_y` [mas/yr]
+# 12 type: Type of the object
+# 13 source: Source of the data (2)
+# 14 reference: Reference(s)
+#
+# Notes:
+#   1. Motion in RA multiplied by cos(Dec)
+#   2. Source is a group label:
+#     New = New data (as of June 2022)
+#     Reid = Reid et al. (2019)
+#     VERA = The first VERA catalogue (2020)
+#
+name alpha delta par e_par mu_x e_mu_x mu_y e_mu_y v_lsr e_v_lsr type source reference
+#
+# Objects from the first VERA catalogue (2020) that
+# are identified with objects from Reid et al (2019):
+#
+# - under the same name:
+#
+G005.88-00.39 18:00:30.3100 -24:04:04.500 0.78 0.05 -0.17 0.60 -0.95 0.48 9.0 3.0 SFR "VERA" "Motogi et al. (2011)"
+G005.88-00.39 18:00:30.2801 -24:04:04.576 0.334 0.020 0.18 0.34 -2.26 0.34 9 5 HMSFR "Reid" "Sato et al. (2014)"
+G014.33-00.64 18:18:54.6532 -16:47:50.077 0.893 0.101 0.95 2.00 -2.50 2.00 22.0 5.0 SFR "VERA" "Sato et al. (2010b)"
+G014.33-00.64 18:18:54.6744 -16:47:50.264 0.893 0.101 0.95 1.50 -2.40 1.30 22 5 HMSFR "Reid" "Sato et al. (2010)"
+G048.60+00.02 19:20:31.1772 13:55:25.257 0.199 0.007 -2.76 0.04 -5.28 0.11 19.0 1.0 SFR "VERA" "Nagayama et al. (2011a)"
+G048.60+00.02 19:20:31.1760 +13:55:25.210 0.093 0.005 -2.89 0.13 -5.50 0.13 18 5 HMSFR "Reid" "Zhang et al. (2013)"
+G049.19-00.33 19:22:57.7705 14:16:09.969 0.211 0.016 -3.21 0.07 -5.08 0.25 69.9 0.5 SFR "VERA" "Nagayama et al. (2015a)"
+G049.19-00.33 19:22:57.7705 +14:16:09.983 0.197 0.008 -3.08 0.40 -5.50 0.40 67 5 HMSFR "Reid" "Wu et al. (2014), Nagayama et al. (2014)"
+G097.53+03.18 21:32:12.4400 55:53:49.600 0.177 0.028 -2.64 0.20 -2.38 0.22 -73.0 5.0 SFR "VERA" "Nakanishi et al. (2020), Sakai et al. (2020b)"
+G097.53+03.18 21:32:12.4343 +55:53:49.689 0.133 0.017 -2.94 0.29 -2.48 0.29 -73 5 HMSFR "Reid" "Hachisuka et al. (2015)"
+G192.16-03.81 05:58:13.5300 16:31:58.900 0.66 0.04 0.69 0.15 -1.57 0.15 5.7 5.0 SFR "VERA" "Shiozaki et al. (2011)"
+G192.16-03.81 05:58:13.5300 +16:31:58.900 0.660 0.040 0.70 0.78 -1.80 0.86 5 5 HMSFR "Reid" "Shiozaki et al. (2011)"
+#
+# - with the same coordinates (names changed to VERA's):
+#
+# Name in Reid et al. (2019): G174.20-00.07
+"AFGL 5142" 05:30:48.0173 33:47:54.568 0.467 0.010 0.32 0.27 -0.22 0.47 -2.0 5.0 SFR "VERA" "Burns et al. (2017)"
+"AFGL 5142" 05:30:48.0173 33:47:54.568 0.467 0.020 0.32 0.56 -0.22 0.68 -2 10 HMSFR "Reid" "Burns et al. (2017)"
+# Name in Reid et al. (2019): G170.65-00.24
+"IRAS 05168+3634" 05:20:22.0700 36:37:56.630 0.532 0.053 0.23 1.07 -3.14 0.28 -15.5 1.9 SFR "VERA" "Sakai et al. (2012)"
+"IRAS 05168+3634" 05:20:22.0700 36:37:56.630 0.532 0.075 0.23 1.20 -3.14 0.60 -19 5 HMSFR "Reid" "Sakai et al. (2012)"
+# Name in Reid et al. (2019): G074.56+00.84
+"IRAS 20143+3634" 20:16:13.3617 36:43:33.920 0.367 0.037 -2.99 0.16 -4.37 0.43 -1.0 1.0 SFR "VERA" "Burns et al. (2014b)"
+"IRAS 20143+3634" 20:16:13.3617 36:43:33.920 0.367 0.083 -3.00 0.81 -4.37 0.98 -1 5 HMSFR "Reid" "Burns et al. (2014)"
+# Name in Reid et al. (2019): G108.42+00.89
+"IRAS 22480+6002" 22:49:58.8760 60:17:56.650 0.400 0.025 -2.58 0.33 -1.91 0.17 -50.8 3.5 SFR "VERA" "Imai et al. (2012)"
+"IRAS 22480+6002" 22:49:58.8760 60:17:56.650 0.400 0.050 -2.58 0.60 -1.91 0.50 -51 5 HMSFR "Reid" "Imai et al. (2012)"
+# Name in Reid et al. (2019): G108.47-02.81
+"IRAS 23004+5642" 23:02:32.0800 56:57:51.400 0.309 0.010 -2.45 1.00 -3.00 0.70 -54.0 5.0 SFR "VERA" "Nakanishi et al. (2020)"
+"IRAS 23004+5642" 23:02:32.0800 56:57:51.400 0.309 0.010 -3.13 0.49 -2.79 0.46 -54 5 HMSFR "Reid" "Choi et al. (2014)"
+# Name in Reid et al. (2019): G123.06-06.30
+"NGC 281" 00:52:24.7008 56:33:50.527 0.355 0.030 -2.63 0.05 -1.86 0.08 -30.0 5.0 SFR "VERA" "Sato et al. (2008)"
+"NGC 281" 00:52:24.7008 56:33:50.527 0.355 0.030 -2.79 0.62 -2.14 0.70 -30 5 HMSFR "Reid" "Sato et al. (2008)"
+# Name in Reid et al. (2019): G115.05-00.04
+"PZ Cas" 23:44:03.2816 61:47:22.187 0.356 0.026 -3.70 0.20 -2.00 0.30 -36.2 0.7 RSG "VERA" "Kusuno et al. (2013)"
+"PZ Cas" 23:44:03.2816 61:47:22.187 0.356 0.040 -3.70 0.78 -2.00 0.81 -36 5 HMSFR "Reid" "Kusuno et al. (2013)"
+# Name in Reid et al. (2019): G048.99-00.29
+G048.99-00.30 19:22:26.1348 14:06:39.133 0.178 0.017 -2.16 0.09 -5.87 0.17 66.3 0.3 SFR "VERA" "Nagayama et al. (2015a)"
+G048.99-00.30 19:22:26.1348 14:06:39.133 0.178 0.017 -2.20 0.48 -5.84 0.63 67 10 HMSFR "Reid" "Nagayama et al. (2014)"
+#
+# - with nearly the same coordinates (names changed to VERA's):
+#
+# Name in Reid et al. (2019): G094.60-01.79
+"AFGL 2789" 21:39:58.2717 50:14:21.014 0.326 0.031 -2.20 0.08 -3.77 0.15 -44.0 5.0 SFR "VERA" "Oh et al. (2010)"
+"AFGL 2789" 21:39:58.2701 50:14:20.994 0.221 0.013 -3.49 0.23 -2.65 0.23 -43 3 HMSFR "Reid" "Oh et al. (2010), Choi et al. (2014), Sakai et al. (2019)"
+# Name in Reid et al. (2019): G168.06+00.82
+"IRAS 05137+3919" 05:17:13.7410 39:22:19.880 0.086 0.027 0.30 0.27 -0.89 0.73 -27.0 5.0 SFR "VERA" "Honma et al. (2011)"
+"IRAS 05137+3919" 05:17:13.7436 39:22:19.915 0.187 0.022 0.44 0.29 -0.78 0.35 -25 5 HMSFR "Reid" "Honma et al. (2007), Hachisuka et al. (2015)"
+# Name in Reid et al. (2019): G188.79+01.03
+"IRAS 06061+2151" 06:09:06.9746 21:50:41.405 0.496 0.031 -0.10 0.10 -3.91 0.07 -1.6 0.2 SFR "VERA" "Niinuma et al. (2011)"
+"IRAS 06061+2151" 06:09:06.9750 21:50:41.400 0.496 0.103 -0.10 0.50 -3.91 0.50 -5 5 HMSFR "Reid" "Niinuma et al. (2011)"
+# Name in Reid et al. (2019): G240.31+00.07
+"IRAS 07427-2400" 07:44:51.9200 -24:07:41.500 0.185 0.027 -1.79 0.32 2.60 0.17 66.4 5.0 SFR "VERA" "Sakai et al. (2015)"
+"IRAS 07427-2400" 07:44:51.9676 -24:07:41.372 0.187 0.014 -1.55 0.50 2.57 0.30 68 5 HMSFR "Reid" "Choi et al. (2014), Sakai et al. (2015)"
+# Name in Reid et al. (2019): G071.31+00.82
+"IRAS 20056+3350" 20:07:31.2586 33:59:41.477 0.213 0.026 -2.62 0.33 -5.65 0.52 9.4 5.0 SFR "VERA" "Burns et al. (2014a)"
+"IRAS 20056+3350" 20:07:31.2593 33:59:41.491 0.213 0.028 -2.62 0.70 -5.65 0.60 9 5 HMSFR "Reid" "Burns et al. (2014)"
+# Name in Reid et al. (2019): G078.12+03.63
+"IRAS 20126+4104" 20:14:26.0218 41:13:32.674 0.750 0.092 -4.15 0.51 -4.07 0.51 -3.5 4.0 SFR "VERA" "Nagayama et al. (2015b)"
+"IRAS 20126+4104" 20:14:26.0700 41:13:32.690 0.645 0.030 -2.06 0.84 0.98 0.84 -6 5 HMSFR "Reid" "Moscadelli et al. (2011), Nagayama et al. (2015)"
+# Name in Reid et al. (2019): G074.03-01.71
+"IRAS 20231+3430" 20:25:07.8013 34:50:34.733 0.611 0.022 -3.79 0.18 -4.88 0.25 6.0 5.0 SFR "VERA" "Ogbodo et al. (2017)"
+"IRAS 20231+3430" 20:25:07.1053 34:49:57.593 0.629 0.017 -3.79 1.30 -4.88 1.50 5 5 HMSFR "Reid" "Xu et al. (2013)"
+# Name in Reid et al. (2019): G107.29+05.63
+"IRAS 22198+6336" 22:21:26.7279 63:51:37.924 1.309 0.047 -2.47 1.40 0.26 1.40 -11.0 5.0 SFR "VERA" "Hirota et al. (2008b)"
+"IRAS 22198+6336" 22:21:26.7280 63:51:37.920 1.288 0.107 -2.47 1.40 0.26 1.40 -11 5 HMSFR "Reid" "Hirota et al. (2008)"
+# Name in Reid et al. (2019): G110.19+02.47
+"IRAS 22555+6213" 22:57:29.8090 62:29:46.850 0.314 0.070 -2.04 0.05 -0.66 0.06 -63.0 1.0 SFR "VERA" "Chibueze et al. (2014b)"
+"IRAS 22555+6213" 22:57:29.8060 62:29:46.837 0.314 0.070 -2.14 0.68 -0.32 0.77 -63 5 HMSFR "Reid" "Chibueze et al. (2014)"
+# Name in Reid et al. (2019): G239.35-05.06
+"VY CMa" 07:22:58.3291 -25:46:03.141 0.88 0.08 -2.09 0.16 1.02 0.61 20.0 5.0 RSG "VERA" "Choi et al. (2008)"
+"VY CMa" 07:22:58.3260 -25:46:03.060 0.855 0.057 -2.80 0.58 2.60 0.58 20 3 HMSFR "Reid" "Choi et al. (2008), Zhang et al. (2012)"
+# Name in Reid et al. (2019): G135.27+02.79
+G135.28+02.80 02:43:28.5825 62:57:08.390 0.124 0.011 -0.45 0.20 0.09 0.16 -72.9 1.6 SFR "VERA" "Nagayama et al. (2020a)"
+G135.28+02.80 02:43:28.5680 62:57:08.388 0.167 0.011 -1.22 0.30 0.46 0.36 -72 3 HMSFR "Reid" "Hachisuka et al. (2009)"
+# Name in Reid et al. (2019): G359.61-00.24
+G359.62-00.25 17:45:39.0908 -29:20:26.294 0.33 0.14 1.31 0.33 -2.41 0.87 -80.0 5.0 SFR "VERA" "Iwata et al. (2017)"
+G359.62-00.25 17:45:39.0697 -29:23:30.265 0.375 0.021 1.00 0.40 -1.50 0.50 21 5 HMSFR "Reid" "A. Sanna et al. (in preparation), K. Immer et al. (in preparation)"
+# Name in Reid et al. (2019): G015.03-00.67
+M17 18:20:23.0160 -16:11:48.030 0.491 0.041 -0.51 0.21 -2.04 0.21 20.0 5.0 SFR "VERA" "Chibueze et al. (2016)"
+M17 18:20:24.8111 -16:11:35.316 0.499 0.026 0.68 0.53 -1.42 0.54 22 3 HMSFR "Reid" "Xu et al. (2011), Chibueze et al. (2016)"
+# Name in Reid et al. (2019): G069.54-00.97
+ON1 20:10:09.2045 31:31:36.101 0.404 0.017 -3.10 0.18 -4.70 0.24 12.0 1.0 SFR "VERA" "Nagayama et al. (2011b)"
+ON1 20:10:09.0700 31:31:35.950 0.406 0.013 -3.19 0.40 -5.22 0.40 12 5 HMSFR "Reid" "Rygl et al. (2010), Nagayama et al. (2011), Xu et al. (2013)"
+# Name in Reid et al. (2019): G075.78+00.34
+ON2N 20:21:44.0123 37:26:37.484 0.261 0.009 -2.79 0.13 -4.66 0.17 0.0 1.0 SFR "VERA" "Ando et al. (2011)"
+ON2N 20:21:44.0120 37:26:37.480 0.261 0.030 -2.79 0.55 -4.66 0.55 1 5 HMSFR "Reid" "Ando et al. (2011)"
+# Name in Reid et al. (2019): G035.20-01.73
+W48A 19:01:45.5423 01:13:32.573 0.433 0.026 -0.05 0.81 -3.51 0.38 41.9 1.4 SFR "VERA" "Chibueze et al. (2020)"
+W48A 19:01:45.5420 01:13:32.690 0.412 0.014 -0.68 0.44 -3.60 0.44 43 5 HMSFR "Reid" "Zhang et al. (2009), K. Rygl et al. (in preparation)"

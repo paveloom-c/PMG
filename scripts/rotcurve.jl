@@ -70,7 +70,7 @@ GREEN = "\e[32m"
 YELLOW = "\e[33m"
 
 # Check for required arguments
-if length(ARGS) <= 1
+if length(ARGS) <= 1 || "--help" in ARGS
     println("""
         $(YELLOW)USAGE:$(RESET)
         { julia --project=. | ./julia.bash } scripts/rotcurve.jl [-s] [-o <OUTPUT_DIR>] [--postfix <POSTFIX>] <INPUT_DIR>
