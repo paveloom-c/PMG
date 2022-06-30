@@ -105,7 +105,7 @@ using LaTeXStrings
 using PGFPlotsX
 
 # Choose a color scheme
-cmap = ColorSchemes.tol_light[2:end]
+colors = ColorSchemes.tol_light[2:end]
 
 # Define the paths
 CURRENT_DIR = @__DIR__
@@ -181,10 +181,40 @@ data = read_bincode(DATA_PATH)
 # Prepare a group for the data
 group = LEGEND_SHOW_SOURCES ? data.source : data.type
 
-# Prepare labels
-markers = ["a", "b", "c", "d", "e", "g"]
+# Sort the data by the number of occurrences of different types
+# (rare types will be plotted over common types)
 keys = unique(group)
-dictionary = Dict([ (k, markers[i]) for (i, k) in enumerate(keys) ])
+counts = Dict([ (k, count(==(k), group)) for k in keys ])
+I = sortperm(group, by=k->counts[k], rev=true)
+group = group[I]
+l = data.l[I]
+b = data.b[I]
+X = data.X[I]
+Y = data.Y[I]
+Z = data.Z[I]
+R = data.R[I]
+ep_X = data.ep_X[I]
+ep_Y = data.ep_Y[I]
+ep_Z = data.ep_Z[I]
+ep_R = data.ep_R[I]
+em_X = data.em_X[I]
+em_Y = data.em_Y[I]
+em_Z = data.em_Z[I]
+em_R = data.em_R[I]
+
+# Compute the secondary data sets
+X_p = X .+ ep_X
+Y_p = Y .+ ep_Y
+Z_p = Z .+ ep_Z
+R_p = R .+ ep_R
+X_m = X .- em_X
+Y_m = Y .- em_Y
+Z_m = Z .- em_Z
+R_m = R .- em_R
+
+# Prepare labels
+labels = ["a", "b", "c", "d", "e", "g"]
+dictionary = Dict([ (k, labels[i]) for (i, k) in enumerate(keys) ])
 label = [ dictionary[k] for k in group ]
 
 println(pad, "> Plotting the scatter plots...")
@@ -200,39 +230,18 @@ function max_min(c; factor=0.1)
 end
 
 "Create a scatter plot"
-function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y = F[], axis_equal=false)
+function scatter(x, y, xlabel, ylabel; x_p = F[], x_m = F[], y_p = F[], y_m = F[], axis_equal=false, crosses=false)
     # Compute the limits
     x_max, x_min = max_min(x)
     y_max, y_min = max_min(y)
-    # Prepare a table
-    table = if isempty(ep_x) && isempty(em_x) && isempty(ep_y) && isempty(em_y)
-        @pgf Table(
-            {
-                meta = "label",
-            },
-            x = x,
-            y = y,
-            label = label,
-        )
+    # Define the markers set
+    marks = if crosses
+        ["x", "+", "asterisk", "star", "10-pointed star"]
     else
-        @pgf Table(
-            {
-                meta = "label",
-                x_error_plus = "ep_x",
-                x_error_minus = "em_x",
-                y_error_plus = "ep_y",
-                y_error_minus = "em_y",
-            },
-            x = x,
-            y = y,
-            label = label,
-            ep_x = ep_x,
-            em_x = em_x,
-            ep_y = ep_y,
-            em_y = em_y,
-        )
+        repeat(["*"], 5)
     end
-    return @pgf Axis(
+    # Create a plot
+    p = @pgf Axis(
         {
             xlabel = xlabel,
             ylabel = ylabel,
@@ -248,13 +257,6 @@ function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y 
             major_grid_style = { opacity = 0.5 },
             tick_label_style = { font = "\\small" },
             tick_style = { line_width = 0.4, color = "black" },
-            "error bars/error bar style" = { line_width = 0.1, opacity = 0.25 },
-            "error bars/error mark options" = {
-                rotate = 90,
-                mark_size = 0.5,
-                line_width = 0.1,
-                opacity = 0.25,
-            },
             axis_equal = axis_equal,
             axis_line_style = { line_width = 1 },
             "axis_lines*" = "left",
@@ -264,11 +266,11 @@ function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y 
             mark_size = 0.5,
             line_width = 0.15,
             "scatter/classes" = {
-                a = { mark = "x", color = cmap[1] },
-                b = { mark = "+", color = cmap[2] },
-                c = { mark = "asterisk", color = cmap[3] },
-                d = { mark = "star", color = cmap[4] },
-                e = { mark = "10-pointed star", color = cmap[5] },
+                a = { mark = marks[1], color = colors[1] },
+                b = { mark = marks[2], color = colors[2] },
+                c = { mark = marks[3], color = colors[3] },
+                d = { mark = marks[4], color = colors[4] },
+                e = { mark = marks[5], color = colors[5] },
             },
         },
         Plot(
@@ -276,22 +278,38 @@ function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y 
                 scatter,
                 "only marks",
                 "scatter src" = "explicit symbolic",
-                "error bars/x dir=both",
-                "error bars/y dir=both",
-                "error bars/x explicit",
-                "error bars/y explicit",
             },
-            table,
+            Table(
+                {
+                    meta = "label",
+                },
+                x = x,
+                y = y,
+                label = label,
+            ),
         ),
         Legend(keys),
     )
+    # Add the error lines if additional data sets are specified
+    if !isempty(x_p) && !isempty(x_m) && !isempty(y_p) && !isempty(y_m)
+        for (x, y, x_p, x_m, y_p, y_m) in zip(x, y, x_p, x_m, y_p, y_m)
+            push!(p, @pgf Plot(
+                {
+                    no_marks,
+                    opacity = 0.25,
+                },
+                Coordinates([(x_m, y_m), (x, y), (x_p, y_p)]),
+            ))
+        end
+    end
+    return p
 end
 
 # Plot a scatter plot in the (X, Y) plane
 println(pad, "    for XY...")
 p = scatter(
-    data.X,
-    data.Y,
+    X,
+    Y,
     L"X \; \mathrm{[kpc]}",
     L"Y \; \mathrm{[kpc]}",
     axis_equal=true,
@@ -301,28 +319,56 @@ pgfsave(joinpath(PLOTS_DIR, "XY$(POSTFIX).pdf"), p)
 # Plot a scatter plot in the (X, Y) plane with errors
 println(pad, "    for XY (errors)...")
 p = scatter(
-    data.X,
-    data.Y,
+    X,
+    Y,
     L"X \; \mathrm{[kpc]}",
     L"Y \; \mathrm{[kpc]}",
-    ep_x=data.ep_X,
-    em_x=data.em_X,
-    ep_y=data.ep_Y,
-    em_y=data.em_Y,
+    x_p=X_p,
+    x_m=X_m,
+    y_p=Y_p,
+    y_m=Y_m,
     axis_equal=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XY (errors)$(POSTFIX).pdf"), p)
 
+# Plot a scatter plot in the (X, Y) plane with crosses
+println(pad, "    for XY (crosses)...")
+p = scatter(
+    X,
+    Y,
+    L"X \; \mathrm{[kpc]}",
+    L"Y \; \mathrm{[kpc]}",
+    axis_equal=true,
+    crosses=true,
+)
+pgfsave(joinpath(PLOTS_DIR, "XY (crosses)$(POSTFIX).pdf"), p)
+
+# Plot a scatter plot in the (X, Y) plane with crosses and errors
+println(pad, "    for XY (crosses, errors)...")
+p = scatter(
+    X,
+    Y,
+    L"X \; \mathrm{[kpc]}",
+    L"Y \; \mathrm{[kpc]}",
+    x_p=X_p,
+    x_m=X_m,
+    y_p=Y_p,
+    y_m=Y_m,
+    axis_equal=true,
+    crosses=true,
+)
+pgfsave(joinpath(PLOTS_DIR, "XY (crosses, errors)$(POSTFIX).pdf"), p)
+
 # Plot a scatter plot in the (X, Z) plane
 println(pad, "    for XZ...")
-p = scatter(data.X, data.Z, L"X \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
+p = scatter(X, Z, L"X \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
 pgfsave(joinpath(PLOTS_DIR, "XZ$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (X, Z) plane with equal axes
 println(pad, "    for XZ (equal axes)...")
 p = scatter(
-    data.X,
-    data.Z,
+    X,
+    Z,
     L"X \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
     axis_equal=true,
@@ -332,41 +378,41 @@ pgfsave(joinpath(PLOTS_DIR, "XZ (equal axes)$(POSTFIX).pdf"), p)
 # Plot a scatter plot in the (X, Z) plane with errors
 println(pad, "    for XZ (errors)...")
 p = scatter(
-    data.X,
-    data.Z,
+    X,
+    Z,
     L"X \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
-    ep_x=data.ep_X,
-    em_x=data.em_X,
-    ep_y=data.ep_Z,
-    em_y=data.em_Z,
+    x_p=X_p,
+    x_m=X_m,
+    y_p=Z_p,
+    y_m=Z_m,
 )
 pgfsave(joinpath(PLOTS_DIR, "XZ (errors)$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (X, Z) plane with errors and equal axes
 println(pad, "    for XZ (equal axes, errors)...")
 p = scatter(
-    data.X,
-    data.Z,
+    X,
+    Z,
     L"X \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
-    ep_x=data.ep_X,
-    em_x=data.em_X,
-    ep_y=data.ep_Z,
-    em_y=data.em_Z,
+    x_p=X_p,
+    x_m=X_m,
+    y_p=Z_p,
+    y_m=Z_m,
     axis_equal=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XZ (equal axes, errors)$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (Y, Z) plane
 println(pad, "    for YZ...")
-p = scatter( data.Y, data.Z, L"Y \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
+p = scatter(Y, Z, L"Y \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
 pgfsave(joinpath(PLOTS_DIR, "YZ$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (Y, Z) plane with equal axes
 p = scatter(
-    data.Y,
-    data.Z,
+    Y,
+    Z,
     L"Y \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
     axis_equal=true,
@@ -376,42 +422,42 @@ pgfsave(joinpath(PLOTS_DIR, "YZ (equal axes)$(POSTFIX).pdf"), p)
 # Plot a scatter plot in the (Y, Z) plane with errors
 println(pad, "    for YZ (errors)...")
 p = scatter(
-    data.Y,
-    data.Z,
+    Y,
+    Z,
     L"Y \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
-    ep_x=data.ep_Y,
-    em_x=data.em_Y,
-    ep_y=data.ep_Z,
-    em_y=data.em_Z,
+    x_p=Y_p,
+    x_m=Y_m,
+    y_p=Z_p,
+    y_m=Z_m,
 )
 pgfsave(joinpath(PLOTS_DIR, "YZ (errors)$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (Y, Z) plane with errors and equal axes
 println(pad, "    for YZ (equal axes, errors)...")
 p = scatter(
-    data.Y,
-    data.Z,
+    Y,
+    Z,
     L"Y \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
-    ep_x=data.ep_Y,
-    em_x=data.em_Y,
-    ep_y=data.ep_Z,
-    em_y=data.em_Z,
+    x_p=Y_p,
+    x_m=Y_m,
+    y_p=Z_p,
+    y_m=Z_m,
     axis_equal=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "YZ (equal axes, errors)$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (R, Z) plane
 println(pad, "    for RZ...")
-p = scatter(data.R, data.Z, L"R \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
+p = scatter(R, Z, L"R \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
 pgfsave(joinpath(PLOTS_DIR, "RZ$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (R, Z) plane with equal axes
 println(pad, "    for RZ (equal axes)...")
 p = scatter(
-    data.R,
-    data.Z,
+    R,
+    Z,
     L"R \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
     axis_equal=true,
@@ -421,28 +467,28 @@ pgfsave(joinpath(PLOTS_DIR, "RZ (equal axes)$(POSTFIX).pdf"), p)
 # Plot a scatter plot in the (R, Z) plane with errors
 println(pad, "    for RZ (errors)...")
 p = scatter(
-    data.R,
-    data.Z,
+    R,
+    Z,
     L"R \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
-    ep_x=data.ep_R,
-    em_x=data.em_R,
-    ep_y=data.ep_Z,
-    em_y=data.em_Z,
+    x_p=R_p,
+    x_m=R_m,
+    y_p=Z_p,
+    y_m=Z_m,
 )
 pgfsave(joinpath(PLOTS_DIR, "RZ (errors)$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (R, Z) plane with errors and equal axes
 println(pad, "    for RZ (equal axes, errors)...")
 p = scatter(
-    data.R,
-    data.Z,
+    R,
+    Z,
     L"R \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
-    ep_x=data.ep_R,
-    em_x=data.em_R,
-    ep_y=data.ep_Z,
-    em_y=data.em_Z,
+    x_p=R_p,
+    x_m=R_m,
+    y_p=Z_p,
+    y_m=Z_m,
     axis_equal=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "RZ (equal axes, errors)$(POSTFIX).pdf"), p)
@@ -450,8 +496,8 @@ pgfsave(joinpath(PLOTS_DIR, "RZ (equal axes, errors)$(POSTFIX).pdf"), p)
 # Plot a scatter plot in the (l, b) plane
 println(pad, "    for lb...")
 p = scatter(
-    data.l,
-    data.b,
+    l,
+    b,
     L"l \; \mathrm{[deg]}",
     L"b \; \mathrm{[deg]}",
     axis_equal=true,

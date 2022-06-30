@@ -36,16 +36,16 @@ impl<F: Float + Debug> TryFrom<&Object<F>> for RotationCurve<F> {
         let v_lsr = object.v_lsr()?;
         let mu_x = object.mu_x()?;
         let mu_y = object.mu_y()?;
-        // Compute the azimuthal velocity and Galactocentric distance
+        // Compute the azimuthal velocity and the Galactocentric distance
         let (theta, r_g) = compute_theta_r_g(alpha, delta, l, b, par.v, v_lsr.v, mu_x.v, mu_y.v);
         // Compute the uncertainty in the azimuthal velocity
         let e_theta = compute_e_theta(
             alpha, delta, l, b, par.v, v_lsr.v, mu_x.v, mu_y.v, par.e_p, v_lsr.e_p, mu_x.e_p,
             mu_y.e_p,
         );
-        // Compute the uncertainty in the Galactocentric distance
-        let r_g_u = compute_r_g_2(l, b, 1. / par.v_l);
-        let r_g_l = compute_r_g_2(l, b, 1. / par.v_u);
+        // Compute the uncertainties in the Galactocentric distance
+        let r_g_u = compute_r_g_2(l, b, 1. / par.v_u);
+        let r_g_l = compute_r_g_2(l, b, 1. / par.v_l);
         Ok(Self {
             theta: Measurement {
                 v: theta,
@@ -58,8 +58,8 @@ impl<F: Float + Debug> TryFrom<&Object<F>> for RotationCurve<F> {
                 v: r_g,
                 v_u: r_g_u,
                 v_l: r_g_l,
-                e_p: (r_g_u - r_g).abs(),
-                e_m: (r_g_l - r_g).abs(),
+                e_p: r_g_u - r_g,
+                e_m: r_g - r_g_l,
             },
         })
     }

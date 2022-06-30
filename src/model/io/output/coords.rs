@@ -39,6 +39,9 @@ const HEADER: &str = indoc! {"
     # 18 em_R: Minus uncertainty in `R` [kpc]
     # 19 type: Type of the object
     # 20 source: Source of the data
+    #
+    # Uncertainties come from assuming maximum and minimum values of the parallax.
+    # Note that they are not independent from each other and can be negative here.
     #\n
 "};
 

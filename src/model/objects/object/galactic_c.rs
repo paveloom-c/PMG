@@ -36,22 +36,22 @@ impl<F: Float + Debug> TryFrom<&Object<F>> for GalacticCartesian<F> {
                 v: x,
                 v_u: x_u,
                 v_l: x_l,
-                e_p: (x_u - x).abs(),
-                e_m: (x_l - x).abs(),
+                e_p: x_u - x,
+                e_m: x - x_l,
             },
             y: Measurement {
                 v: y,
                 v_u: y_u,
                 v_l: y_l,
-                e_p: (y_u - y).abs(),
-                e_m: (y_l - y).abs(),
+                e_p: y_u - y,
+                e_m: y - y_l,
             },
             z: Measurement {
                 v: z,
                 v_u: z_u,
                 v_l: z_l,
-                e_p: (z_u - z).abs(),
-                e_m: (z_l - z).abs(),
+                e_p: z_u - z,
+                e_m: z - z_l,
             },
         })
     }

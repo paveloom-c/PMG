@@ -35,8 +35,8 @@ impl<F: Float + Debug> TryFrom<&Object<F>> for Distances<F> {
         let par = object.par()?;
         // Compute the heliocentric distance
         let r_h = 1. / par.v;
-        let r_h_u = 1. / par.v_l;
-        let r_h_l = 1. / par.v_u;
+        let r_h_u = 1. / par.v_u;
+        let r_h_l = 1. / par.v_l;
         // Compute the Galactocentric distance
         let r_g = compute_r_g_1(l, b, r_h);
         let r_g_u = compute_r_g_1(l, b, r_h_u);
@@ -46,15 +46,15 @@ impl<F: Float + Debug> TryFrom<&Object<F>> for Distances<F> {
                 v: r_h,
                 v_u: r_h_u,
                 v_l: r_h_l,
-                e_p: (r_h_u - r_h).abs(),
-                e_m: (r_h_l - r_h).abs(),
+                e_p: r_h_u - r_h,
+                e_m: r_h - r_h_l,
             },
             r_g: Measurement {
                 v: r_g,
                 v_u: r_g_u,
                 v_l: r_g_l,
-                e_p: (r_g_u - r_g).abs(),
-                e_m: (r_g_l - r_g).abs(),
+                e_p: r_g_u - r_g,
+                e_m: r_g - r_g_l,
             },
         })
     }

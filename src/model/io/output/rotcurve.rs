@@ -27,6 +27,9 @@ const HEADER: &str = indoc! {"
     # 6 em_R: Minus uncertainty in `R` [kpc]
     # 7 type: Type of the object
     # 8 source: Source of the data
+    #
+    # Uncertainties in the distance come from assuming maximum and minimum
+    # values of the parallax. Note that they can be negative here.
     #\n
 "};
 

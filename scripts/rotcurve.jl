@@ -105,7 +105,7 @@ using LaTeXStrings
 using PGFPlotsX
 
 # Choose a color scheme
-cmap = ColorSchemes.tol_light[2:end]
+colors = ColorSchemes.tol_light[2:end]
 
 # Define the paths
 CURRENT_DIR = @__DIR__
@@ -169,9 +169,20 @@ data = read_bincode(DATA_PATH)
 # Prepare a group for the data
 group = LEGEND_SHOW_SOURCES ? data.source : data.type
 
+# Sort the data by the number of occurrences of different types
+# (rare types will be plotted over common types)
+keys = unique(group)
+counts = Dict([ (k, count(==(k), group)) for k in keys ])
+I = sortperm(group, by=k->counts[k], rev=true)
+group = group[I]
+theta = data.theta[I]
+e_theta = data.e_theta[I]
+R = data.R[I]
+ep_R = data.ep_R[I]
+em_R = data.em_R[I]
+
 # Prepare labels
 markers = ["a", "b", "c", "d", "e", "g"]
-keys = unique(group)
 dictionary = Dict([ (k, markers[i]) for (i, k) in enumerate(keys) ])
 label = [ dictionary[k] for k in group ]
 
@@ -220,6 +231,7 @@ function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y 
             em_y = em_y,
         )
     end
+    # Create a plot
     return @pgf Axis(
         {
             xlabel = xlabel,
@@ -251,11 +263,11 @@ function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y 
             mark_size = 0.5,
             line_width = 0.15,
             "scatter/classes" = {
-                a = { mark = "x", color = cmap[1] },
-                b = { mark = "+", color = cmap[2] },
-                c = { mark = "asterisk", color = cmap[3] },
-                d = { mark = "star", color = cmap[4] },
-                e = { mark = "10-pointed star", color = cmap[5] },
+                a = { mark = "x", color = colors[1] },
+                b = { mark = "+", color = colors[2] },
+                c = { mark = "asterisk", color = colors[3] },
+                d = { mark = "star", color = colors[4] },
+                e = { mark = "10-pointed star", color = colors[5] },
             },
         },
         Plot(
@@ -277,8 +289,8 @@ end
 # Plot the rotation curve
 println(pad, "    for Rotation curve...")
 p = scatter(
-    data.R,
-    data.theta,
+    R,
+    theta,
     L"R \; \mathrm{[kpc]}",
     L"\theta \; \mathrm{[km \; s^{-1}]}",
 )
@@ -286,14 +298,14 @@ pgfsave(joinpath(PLOTS_DIR, "Rotation curve$(POSTFIX).pdf"), p)
 
 println(pad, "    for Rotation curve (errors)...")
 p = scatter(
-    data.R,
-    data.theta,
+    R,
+    theta,
     L"R \; \mathrm{[kpc]}",
     L"\theta \; \mathrm{[km \; s^{-1}]}",
-    ep_x=data.ep_R,
-    em_x=data.em_R,
-    ep_y=data.e_theta,
-    em_y=data.e_theta,
+    ep_x=ep_R,
+    em_x=em_R,
+    ep_y=e_theta,
+    em_y=e_theta,
 )
 pgfsave(joinpath(PLOTS_DIR, "Rotation curve (errors)$(POSTFIX).pdf"), p)
 
