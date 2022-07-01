@@ -41,6 +41,7 @@
 #       HH 12-15: SFR -> LMSFR (see the VERA paper (2020), subsection 5.2)
 #       S76E: SFR -> LMSFR (low lower limit of the total mass)
 #       IRAS 19312+1950: SFR -> AGB (described in the paper as such)
+#       Sgr B2: SFR -> HMSFR (described as a massive star-forming region)
 #   4. VERA catalogue: the data in each line is from the last mentioned reference
 #
 name alpha delta par e_par mu_x e_mu_x mu_y e_mu_y v_lsr e_v_lsr type source reference
