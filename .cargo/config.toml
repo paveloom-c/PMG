@@ -31,4 +31,8 @@ lint = [
     "clippy::single_char_lifetime_names",
     "-A",
     "clippy::missing_errors_doc",
+    "-A",
+    "clippy::pub_use",
+    "-A",
+    "clippy::self_named_module_files",
 ]
