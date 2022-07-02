@@ -20,7 +20,10 @@ pub(in crate::model) struct GalacticCartesian<F: Float + Debug> {
 }
 
 #[allow(clippy::many_single_char_names)]
-impl<F: Float + Debug> TryFrom<&Object<F>> for GalacticCartesian<F> {
+impl<F> TryFrom<&Object<F>> for GalacticCartesian<F>
+where
+    F: Float + Default + Debug,
+{
     type Error = anyhow::Error;
 
     fn try_from(object: &Object<F>) -> Result<Self> {

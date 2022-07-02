@@ -24,8 +24,11 @@ use anyhow::{anyhow, Context, Result};
 use num::Float;
 
 /// Data object
-#[derive(Debug)]
-pub(in crate::model) struct Object<F: Float + Debug> {
+#[derive(Debug, Default)]
+pub(in crate::model) struct Object<F>
+where
+    F: Float + Default + Debug,
+{
     /// Name of the object
     name: Option<String>,
     /// Equatorial spherical coordinates
@@ -52,26 +55,7 @@ pub(in crate::model) struct Object<F: Float + Debug> {
     source: Option<String>,
 }
 
-impl<F: Float + Debug> Default for Object<F> {
-    fn default() -> Self {
-        Self {
-            name: Option::default(),
-            equatorial_s: Option::default(),
-            par: Option::default(),
-            v_lsr: Option::default(),
-            mu_x: Option::default(),
-            mu_y: Option::default(),
-            distances: Option::default(),
-            galactic_s: Option::default(),
-            galactic_c: Option::default(),
-            rotation_c: Option::default(),
-            obj_type: Option::default(),
-            source: Option::default(),
-        }
-    }
-}
-
-impl<F: Float + Debug> Object<F> {
+impl<F: Float + Default + Debug> Object<F> {
     /// Unwrap the name of the object
     pub(in crate::model) fn name(&self) -> Result<&String> {
         self.name
@@ -199,7 +183,7 @@ impl<F: Float + Debug> Object<F> {
 
 impl<F> TryFrom<input::Record<F>> for Object<F>
 where
-    F: Float + Debug + FromStr,
+    F: Float + Default + Debug + FromStr,
     <F as FromStr>::Err: Error + Send + Sync + 'static,
 {
     type Error = anyhow::Error;

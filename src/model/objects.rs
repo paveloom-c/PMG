@@ -18,10 +18,13 @@ use num::Float;
 use serde::de::DeserializeOwned;
 
 /// Data objects
-#[derive(Debug)]
-pub struct Objects<F: Float + Debug>(Vec<Object<F>>);
+#[derive(Debug, Default)]
+pub struct Objects<F: Float + Default + Debug>(Vec<Object<F>>);
 
-impl<F: Float + Debug> Objects<F> {
+impl<F> Objects<F>
+where
+    F: Float + Default + Debug,
+{
     /// Perform computations based on goals
     pub(in crate::model) fn compute(&mut self, goals: &[Goal]) -> Result<()> {
         // Perform computations for each object
@@ -47,16 +50,10 @@ impl<F: Float + Debug> Objects<F> {
     }
 }
 
-impl<F: Float + Debug> Default for Objects<F> {
-    fn default() -> Self {
-        Self(Vec::default())
-    }
-}
-
 /// Parse a record into an object
 fn deserialize<F>(result: Result<input::Record<F>, csv::Error>) -> Result<Object<F>>
 where
-    F: Float + Debug + FromStr,
+    F: Float + Default + Debug + FromStr,
     <F as FromStr>::Err: Error + Send + Sync + 'static,
 {
     // Try to deserialize the record
@@ -69,7 +66,7 @@ where
 
 impl<F> TryFrom<&Path> for Objects<F>
 where
-    F: Float + Debug + FromStr + DeserializeOwned,
+    F: Float + Default + Debug + FromStr + DeserializeOwned,
     <F as FromStr>::Err: Error + Send + Sync + 'static,
 {
     type Error = anyhow::Error;

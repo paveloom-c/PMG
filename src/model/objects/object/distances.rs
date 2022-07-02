@@ -26,7 +26,10 @@ pub(in crate::model) struct Distances<F: Float + Debug> {
 #[allow(clippy::unwrap_in_result)]
 #[allow(clippy::unwrap_used)]
 #[replace_float_literals(F::from(literal).unwrap())]
-impl<F: Float + Debug> TryFrom<&Object<F>> for Distances<F> {
+impl<F> TryFrom<&Object<F>> for Distances<F>
+where
+    F: Float + Default + Debug,
+{
     type Error = anyhow::Error;
 
     fn try_from(object: &Object<F>) -> Result<Self> {

@@ -18,13 +18,13 @@ use num::Float;
 use serde::{de::DeserializeOwned, Serialize};
 
 /// Model of the Galaxy
-#[derive(Debug)]
-pub struct Model<F: Float + Debug> {
+#[derive(Debug, Default)]
+pub struct Model<F: Float + Default + Debug> {
     /// Data objects
     objects: Objects<F>,
 }
 
-impl<F: Float + Debug> Model<F> {
+impl<F: Float + Default + Debug> Model<F> {
     /// Perform computations based on goals
     pub fn compute(&mut self, goals: &[Goal]) -> Result<()> {
         self.objects.compute(goals)?;
@@ -70,17 +70,9 @@ impl<F: Float + Debug> Model<F> {
     }
 }
 
-impl<F: Float + Debug> Default for Model<F> {
-    fn default() -> Self {
-        Self {
-            objects: Objects::default(),
-        }
-    }
-}
-
 impl<F> TryFrom<Vec<PathBuf>> for Model<F>
 where
-    F: Float + Debug + FromStr + DeserializeOwned,
+    F: Float + Default + Debug + FromStr + DeserializeOwned,
     <F as FromStr>::Err: Error + Send + Sync + 'static,
 {
     type Error = anyhow::Error;

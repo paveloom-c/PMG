@@ -59,7 +59,10 @@ struct Record<'a, F: Float + Debug> {
 }
 
 #[allow(clippy::many_single_char_names)]
-impl<'a, F: Float + Debug> TryFrom<&'a Object<F>> for Record<'a, F> {
+impl<'a, F> TryFrom<&'a Object<F>> for Record<'a, F>
+where
+    F: Float + Default + Debug,
+{
     type Error = anyhow::Error;
 
     fn try_from(object: &'a Object<F>) -> Result<Self> {
@@ -83,7 +86,10 @@ impl<'a, F: Float + Debug> TryFrom<&'a Object<F>> for Record<'a, F> {
 /// Output data records
 type Records<'a, F> = Vec<Record<'a, F>>;
 
-impl<'a, F: Float + Debug> TryFrom<&'a Model<F>> for Records<'a, F> {
+impl<'a, F> TryFrom<&'a Model<F>> for Records<'a, F>
+where
+    F: Float + Default + Debug,
+{
     type Error = anyhow::Error;
 
     fn try_from(model: &'a Model<F>) -> Result<Self> {
@@ -105,7 +111,7 @@ pub(in crate::model) fn serialize_to<F>(
     model: &Model<F>,
 ) -> Result<()>
 where
-    F: Float + Debug + Serialize,
+    F: Float + Default + Debug + Serialize,
 {
     super::serialize_to(
         dat_dir,
