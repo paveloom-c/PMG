@@ -21,7 +21,7 @@
 # Notes:
 #   1. Motion in RA multiplied by cos(Dec)
 #   2. Source is a group label:
-#     New = New objects and new data for old objects (as of June 2022) (10 total)
+#     New = New objects and new data for old objects (as of June 2022) (13 total)
 #     VERA = The first VERA catalogue (2020) (64 selected out of 99 total)
 #     Reid = Reid et al. (2019) (199 total)
 #   3. Masers are divided into the following groups by type:
@@ -30,7 +30,7 @@
 #       it was possible) (66 selected out of 69 total):
 #       - SFRs (star-forming regions) (36 selected out of 39 total, excluding LMSFRs)
 #         - LMSFRs (low-mass star-forming regions) (4 total)
-#       - AGB (Asymptotic Giants Branch) (30 total)
+#       - AGB (Asymptotic Giants Branch) (33 total)
 #       - RSG (Red Super Giants) (0 total)
 #
 #     Changed types per object:
@@ -57,6 +57,9 @@ G026.50+0.28 18:38:40.7518 -05:35:05.108 0.159 0.012 -2.51 0.34 -6.04 0.34 104 3
 G050.28-00.39 19:25:17.9310 15:12:24.720 0.140 0.018 -3.29 0.56 -5.52 0.37 17 3 SFR New "Sakai et al. (2022)"
 G053.14+00.07 19:29:17.4764 17:56:18.264 0.726 0.038 -1.27 1.08 -7.15 1.07 22 4 SFR New "Sakai et al. (2022)"
 G070.33+01.59 20:01:54.0627 33:34:14.485 0.074 0.037 -2.82 0.29 -4.68 0.28 -23 5 SFR New "Sakai et al. (2022)"
+"RR Aql" 19:57:36.0334 -01:53:12.157 2.44 0.07 -22.29 0.17 -45.70 0.85 28.9 0 AGB New "Sun et al. (2022)"
+"RR Aql" 19:57:36.0334 -01:53:12.157 2.41 0.09 -22.29 0.23 -45.91 0.46 28.8 0 AGB New "Sun et al. (2022)"
+"RR Aql" 19:57:36.0377 -01:53:12.203 2.44 0.08 -22.68 0.18 -48.47 1.46 30.9 0 AGB New "Sun et al. (2022)"
 # New data:
 "Sgr B2" 17:47:20.1817 -28:23:03.889 0.133 0.038 -1.87 0.15 -3.74 0.18 62.0 5.0 HMSFR New "Sakai et al. (2021)"
 # Another ID: IRAS 20255+4032 (see the paper)
