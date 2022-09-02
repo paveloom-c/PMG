@@ -1,49 +1,76 @@
 //! Galactic heliocentric coordinates of the objects
 
+use crate::consts;
 use crate::model::{Model, Object};
 
 use std::fmt::Debug;
 use std::path::Path;
 
 use anyhow::{Context, Result};
-use indoc::indoc;
+use indoc::formatdoc;
+use lazy_static::lazy_static;
 use num::Float;
 use serde::Serialize;
 
 /// Name of the files
 const NAME: &str = "coords";
 
-/// Header of the text file
-const HEADER: &str = indoc! {"
-    # Galactic heliocentric coordinates of the objects
-    #
-    # Descriptions:
-    #
-    # 1  name: Name of the object
-    # 2  l: Longitude [deg]
-    # 3  b: Latitude [deg]
-    # 4  X: X coordinate [kpc]
-    # 5  ep_X: Plus uncertainty in `X` [kpc]
-    # 6  em_X: Minus uncertainty in `X` [kpc]
-    # 7  Y: Y coordinate [kpc]
-    # 8  ep_Y: Plus uncertainty in `Y` [kpc]
-    # 9  em_Y: Minus uncertainty in `Y` [kpc]
-    # 10 Z: Z coordinate [kpc]
-    # 11 ep_Z: Plus uncertainty in `Z` [kpc]
-    # 12 em_Z: Minus uncertainty in `Z` [kpc]
-    # 13 r: Heliocentric distance [kpc]
-    # 14 ep_r: Plus uncertainty in `r` [kpc]
-    # 15 em_r: Minus uncertainty in `r` [kpc]
-    # 16 R: Galactocentric distance [kpc]
-    # 17 ep_R: Plus uncertainty in `R` [kpc]
-    # 18 em_R: Minus uncertainty in `R` [kpc]
-    # 19 type: Type of the object
-    # 20 source: Source of the data
-    #
-    # Uncertainties come from assuming maximum and minimum values of the parallax.
-    # Note that they are not independent from each other and can be negative here.
-    #\n
-"};
+lazy_static! {
+    /// Header of the text file
+    static ref HEADER: String = formatdoc! {
+        "
+            # Galactic heliocentric coordinates of the objects
+            #
+            # Descriptions:
+            #
+            # 1  name: Name of the object
+            # 2  l: Longitude [deg]
+            # 3  b: Latitude [deg]
+            # 4  X: X coordinate [kpc]
+            # 5  ep_X: Plus uncertainty in `X` [kpc]
+            # 6  em_X: Minus uncertainty in `X` [kpc]
+            # 7  Y: Y coordinate [kpc]
+            # 8  ep_Y: Plus uncertainty in `Y` [kpc]
+            # 9  em_Y: Minus uncertainty in `Y` [kpc]
+            # 10 Z: Z coordinate [kpc]
+            # 11 ep_Z: Plus uncertainty in `Z` [kpc]
+            # 12 em_Z: Minus uncertainty in `Z` [kpc]
+            # 13 r: Heliocentric distance [kpc]
+            # 14 ep_r: Plus uncertainty in `r` [kpc]
+            # 15 em_r: Minus uncertainty in `r` [kpc]
+            # 16 R: Galactocentric distance [kpc]
+            # 17 ep_R: Plus uncertainty in `R` [kpc]
+            # 18 em_R: Minus uncertainty in `R` [kpc]
+            # 19 type: Type of the object
+            # 20 source: Source of the data
+            #
+            # Uncertainties come from assuming maximum and minimum values of the parallax.
+            # Note that they are not independent from each other and can be negative here.
+            #
+            # Globals used:
+            #
+            # The right ascension of the north galactic pole (radians)
+            # Source: Reid et al. (2009)
+            # ALPHA_NGP: {alpha_ngp}
+            #
+            # The declination of the north galactic pole (radians)
+            # Source: Reid et al. (2009)
+            # DELTA_NGP: {delta_ngp}
+            #
+            # The longitude of the north celestial pole (radians)
+            # Source: Reid et al. (2009)
+            # L_NCP: {l_ncp}
+            #
+            # Galactocentric distance to the Sun (kpc)
+            # R_0_1: = {r_0_1}.
+            #
+        ",
+        alpha_ngp = *consts::ALPHA_NGP,
+        delta_ngp = *consts::DELTA_NGP,
+        l_ncp = *consts::L_NCP,
+        r_0_1 = consts::R_0_1,
+    };
+}
 
 /// Output data record
 #[derive(Serialize)]
@@ -179,7 +206,7 @@ where
         dat_dir,
         bin_dir,
         NAME,
-        HEADER,
+        &HEADER,
         Records::try_from(model).with_context(|| "Couldn't construct records from the model")?,
     )
 }

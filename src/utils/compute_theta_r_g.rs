@@ -1,90 +1,12 @@
 //! Compute the azimuthal velocity and Galactocentric distance
 
-use super::compute_r_g::r_0_2;
 use super::{compute_r_g_2, to_spherical};
+use crate::consts::{k, r_0_2, theta_sun, u_sun, u_sun_standard, v_sun_standard, w_sun_standard};
 
 use std::fmt::Debug;
 
 use num::Float;
 use numeric_literals::replace_float_literals;
-
-/// Standard Solar Motion toward GC (km/s)
-///
-/// Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
-const U_SUN_STANDARD: f64 = 10.3;
-
-/// Peculiar motion locally toward GC (km/s)
-///
-/// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-const U_SUN: f64 = 10.7;
-
-/// Standard Solar Motion toward l = 90 degrees (km/s)
-///
-/// Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
-const V_SUN_STANDARD: f64 = 15.3;
-
-/// Full circular velocity of the Sun (km/s)
-///
-/// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-const THETA_SUN: f64 = 247.;
-
-/// Standard Solar Motion toward NGP (km/s)
-///
-/// Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
-const W_SUN_STANDARD: f64 = 7.7;
-
-/// Linear velocities units conversion coefficient
-///
-/// Sources: Gromov, Nikiforov (2016)
-const K: f64 = 4.7406;
-
-/// Standard Solar Motion toward GC (km/s)
-#[allow(clippy::inline_always)]
-#[allow(clippy::unwrap_used)]
-#[inline(always)]
-pub(super) fn u_sun_standard<F: Float + Debug>() -> F {
-    F::from(U_SUN_STANDARD).unwrap()
-}
-
-/// Peculiar motion locally toward GC (km/s)
-#[allow(clippy::inline_always)]
-#[allow(clippy::unwrap_used)]
-#[inline(always)]
-pub(super) fn u_sun<F: Float + Debug>() -> F {
-    F::from(U_SUN).unwrap()
-}
-
-/// Standard Solar Motion toward l = 90 degrees (km/s)
-#[allow(clippy::inline_always)]
-#[allow(clippy::unwrap_used)]
-#[inline(always)]
-pub(super) fn v_sun_standard<F: Float + Debug>() -> F {
-    F::from(V_SUN_STANDARD).unwrap()
-}
-
-/// Full circular velocity of the Sun (km/s)
-#[allow(clippy::inline_always)]
-#[allow(clippy::unwrap_used)]
-#[inline(always)]
-pub(super) fn theta_sun<F: Float + Debug>() -> F {
-    F::from(THETA_SUN).unwrap()
-}
-
-/// Standard Solar Motion toward NGP (km/s)
-#[allow(clippy::inline_always)]
-#[allow(clippy::unwrap_used)]
-#[inline(always)]
-pub(super) fn w_sun_standard<F: Float + Debug>() -> F {
-    F::from(W_SUN_STANDARD).unwrap()
-}
-
-/// Linear velocities units conversion coefficient
-#[allow(clippy::inline_always)]
-#[allow(clippy::unwrap_used)]
-#[inline(always)]
-pub(super) fn k<F: Float + Debug>() -> F {
-    F::from(K).unwrap()
-}
 
 /// Compute the azimuthal velocity and Galactocentric distance
 ///

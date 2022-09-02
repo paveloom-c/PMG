@@ -2,6 +2,7 @@
 //! of the Galaxy by optimising over its parametric model.
 
 mod cli;
+pub mod consts;
 mod goal;
 mod model;
 mod utils;

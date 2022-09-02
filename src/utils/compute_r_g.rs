@@ -1,34 +1,12 @@
 //! Compute the distance in the Galactocentric
 //! coordinate system associated with the object
 
+use crate::consts::{r_0_1, r_0_2};
+
 use std::fmt::Debug;
 
 use num::Float;
 use numeric_literals::replace_float_literals;
-
-/// Galactocentric distance to the Sun (kpc)
-const R_0_1: f64 = 8.;
-
-/// Galactocentric distance to the Sun (kpc)
-///
-/// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-const R_0_2: f64 = 8.15;
-
-/// Galactocentric distance to the Sun (kpc)
-#[allow(clippy::inline_always)]
-#[allow(clippy::unwrap_used)]
-#[inline(always)]
-pub(super) fn r_0_1<F: Float + Debug>() -> F {
-    F::from(R_0_1).unwrap()
-}
-
-/// Galactocentric distance to the Sun (kpc)
-#[allow(clippy::inline_always)]
-#[allow(clippy::unwrap_used)]
-#[inline(always)]
-pub(super) fn r_0_2<F: Float + Debug>() -> F {
-    F::from(R_0_2).unwrap()
-}
 
 /// Compute the distance in the Galactocentric
 /// coordinate system associated with the object
