@@ -1,9 +1,9 @@
 //! Distances
 
 use super::{Measurement, Object};
-use crate::utils::compute_r_g_1;
+use crate::model::Consts;
 
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 
 use anyhow::Result;
 use num::Float;
@@ -26,13 +26,11 @@ pub(in crate::model) struct Distances<F: Float + Debug> {
 #[allow(clippy::unwrap_in_result)]
 #[allow(clippy::unwrap_used)]
 #[replace_float_literals(F::from(literal).unwrap())]
-impl<F> TryFrom<&Object<F>> for Distances<F>
+impl<F> Distances<F>
 where
-    F: Float + Default + Debug,
+    F: Float + Default + Display + Debug,
 {
-    type Error = anyhow::Error;
-
-    fn try_from(object: &Object<F>) -> Result<Self> {
+    pub(super) fn try_from(object: &Object<F>, consts: &Consts<F>) -> Result<Self> {
         // Unpack the data
         let (l, b) = object.galactic_s()?.into();
         let par = object.par()?;
@@ -41,9 +39,9 @@ where
         let r_h_u = 1. / par.v_u;
         let r_h_l = 1. / par.v_l;
         // Compute the Galactocentric distance
-        let r_g = compute_r_g_1(l, b, r_h);
-        let r_g_u = compute_r_g_1(l, b, r_h_u);
-        let r_g_l = compute_r_g_1(l, b, r_h_l);
+        let r_g = consts.compute_r_g_1(l, b, r_h);
+        let r_g_u = consts.compute_r_g_1(l, b, r_h_u);
+        let r_g_l = consts.compute_r_g_1(l, b, r_h_l);
         Ok(Self {
             r_h: Measurement {
                 v: r_h,

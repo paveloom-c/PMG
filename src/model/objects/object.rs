@@ -8,6 +8,7 @@ mod measurement;
 mod rotation_c;
 
 use crate::model::io::input;
+use crate::model::Consts;
 use crate::Goal;
 use distances::Distances;
 use equatorial_s::EquatorialSpherical;
@@ -17,7 +18,7 @@ use measurement::Measurement;
 use rotation_c::RotationCurve;
 
 use std::error::Error;
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 use std::str::FromStr;
 
 use anyhow::{anyhow, Context, Result};
@@ -55,7 +56,7 @@ where
     source: Option<String>,
 }
 
-impl<F: Float + Default + Debug> Object<F> {
+impl<F: Float + Default + Display + Debug> Object<F> {
     /// Unwrap the name of the object
     pub(in crate::model) fn name(&self) -> Result<&String> {
         self.name
@@ -129,14 +130,14 @@ impl<F: Float + Default + Debug> Object<F> {
             .ok_or_else(|| anyhow!("Couldn't unwrap the source of the data"))
     }
     /// Perform computations based on goals
-    pub(in crate::model) fn compute(&mut self, goals: &[Goal]) -> Result<()> {
+    pub(in crate::model) fn compute(&mut self, goals: &[Goal], consts: &Consts<F>) -> Result<()> {
         if goals.contains(&Goal::Coords) {
             // Convert equatorial coordinates to Galactic
             // heliocentric spherical coordinates
-            self.compute_galactic_s()
+            self.compute_galactic_s(consts)
                 .with_context(|| "Couldn't compute the Galactic spherical coordinates")?;
             // Compute the distances
-            self.compute_distances()
+            self.compute_distances(consts)
                 .with_context(|| "Couldn't compute the distances")?;
             // Convert equatorial coordinates to Galactic
             // heliocentric Cartesian coordinates
@@ -146,10 +147,10 @@ impl<F: Float + Default + Debug> Object<F> {
         if goals.contains(&Goal::RotationCurve) {
             // Convert equatorial coordinates to Galactic
             // heliocentric spherical coordinates
-            self.compute_galactic_s()
+            self.compute_galactic_s(consts)
                 .with_context(|| "Couldn't compute the Galactic spherical coordinates")?;
             // Compute the rotation curve
-            self.compute_rotation_c()
+            self.compute_rotation_c(consts)
                 .with_context(|| "Couldn't compute the rotation curve")?;
         }
         Ok(())
@@ -163,20 +164,21 @@ impl<F: Float + Default + Debug> Object<F> {
     }
     /// Convert equatorial coordinates to Galactic
     /// heliocentric spherical coordinates
-    fn compute_galactic_s(&mut self) -> Result<()> {
+    fn compute_galactic_s(&mut self, consts: &Consts<F>) -> Result<()> {
         self.galactic_s
-            .get_or_insert(GalacticSpherical::try_from(&*self)?);
+            .get_or_insert(GalacticSpherical::try_from(&*self, consts)?);
         Ok(())
     }
     /// Compute the distances
-    fn compute_distances(&mut self) -> Result<()> {
-        self.distances.get_or_insert(Distances::try_from(&*self)?);
+    fn compute_distances(&mut self, consts: &Consts<F>) -> Result<()> {
+        self.distances
+            .get_or_insert(Distances::try_from(&*self, consts)?);
         Ok(())
     }
     /// Compute the rotation curve
-    fn compute_rotation_c(&mut self) -> Result<()> {
+    fn compute_rotation_c(&mut self, consts: &Consts<F>) -> Result<()> {
         self.rotation_c
-            .get_or_insert(RotationCurve::try_from(&*self)?);
+            .get_or_insert(RotationCurve::try_from(&*self, consts)?);
         Ok(())
     }
 }

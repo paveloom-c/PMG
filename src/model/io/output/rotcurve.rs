@@ -1,24 +1,108 @@
 //! Rotation curve
 
-use crate::consts;
 use crate::model::{Model, Object};
 
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 use std::path::Path;
 
 use anyhow::{Context, Result};
 use indoc::formatdoc;
-use lazy_static::lazy_static;
 use num::Float;
 use serde::Serialize;
 
 /// Name of the files
 const NAME: &str = "rotcurve";
 
-lazy_static! {
-    /// Header of the text file
-    static ref HEADER: String = formatdoc! {
-        "
+/// Output data record
+#[derive(Serialize)]
+struct Record<'a, F: Float + Debug> {
+    /// Name
+    name: &'a String,
+    /// Azimuthal velocity (km/s)
+    theta: F,
+    /// Plus uncertainty in `theta` (km/s)
+    ep_theta: F,
+    /// Plus uncertainty in `theta` (km/s)
+    em_theta: F,
+    /// Velocity uncertainty in `theta` (km/s)
+    evel_theta: F,
+    /// Galactocentric distance (kpc)
+    #[serde(rename = "R")]
+    r_g: F,
+    /// Plus uncertainty in `r_g` (km/s)
+    #[serde(rename = "ep_R")]
+    e_p_r_g: F,
+    /// Minus uncertainty in `r_g` (km/s)
+    #[serde(rename = "em_R")]
+    e_m_r_g: F,
+    /// Type of the object
+    #[serde(rename = "type")]
+    obj_type: &'a String,
+    /// Source of the data
+    source: &'a String,
+}
+
+#[allow(clippy::many_single_char_names)]
+impl<'a, F> TryFrom<&'a Object<F>> for Record<'a, F>
+where
+    F: Float + Default + Display + Debug,
+{
+    type Error = anyhow::Error;
+
+    fn try_from(object: &'a Object<F>) -> Result<Self> {
+        let name = object.name()?;
+        let (theta, r_g) = object.rotation_c()?.into();
+        let obj_type = object.obj_type()?;
+        let source = object.source()?;
+        Ok(Self {
+            name,
+            theta: theta.measurement.v,
+            ep_theta: theta.measurement.e_p,
+            em_theta: theta.measurement.e_m,
+            evel_theta: theta.e_vel,
+            r_g: r_g.v,
+            e_p_r_g: r_g.e_p,
+            e_m_r_g: r_g.e_m,
+            obj_type,
+            source,
+        })
+    }
+}
+
+/// Output data records
+type Records<'a, F> = Vec<Record<'a, F>>;
+
+impl<'a, F> TryFrom<&'a Model<F>> for Records<'a, F>
+where
+    F: Float + Default + Display + Debug,
+{
+    type Error = anyhow::Error;
+
+    fn try_from(model: &'a Model<F>) -> Result<Self> {
+        model
+            .objects
+            .iter()
+            .map(|object| {
+                Record::try_from(object)
+                    .with_context(|| "Couldn't construct a record from the object")
+            })
+            .collect()
+    }
+}
+
+impl<F> Model<F>
+where
+    F: Float + Default + Debug + Display + Serialize,
+{
+    /// Serialize the rotation curve
+    pub(in crate::model) fn serialize_to_rotcurve(
+        &self,
+        dat_dir: &Path,
+        bin_dir: &Path,
+    ) -> Result<()> {
+        // Prepare a header
+        let header = formatdoc!(
+            "
             # Rotation curve
             #
             # Descriptions:
@@ -79,111 +163,24 @@ lazy_static! {
             # Sources: Gromov, Nikiforov (2016)
             # K: {k};
             #
-        ",
-        alpha_ngp = *consts::ALPHA_NGP,
-        delta_ngp = *consts::DELTA_NGP,
-        l_ncp = *consts::L_NCP,
-        r_0_2 = consts::R_0_2,
-        u_sun_standard = consts::U_SUN_STANDARD,
-        u_sun = consts::U_SUN,
-        v_sun_standard = consts::V_SUN_STANDARD,
-        theta_sun = consts::THETA_SUN,
-        w_sun_standard = consts::W_SUN_STANDARD,
-        k = consts::K,
-    };
-}
-
-/// Output data record
-#[derive(Serialize)]
-struct Record<'a, F: Float + Debug> {
-    /// Name
-    name: &'a String,
-    /// Azimuthal velocity (km/s)
-    theta: F,
-    /// Plus uncertainty in `theta` (km/s)
-    ep_theta: F,
-    /// Plus uncertainty in `theta` (km/s)
-    em_theta: F,
-    /// Velocity uncertainty in `theta` (km/s)
-    evel_theta: F,
-    /// Galactocentric distance (kpc)
-    #[serde(rename = "R")]
-    r_g: F,
-    /// Plus uncertainty in `r_g` (km/s)
-    #[serde(rename = "ep_R")]
-    e_p_r_g: F,
-    /// Minus uncertainty in `r_g` (km/s)
-    #[serde(rename = "em_R")]
-    e_m_r_g: F,
-    /// Type of the object
-    #[serde(rename = "type")]
-    obj_type: &'a String,
-    /// Source of the data
-    source: &'a String,
-}
-
-#[allow(clippy::many_single_char_names)]
-impl<'a, F> TryFrom<&'a Object<F>> for Record<'a, F>
-where
-    F: Float + Default + Debug,
-{
-    type Error = anyhow::Error;
-
-    fn try_from(object: &'a Object<F>) -> Result<Self> {
-        let name = object.name()?;
-        let (theta, r_g) = object.rotation_c()?.into();
-        let obj_type = object.obj_type()?;
-        let source = object.source()?;
-        Ok(Self {
-            name,
-            theta: theta.measurement.v,
-            ep_theta: theta.measurement.e_p,
-            em_theta: theta.measurement.e_m,
-            evel_theta: theta.e_vel,
-            r_g: r_g.v,
-            e_p_r_g: r_g.e_p,
-            e_m_r_g: r_g.e_m,
-            obj_type,
-            source,
-        })
+            ",
+            alpha_ngp = self.consts.alpha_ngp,
+            delta_ngp = self.consts.delta_ngp,
+            l_ncp = self.consts.l_ncp,
+            r_0_2 = self.consts.r_0_2,
+            u_sun_standard = self.consts.u_sun_standard,
+            u_sun = self.consts.u_sun,
+            v_sun_standard = self.consts.v_sun_standard,
+            theta_sun = self.consts.theta_sun,
+            w_sun_standard = self.consts.w_sun_standard,
+            k = self.consts.k,
+        );
+        super::serialize_to(
+            dat_dir,
+            bin_dir,
+            NAME,
+            &header,
+            Records::try_from(self).with_context(|| "Couldn't construct records from the model")?,
+        )
     }
-}
-
-/// Output data records
-type Records<'a, F> = Vec<Record<'a, F>>;
-
-impl<'a, F> TryFrom<&'a Model<F>> for Records<'a, F>
-where
-    F: Float + Default + Debug,
-{
-    type Error = anyhow::Error;
-
-    fn try_from(model: &'a Model<F>) -> Result<Self> {
-        model
-            .objects
-            .iter()
-            .map(|object| {
-                Record::try_from(object)
-                    .with_context(|| "Couldn't construct a record from the object")
-            })
-            .collect()
-    }
-}
-
-/// Serialize records to the files
-pub(in crate::model) fn serialize_to<F>(
-    dat_dir: &Path,
-    bin_dir: &Path,
-    model: &Model<F>,
-) -> Result<()>
-where
-    F: Float + Default + Debug + Serialize,
-{
-    super::serialize_to(
-        dat_dir,
-        bin_dir,
-        NAME,
-        &HEADER,
-        Records::try_from(model).with_context(|| "Couldn't construct records from the model")?,
-    )
 }

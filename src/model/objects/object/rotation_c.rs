@@ -1,9 +1,9 @@
 //! Rotation curve
 
 use super::{Measurement, Object};
-use crate::utils::{compute_e_theta, compute_theta_r_g};
+use crate::model::Consts;
 
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 
 use anyhow::Result;
 use num::Float;
@@ -35,13 +35,11 @@ pub(in crate::model) struct RotationCurve<F: Float + Debug> {
 #[allow(clippy::unwrap_in_result)]
 #[allow(clippy::unwrap_used)]
 #[replace_float_literals(F::from(literal).unwrap())]
-impl<F> TryFrom<&Object<F>> for RotationCurve<F>
+impl<F> RotationCurve<F>
 where
-    F: Float + Default + Debug,
+    F: Float + Default + Display + Debug,
 {
-    type Error = anyhow::Error;
-
-    fn try_from(object: &Object<F>) -> Result<Self> {
+    pub(super) fn try_from(object: &Object<F>, model: &Consts<F>) -> Result<Self> {
         // Unpack the data
         let (alpha, delta) = object.equatorial_s()?.into();
         let (l, b) = object.galactic_s()?.into();
@@ -50,13 +48,14 @@ where
         let mu_x = object.mu_x()?;
         let mu_y = object.mu_y()?;
         // Compute the azimuthal velocity and the Galactocentric distance
-        let (theta, r_g) = compute_theta_r_g(alpha, delta, l, b, par.v, v_lsr.v, mu_x.v, mu_y.v);
+        let (theta, r_g) =
+            model.compute_theta_r_g(alpha, delta, l, b, par.v, v_lsr.v, mu_x.v, mu_y.v);
         let (theta_u, r_g_u) =
-            compute_theta_r_g(alpha, delta, l, b, par.v_u, v_lsr.v, mu_x.v, mu_y.v);
+            model.compute_theta_r_g(alpha, delta, l, b, par.v_u, v_lsr.v, mu_x.v, mu_y.v);
         let (theta_l, r_g_l) =
-            compute_theta_r_g(alpha, delta, l, b, par.v_l, v_lsr.v, mu_x.v, mu_y.v);
+            model.compute_theta_r_g(alpha, delta, l, b, par.v_l, v_lsr.v, mu_x.v, mu_y.v);
         // Compute the uncertainty in the azimuthal velocity inherited from velocities
-        let e_vel_theta = compute_e_theta(
+        let e_vel_theta = model.compute_e_theta(
             alpha, delta, l, b, par.v, v_lsr.v, mu_x.v, mu_y.v, v_lsr.e_p, mu_x.e_p, mu_y.e_p,
         );
         Ok(Self {

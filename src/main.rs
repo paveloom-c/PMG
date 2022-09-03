@@ -2,7 +2,6 @@
 //! of the Galaxy by optimising over its parametric model.
 
 mod cli;
-pub mod consts;
 mod goal;
 mod model;
 mod utils;
@@ -17,7 +16,7 @@ pub fn main() -> Result<()> {
     // Parse the arguments
     let args = cli::parse();
     // Initialize a model from the input data
-    let mut model = Model::<f64>::try_from(args.inputs)
+    let mut model = Model::<f64>::try_from(&args)
         .with_context(|| "Couldn't load the data from the input files")?;
     // Perform computations based on the goals
     model

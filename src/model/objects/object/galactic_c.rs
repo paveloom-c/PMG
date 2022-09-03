@@ -3,7 +3,7 @@
 use super::{Measurement, Object};
 use crate::utils::to_cartesian;
 
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 
 use anyhow::Result;
 use num::Float;
@@ -22,7 +22,7 @@ pub(in crate::model) struct GalacticCartesian<F: Float + Debug> {
 #[allow(clippy::many_single_char_names)]
 impl<F> TryFrom<&Object<F>> for GalacticCartesian<F>
 where
-    F: Float + Default + Debug,
+    F: Float + Default + Display + Debug,
 {
     type Error = anyhow::Error;
 

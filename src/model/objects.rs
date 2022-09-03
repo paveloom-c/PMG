@@ -3,11 +3,13 @@
 mod object;
 
 use crate::model::io::input;
+use crate::model::Consts;
 use crate::Goal;
+
 pub(in crate::model) use object::Object;
 
 use std::error::Error;
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 use std::path::Path;
 use std::slice::{Iter, IterMut};
 use std::str::FromStr;
@@ -23,14 +25,14 @@ pub struct Objects<F: Float + Default + Debug>(Vec<Object<F>>);
 
 impl<F> Objects<F>
 where
-    F: Float + Default + Debug,
+    F: Float + Default + Display + Debug,
 {
     /// Perform computations based on goals
-    pub(in crate::model) fn compute(&mut self, goals: &[Goal]) -> Result<()> {
+    pub(in crate::model) fn compute(&mut self, goals: &[Goal], consts: &Consts<F>) -> Result<()> {
         // Perform computations for each object
         for object in self.iter_mut() {
             object
-                .compute(goals)
+                .compute(goals, consts)
                 .with_context(|| "Couldn't perform computations for an object")?;
         }
         Ok(())

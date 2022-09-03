@@ -23,7 +23,7 @@ pub fn to_cartesian<F: Float + Debug>(l: F, b: F, r: F) -> (F, F, F) {
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
-        use super::to_spherical;
+        use crate::model::Consts;
 
         use std::path::Path;
 
@@ -82,6 +82,14 @@ cfg_if::cfg_if! {
 #[test]
 #[allow(clippy::unwrap_used)]
 fn test() -> Result<()> {
+    // Initialize a new constants struct
+    let consts = Consts {
+        alpha_ngp: 3.366033392377493,
+        delta_ngp: 0.4734788002709736,
+        l_ncp: 2.1455681560616693,
+        ..Default::default()
+    };
+    // Modify the constants for this test
     // Define the path to the data files
     let current_file = Path::new(file!());
     let tests_path = current_file
@@ -115,7 +123,7 @@ fn test() -> Result<()> {
         let coords: CoordsRecord<f64> = coords_record
             .with_context(|| format!("Couldn't deserialize a record from {coords_path:?}"))?;
         // Compute the Galactic spherical coordinates
-        let (gs_l, gs_b) = to_spherical(data.alpha.to_radians(), data.delta.to_radians());
+        let (gs_l, gs_b) = consts.to_spherical(data.alpha.to_radians(), data.delta.to_radians());
         // Compare the data
         let a = (coords.x, coords.y, coords.z);
         let b = to_cartesian(gs_l, gs_b, 1. / data.par);
