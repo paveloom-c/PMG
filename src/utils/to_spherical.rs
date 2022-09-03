@@ -2,34 +2,32 @@
 
 use crate::model::Consts;
 
-use std::fmt::{Debug, Display};
+use std::fmt::Debug;
 
 use num::Float;
 
-impl<F: Float + Default + Display + Debug> Consts<F> {
-    /// Convert the equatorial coordinates to spherical heliocentric Galactic coordinates
-    ///
-    /// Angles must be in radians, then radians returned.
-    ///
-    /// Source: [Wikipedia](https://en.wikipedia.org/wiki/Galactic_coordinate_system#Conversion_between_equatorial_and_galactic_coordinates)
-    pub fn to_spherical(&self, alpha: F, delta: F) -> (F, F) {
-        // Get the constants
-        let alpha_ngp: F = self.alpha_ngp;
-        let delta_ngp: F = self.delta_ngp;
-        let l_ncp: F = self.l_ncp;
-        // Compute the angles
-        let phi = F::atan2(
-            F::cos(delta) * F::sin(alpha - alpha_ngp),
-            F::cos(delta_ngp) * F::sin(delta)
-                - F::sin(delta_ngp) * F::cos(delta) * F::cos(alpha - alpha_ngp),
-        );
-        let l = l_ncp - phi;
-        let b = F::asin(
-            F::sin(delta_ngp) * F::sin(delta)
-                + F::cos(delta_ngp) * F::cos(delta) * F::cos(alpha - alpha_ngp),
-        );
-        (l, b)
-    }
+/// Convert the equatorial coordinates to spherical heliocentric Galactic coordinates
+///
+/// Angles must be in radians, then radians returned.
+///
+/// Source: [Wikipedia](https://en.wikipedia.org/wiki/Galactic_coordinate_system#Conversion_between_equatorial_and_galactic_coordinates)
+pub fn to_spherical<F: Float + Debug>(alpha: F, delta: F, consts: &Consts) -> (F, F) {
+    // Get the constants
+    let alpha_ngp: F = consts.alpha_ngp();
+    let delta_ngp: F = consts.delta_ngp();
+    let l_ncp: F = consts.l_ncp();
+    // Compute the angles
+    let phi = F::atan2(
+        F::cos(delta) * F::sin(alpha - alpha_ngp),
+        F::cos(delta_ngp) * F::sin(delta)
+            - F::sin(delta_ngp) * F::cos(delta) * F::cos(alpha - alpha_ngp),
+    );
+    let l = l_ncp - phi;
+    let b = F::asin(
+        F::sin(delta_ngp) * F::sin(delta)
+            + F::cos(delta_ngp) * F::cos(delta) * F::cos(alpha - alpha_ngp),
+    );
+    (l, b)
 }
 
 cfg_if::cfg_if! {
@@ -83,8 +81,6 @@ fn test() -> Result<()> {
         .unwrap()
         .parent()
         .unwrap()
-        .parent()
-        .unwrap()
         .join("tests");
     let data_path = tests_path.join("data.dat");
     // Create two CSV readers
@@ -102,7 +98,7 @@ fn test() -> Result<()> {
             .with_context(|| format!("Couldn't deserialize a record from {data_path:?}"))?;
         // Compare the data
         let a = (data.l.to_radians(), data.b.to_radians());
-        let b = consts.to_spherical(data.alpha.to_radians(), data.delta.to_radians());
+        let b = to_spherical(data.alpha.to_radians(), data.delta.to_radians(), &consts);
         ensure!(
             izip!([a.0, a.1], [b.0, b.1])
                 .all(|(v1, v2)| (v1 - v2).abs() < f64::from(f32::epsilon())),

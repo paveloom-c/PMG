@@ -130,7 +130,7 @@ impl<F: Float + Default + Display + Debug> Object<F> {
             .ok_or_else(|| anyhow!("Couldn't unwrap the source of the data"))
     }
     /// Perform computations based on goals
-    pub(in crate::model) fn compute(&mut self, goals: &[Goal], consts: &Consts<F>) -> Result<()> {
+    pub(in crate::model) fn compute(&mut self, goals: &[Goal], consts: &Consts) -> Result<()> {
         if goals.contains(&Goal::Coords) {
             // Convert equatorial coordinates to Galactic
             // heliocentric spherical coordinates
@@ -164,19 +164,19 @@ impl<F: Float + Default + Display + Debug> Object<F> {
     }
     /// Convert equatorial coordinates to Galactic
     /// heliocentric spherical coordinates
-    fn compute_galactic_s(&mut self, consts: &Consts<F>) -> Result<()> {
+    fn compute_galactic_s(&mut self, consts: &Consts) -> Result<()> {
         self.galactic_s
             .get_or_insert(GalacticSpherical::try_from(&*self, consts)?);
         Ok(())
     }
     /// Compute the distances
-    fn compute_distances(&mut self, consts: &Consts<F>) -> Result<()> {
+    fn compute_distances(&mut self, consts: &Consts) -> Result<()> {
         self.distances
             .get_or_insert(Distances::try_from(&*self, consts)?);
         Ok(())
     }
     /// Compute the rotation curve
-    fn compute_rotation_c(&mut self, consts: &Consts<F>) -> Result<()> {
+    fn compute_rotation_c(&mut self, consts: &Consts) -> Result<()> {
         self.rotation_c
             .get_or_insert(RotationCurve::try_from(&*self, consts)?);
         Ok(())

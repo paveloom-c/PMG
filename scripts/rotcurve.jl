@@ -33,6 +33,7 @@ end
 
 # Define default values for optional arguments
 LEGEND_SHOW_SOURCES = false
+PLOT_TEST = false
 OUTPUT_DIR = ""
 POSTFIX = ""
 
@@ -42,6 +43,11 @@ for i in eachindex(ARGS)
     if ARGS[i] == "-s"
         check_last(i)
         global LEGEND_SHOW_SOURCES = true
+    end
+    # Plot the test plot, too
+    if ARGS[i] == "--with-test"
+        check_last(i)
+        global PLOT_TEST = true
     end
     # Output directory
     if ARGS[i] == "-o"
@@ -325,5 +331,25 @@ p = scatter(
     evel=evel_theta,
 )
 pgfsave(joinpath(PLOTS_DIR, "Rotation curve (errors)$(POSTFIX).pdf"), p)
+
+# Plot the test plot if requested
+if PLOT_TEST
+    using CSV
+    # Read the data
+    data = CSV.File(joinpath(ROOT_DIR, "tests", "rotcurve.dat"), delim=' ', comment="#")
+    R = data.R
+    theta = data.theta
+    # Update the labels
+    label = repeat(["c"], length(R))
+    # Plot
+    println(pad, "    for Rotation curve (test)...")
+    p = scatter(
+        R,
+        theta,
+        L"R \; \mathrm{[kpc]}",
+        L"\theta \; \mathrm{[km \; s^{-1}]}",
+    )
+    pgfsave(joinpath(PLOTS_DIR, "Rotation curve (test)$(POSTFIX).pdf"), p)
+end
 
 println()

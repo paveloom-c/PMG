@@ -1,6 +1,5 @@
 //! Model of the Galaxy
 
-mod comp;
 mod consts;
 mod io;
 mod objects;
@@ -24,7 +23,7 @@ use serde::{de::DeserializeOwned, Serialize};
 #[derive(Debug, Default)]
 pub struct Model<F: Float + Default + Display + Debug> {
     /// Constants
-    consts: Consts<F>,
+    consts: Consts,
     /// Data objects
     objects: Objects<F>,
 }
@@ -86,17 +85,17 @@ where
         // Initialize an empty model
         let mut model = Self {
             consts: Consts {
-                alpha_ngp: F::from(args.alpha_ngp).unwrap(),
-                delta_ngp: F::from(args.delta_ngp).unwrap(),
-                k: F::from(args.k).unwrap(),
-                l_ncp: F::from(args.l_ncp).unwrap(),
-                r_0_1: F::from(args.r_0_1).unwrap(),
-                r_0_2: F::from(args.r_0_2).unwrap(),
-                theta_sun: F::from(args.theta_sun).unwrap(),
-                u_sun: F::from(args.u_sun).unwrap(),
-                u_sun_standard: F::from(args.u_sun_standard).unwrap(),
-                v_sun_standard: F::from(args.v_sun_standard).unwrap(),
-                w_sun_standard: F::from(args.w_sun_standard).unwrap(),
+                alpha_ngp: args.alpha_ngp,
+                delta_ngp: args.delta_ngp,
+                k: args.k,
+                l_ncp: args.l_ncp,
+                r_0_1: args.r_0_1,
+                r_0_2: args.r_0_2,
+                theta_sun: args.theta_sun,
+                u_sun: args.u_sun,
+                u_sun_standard: args.u_sun_standard,
+                v_sun_standard: args.v_sun_standard,
+                w_sun_standard: args.w_sun_standard,
             },
             ..Default::default()
         };

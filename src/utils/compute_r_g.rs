@@ -3,23 +3,21 @@
 
 use crate::model::Consts;
 
-use std::fmt::{Debug, Display};
+use std::fmt::Debug;
 
 use num::Float;
 use numeric_literals::replace_float_literals;
 
-impl<F: Float + Default + Display + Debug> Consts<F> {
-    /// Compute the distance in the Galactocentric
-    /// coordinate system associated with the object
-    pub fn compute_r_g_1(&self, l: F, b: F, r_h: F) -> F {
-        compute_r_g(l, b, r_h, self.r_0_1)
-    }
+/// Compute the distance in the Galactocentric
+/// coordinate system associated with the object
+pub fn compute_r_g_1<F: Float + Debug>(l: F, b: F, r_h: F, consts: &Consts) -> F {
+    compute_r_g(l, b, r_h, consts.r_0_1())
+}
 
-    /// Compute the distance in the Galactocentric
-    /// coordinate system associated with the object
-    pub fn compute_r_g_2(&self, l: F, b: F, r_h: F) -> F {
-        compute_r_g(l, b, r_h, self.r_0_2)
-    }
+/// Compute the distance in the Galactocentric
+/// coordinate system associated with the object
+pub fn compute_r_g_2<F: Float + Debug>(l: F, b: F, r_h: F, consts: &Consts) -> F {
+    compute_r_g(l, b, r_h, consts.r_0_2())
 }
 
 /// Compute the distance in the Galactocentric

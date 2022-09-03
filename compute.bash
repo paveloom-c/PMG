@@ -23,6 +23,8 @@ ${PAD}        - compute the rotation curve"
 
 cargo run -r -- -o data/output/all --goals coords rotcurve -i data/input/all.dat &>/dev/null
 cargo run -r -- -o data/output/hmsfrs --goals coords rotcurve -i data/input/hmsfrs.dat &>/dev/null
+cargo run -r -- -o data/output/hmsfrs_test --goals rotcurve -i data/input/hmsfrs.dat \
+  --u-sun 11 --theta-sun 255 --r-0-2 8.34 &>/dev/null
 
 echo -e "
 ${PAD}Step 3. Plot the comparison charts for the objects that are
@@ -48,3 +50,5 @@ echo -e "${PAD}All by source:"
 ./julia.bash scripts/rotcurve.jl -s -o "'All by source'" data/output/all/
 echo -e "${PAD}HMSFRs:"
 ./julia.bash scripts/rotcurve.jl -s -o "HMSFRs" data/output/hmsfrs/
+echo -e "${PAD}HMSFRs (test):"
+./julia.bash scripts/rotcurve.jl -s --with-test -o "'HMSFRs (Test)'" data/output/hmsfrs_test

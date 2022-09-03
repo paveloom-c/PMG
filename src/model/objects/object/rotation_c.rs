@@ -2,6 +2,7 @@
 
 use super::{Measurement, Object};
 use crate::model::Consts;
+use crate::utils::{compute_e_theta, compute_theta_r_g};
 
 use std::fmt::{Debug, Display};
 
@@ -39,7 +40,7 @@ impl<F> RotationCurve<F>
 where
     F: Float + Default + Display + Debug,
 {
-    pub(super) fn try_from(object: &Object<F>, model: &Consts<F>) -> Result<Self> {
+    pub(super) fn try_from(object: &Object<F>, consts: &Consts) -> Result<Self> {
         // Unpack the data
         let (alpha, delta) = object.equatorial_s()?.into();
         let (l, b) = object.galactic_s()?.into();
@@ -49,14 +50,15 @@ where
         let mu_y = object.mu_y()?;
         // Compute the azimuthal velocity and the Galactocentric distance
         let (theta, r_g) =
-            model.compute_theta_r_g(alpha, delta, l, b, par.v, v_lsr.v, mu_x.v, mu_y.v);
+            compute_theta_r_g(alpha, delta, l, b, par.v, v_lsr.v, mu_x.v, mu_y.v, consts);
         let (theta_u, r_g_u) =
-            model.compute_theta_r_g(alpha, delta, l, b, par.v_u, v_lsr.v, mu_x.v, mu_y.v);
+            compute_theta_r_g(alpha, delta, l, b, par.v_u, v_lsr.v, mu_x.v, mu_y.v, consts);
         let (theta_l, r_g_l) =
-            model.compute_theta_r_g(alpha, delta, l, b, par.v_l, v_lsr.v, mu_x.v, mu_y.v);
+            compute_theta_r_g(alpha, delta, l, b, par.v_l, v_lsr.v, mu_x.v, mu_y.v, consts);
         // Compute the uncertainty in the azimuthal velocity inherited from velocities
-        let e_vel_theta = model.compute_e_theta(
+        let e_vel_theta = compute_e_theta(
             alpha, delta, l, b, par.v, v_lsr.v, mu_x.v, mu_y.v, v_lsr.e_p, mu_x.e_p, mu_y.e_p,
+            consts,
         );
         Ok(Self {
             theta: AzimuthalVelocity {

@@ -28,7 +28,7 @@ where
     F: Float + Default + Display + Debug,
 {
     /// Perform computations based on goals
-    pub(in crate::model) fn compute(&mut self, goals: &[Goal], consts: &Consts<F>) -> Result<()> {
+    pub(in crate::model) fn compute(&mut self, goals: &[Goal], consts: &Consts) -> Result<()> {
         // Perform computations for each object
         for object in self.iter_mut() {
             object

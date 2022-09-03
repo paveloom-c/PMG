@@ -175,22 +175,22 @@ where
             # Uncertainties come from assuming maximum and minimum values of the parallax.
             # Note that they are not independent from each other and can be negative here.
             #
-            # Globals used:
+            # Parameters used:
             #
-            # The right ascension of the north galactic pole (radians)
+            # The right ascension of the north galactic pole (HMS angle -> radians)
             # Source: Reid et al. (2009)
-            # ALPHA_NGP: {alpha_ngp}
+            # ALPHA_NGP: {alpha_ngp} [12:51:26.2817]
             #
-            # The declination of the north galactic pole (radians)
+            # The declination of the north galactic pole (DMS angle -> radians)
             # Source: Reid et al. (2009)
-            # DELTA_NGP: {delta_ngp}
+            # DELTA_NGP: {delta_ngp} [27:07:42.013]
             #
-            # The longitude of the north celestial pole (radians)
+            # The longitude of the north celestial pole (decimal degrees angle -> radians)
             # Source: Reid et al. (2009)
-            # L_NCP: {l_ncp}
+            # L_NCP: {l_ncp} [122.932]
             #
             # Galactocentric distance to the Sun (kpc)
-            # R_0_1: = {r_0_1}.
+            # R_0_1: = {r_0_1}
             #
             ",
             alpha_ngp = self.consts.alpha_ngp,

@@ -2,6 +2,7 @@
 
 use super::Object;
 use crate::model::Consts;
+use crate::utils::to_spherical;
 
 use std::fmt::{Debug, Display};
 
@@ -25,11 +26,11 @@ impl<F> GalacticSpherical<F>
 where
     F: Float + Default + Display + Debug,
 {
-    pub(super) fn try_from(object: &Object<F>, consts: &Consts<F>) -> Result<Self> {
+    pub(super) fn try_from(object: &Object<F>, consts: &Consts) -> Result<Self> {
         // Unpack the data
         let (alpha, delta) = object.equatorial_s()?.into();
         // Convert to the Galactic heliocentric spherical coordinate system
-        let (l, b) = consts.to_spherical(alpha, delta);
+        let (l, b) = to_spherical(alpha, delta, consts);
         Ok(Self { l, b })
     }
 }

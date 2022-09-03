@@ -121,47 +121,47 @@ where
             # Uncertainties in the distance come from assuming maximum and minimum
             # values of the parallax. Note that they can be negative here.
             #
-            # Globals used:
+            # Parameters used:
             #
-            # The right ascension of the north galactic pole (radians)
+            # The right ascension of the north galactic pole (HMS angle -> radians)
             # Source: Reid et al. (2009)
-            # ALPHA_NGP: {alpha_ngp}
+            # ALPHA_NGP: {alpha_ngp} [12:51:26.2817]
             #
-            # The declination of the north galactic pole (radians)
+            # The declination of the north galactic pole (DMS angle -> radians)
             # Source: Reid et al. (2009)
-            # DELTA_NGP: {delta_ngp}
+            # DELTA_NGP: {delta_ngp} [27:07:42.013]
             #
-            # The longitude of the north celestial pole (radians)
+            # The longitude of the north celestial pole (decimal degrees angle -> radians)
             # Source: Reid et al. (2009)
-            # L_NCP: {l_ncp}
+            # L_NCP: {l_ncp} [122.932]
             #
             # Galactocentric distance to the Sun (kpc)
             # Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-            # R_0_2: = {r_0_2}.
+            # R_0_2: = {r_0_2}
             #
             # Standard Solar Motion toward GC (km/s)
             # Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
-            # U_SUN_STANDARD: {u_sun_standard};
+            # U_SUN_STANDARD: {u_sun_standard}
             #
             # Peculiar motion locally toward GC (km/s)
             # Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-            # U_SUN: {u_sun};
+            # U_SUN: {u_sun}
             #
             # Standard Solar Motion toward l = 90 degrees (km/s)
             # Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
-            # V_SUN_STANDARD: {v_sun_standard};
+            # V_SUN_STANDARD: {v_sun_standard}
             #
             # Full circular velocity of the Sun (km/s)
             # Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-            # THETA_SUN: {theta_sun};
+            # THETA_SUN: {theta_sun}
             #
             # Standard Solar Motion toward NGP (km/s)
             # Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
-            # W_SUN_STANDARD: = {w_sun_standard};
+            # W_SUN_STANDARD: = {w_sun_standard}
             #
             # Linear velocities units conversion coefficient
             # Sources: Gromov, Nikiforov (2016)
-            # K: {k};
+            # K: {k}
             #
             ",
             alpha_ngp = self.consts.alpha_ngp,
