@@ -22,7 +22,6 @@ function parse_string(i)::String
         # Join the arguments in one string
         # and remove the apostrophes
         chop(join(ARGS[i:j], ' '), head=1, tail=1)
-    # Otherwise,
     else
         # Return the next argument
         ARGS[i]
@@ -47,7 +46,7 @@ for i in eachindex(ARGS)
     # Output directory
     if ARGS[i] == "-o"
         try
-            global OUTPUT_DIR = parse_string(i+1)
+            global OUTPUT_DIR = parse_string(i + 1)
         catch
             println("Couldn't parse the value of the `-o` argument.")
             exit(1)
@@ -162,7 +161,6 @@ function read_bincode(path::AbstractString)::Data
                     nbytes = read(io, I)
                     # Read the string
                     String(read(io, nbytes))
-                # Otherwise,
                 else
                     # Read the value
                     read(io, type)
@@ -184,8 +182,8 @@ group = LEGEND_SHOW_SOURCES ? data.source : data.type
 # Sort the data by the number of occurrences of different types
 # (rare types will be plotted over common types)
 keys = unique(group)
-counts = Dict([ (k, count(==(k), group)) for k in keys ])
-I = sortperm(group, by=k->counts[k], rev=true)
+counts = Dict([(k, count(==(k), group)) for k in keys])
+I = sortperm(group, by=k -> counts[k], rev=true)
 group = group[I]
 l = data.l[I]
 b = data.b[I]
@@ -214,8 +212,8 @@ R_m = R .- em_R
 
 # Prepare labels
 labels = ["a", "b", "c", "d", "e", "g"]
-dictionary = Dict([ (k, labels[i]) for (i, k) in enumerate(keys) ])
-label = [ dictionary[k] for k in group ]
+dictionary = Dict([(k, labels[i]) for (i, k) in enumerate(keys)])
+label = [dictionary[k] for k in group]
 
 println(pad, "> Plotting the scatter plots...")
 
@@ -230,10 +228,34 @@ function max_min(c; factor=0.1)
 end
 
 "Create a scatter plot"
-function scatter(x, y, xlabel, ylabel; x_p = F[], x_m = F[], y_p = F[], y_m = F[], axis_equal=false, crosses=false)
+function scatter(
+    x,
+    y,
+    xlabel,
+    ylabel;
+    x_p=F[],
+    x_m=F[],
+    y_p=F[],
+    y_m=F[],
+    axis_equal=false,
+    crosses=false,
+    correct_infs=false
+)
     # Compute the limits
     x_max, x_min = max_min(x)
     y_max, y_min = max_min(y)
+    "Correct for infinite values on the XY, XZ, YZ plots"
+    function wrap_points(x_m::Tuple{F,F}, p::Tuple{F,F}, x_p::Tuple{F,F})
+        # The singularity point exists in the case of
+        # parallax being zero (for the minus uncertainty)
+        if x_m == (Inf, Inf)
+            return [(x_max, x_p[2] / x_p[1] * x_max), p, x_p]
+        elseif x_m == (-Inf, -Inf)
+            return [(x_min, x_p[2] / x_p[1] * x_min), p, x_p]
+        else
+            return [x_m, p, x_p]
+        end
+    end
     # Define the markers set
     marks = if crosses
         ["x", "+", "asterisk", "star", "10-pointed star"]
@@ -253,24 +275,24 @@ function scatter(x, y, xlabel, ylabel; x_p = F[], x_m = F[], y_p = F[], y_m = F[
             width = 200,
             grid = "both",
             minor_tick_num = 4,
-            minor_grid_style = { opacity = 0.25 },
-            major_grid_style = { opacity = 0.5 },
-            tick_label_style = { font = "\\small" },
-            tick_style = { line_width = 0.4, color = "black" },
+            minor_grid_style = {opacity = 0.25},
+            major_grid_style = {opacity = 0.5},
+            tick_label_style = {font = "\\small"},
+            tick_style = {line_width = 0.4, color = "black"},
             axis_equal = axis_equal,
-            axis_line_style = { line_width = 1 },
+            axis_line_style = {line_width = 1},
             "axis_lines*" = "left",
-            legend_image_post_style = { mark_size = 2, line_width = 0.4 },
+            legend_image_post_style = {mark_size = 2, line_width = 0.4},
             legend_pos = "outer north east",
-            legend_style = { line_width = 1 },
+            legend_style = {line_width = 1},
             mark_size = 0.5,
             line_width = 0.15,
             "scatter/classes" = {
-                a = { mark = marks[1], color = colors[1] },
-                b = { mark = marks[2], color = colors[2] },
-                c = { mark = marks[3], color = colors[3] },
-                d = { mark = marks[4], color = colors[4] },
-                e = { mark = marks[5], color = colors[5] },
+                a = {mark = marks[1], color = colors[1]},
+                b = {mark = marks[2], color = colors[2]},
+                c = {mark = marks[3], color = colors[3]},
+                d = {mark = marks[4], color = colors[4]},
+                e = {mark = marks[5], color = colors[5]},
             },
         },
         Plot(
@@ -283,9 +305,9 @@ function scatter(x, y, xlabel, ylabel; x_p = F[], x_m = F[], y_p = F[], y_m = F[
                 {
                     meta = "label",
                 },
-                x = x,
-                y = y,
-                label = label,
+                x=x,
+                y=y,
+                label=label,
             ),
         ),
         Legend(keys),
@@ -298,7 +320,11 @@ function scatter(x, y, xlabel, ylabel; x_p = F[], x_m = F[], y_p = F[], y_m = F[
                     no_marks,
                     opacity = 0.25,
                 },
-                Coordinates([(x_m, y_m), (x, y), (x_p, y_p)]),
+                Coordinates(if correct_infs
+                    wrap_points((x_m, y_m), (x, y), (x_p, y_p))
+                else
+                    [(x_m, y_m), (x, y), (x_p, y_p)]
+                end)
             ))
         end
     end
@@ -313,6 +339,7 @@ p = scatter(
     L"X \; \mathrm{[kpc]}",
     L"Y \; \mathrm{[kpc]}",
     axis_equal=true,
+    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XY$(POSTFIX).pdf"), p)
 
@@ -328,6 +355,7 @@ p = scatter(
     y_p=Y_p,
     y_m=Y_m,
     axis_equal=true,
+    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XY (errors)$(POSTFIX).pdf"), p)
 
@@ -340,6 +368,7 @@ p = scatter(
     L"Y \; \mathrm{[kpc]}",
     axis_equal=true,
     crosses=true,
+    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XY (crosses)$(POSTFIX).pdf"), p)
 
@@ -356,12 +385,19 @@ p = scatter(
     y_m=Y_m,
     axis_equal=true,
     crosses=true,
+    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XY (crosses, errors)$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (X, Z) plane
 println(pad, "    for XZ...")
-p = scatter(X, Z, L"X \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
+p = scatter(
+    X,
+    Z,
+    L"X \; \mathrm{[kpc]}",
+    L"Z \; \mathrm{[kpc]}",
+    correct_infs=true,
+)
 pgfsave(joinpath(PLOTS_DIR, "XZ$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (X, Z) plane with equal axes
@@ -372,6 +408,7 @@ p = scatter(
     L"X \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
     axis_equal=true,
+    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XZ (equal axes)$(POSTFIX).pdf"), p)
 
@@ -386,6 +423,7 @@ p = scatter(
     x_m=X_m,
     y_p=Z_p,
     y_m=Z_m,
+    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XZ (errors)$(POSTFIX).pdf"), p)
 
@@ -401,12 +439,19 @@ p = scatter(
     y_p=Z_p,
     y_m=Z_m,
     axis_equal=true,
+    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XZ (equal axes, errors)$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (Y, Z) plane
 println(pad, "    for YZ...")
-p = scatter(Y, Z, L"Y \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
+p = scatter(
+    Y,
+    Z,
+    L"Y \; \mathrm{[kpc]}",
+    L"Z \; \mathrm{[kpc]}",
+    correct_infs=true,
+)
 pgfsave(joinpath(PLOTS_DIR, "YZ$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (Y, Z) plane with equal axes
@@ -416,6 +461,7 @@ p = scatter(
     L"Y \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
     axis_equal=true,
+    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "YZ (equal axes)$(POSTFIX).pdf"), p)
 
@@ -430,6 +476,7 @@ p = scatter(
     x_m=Y_m,
     y_p=Z_p,
     y_m=Z_m,
+    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "YZ (errors)$(POSTFIX).pdf"), p)
 
@@ -445,6 +492,7 @@ p = scatter(
     y_p=Z_p,
     y_m=Z_m,
     axis_equal=true,
+    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "YZ (equal axes, errors)$(POSTFIX).pdf"), p)
 

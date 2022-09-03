@@ -200,7 +200,11 @@ where
         object.par.replace(Measurement {
             v: record.par,
             v_u: record.par + record.e_par,
-            v_l: record.par - record.e_par,
+            // In some cases the uncertainty of the value can be greater than the nominal value,
+            // hence leading to negative results in this subtraction. We avoid this here,
+            // since there is no such thing as a negative parallax. In case of zero
+            // being the maximum value, we will get the `Inf` distance along the way
+            v_l: F::max(F::zero(), record.par - record.e_par),
             e_p: record.e_par,
             e_m: record.e_par,
         });
