@@ -341,6 +341,8 @@ if PLOT_TEST
     theta = data.theta
     # Update the labels
     label = repeat(["c"], length(R))
+    # Remove the legend
+    keys = []
     # Plot
     println(pad, "    for Rotation curve (test)...")
     p = scatter(
