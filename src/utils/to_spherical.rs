@@ -67,9 +67,9 @@ cfg_if::cfg_if! {
 fn test() -> Result<()> {
     // Initialize a new constants struct
     let consts = Consts {
-        alpha_ngp: 3.366033392377493,
-        delta_ngp: 0.4734788002709736,
-        l_ncp: 2.1455681560616693,
+        alpha_ngp: 3.366_033_392_377_493,
+        delta_ngp: 0.473_478_800_270_973_6,
+        l_ncp: 2.145_568_156_061_669_3,
         ..Default::default()
     };
     // Define the path to the data files

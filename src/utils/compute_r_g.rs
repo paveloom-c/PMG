@@ -1,6 +1,8 @@
 //! Compute the distance in the Galactocentric
 //! coordinate system associated with the object
 
+#![allow(clippy::module_name_repetitions)]
+
 use crate::model::Consts;
 
 use std::fmt::Debug;

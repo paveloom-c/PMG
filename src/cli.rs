@@ -13,8 +13,9 @@ use clap::{
 
 /// Parser of angles in the hours-minutes-seconds form
 #[derive(Clone)]
-struct HMSParser {}
+struct HMSParser;
 
+#[allow(clippy::indexing_slicing)]
 impl TypedValueParser for HMSParser {
     type Value = f64;
 
@@ -28,8 +29,11 @@ impl TypedValueParser for HMSParser {
         if let Some(string) = value.to_str() {
             // If the string can be split into a vector of floats
             if let Ok(vec) = str2vec(string) {
-                // Convert these to the radians
-                return Ok(hms2rad(vec[0], vec[1], vec[2]));
+                // If there are at least three float numbers
+                if vec.len() >= 3 {
+                    // Convert these to the radians
+                    return Ok(hms2rad(vec[0], vec[1], vec[2]));
+                }
             }
         }
         // Otherwise, return an error
@@ -42,8 +46,9 @@ impl TypedValueParser for HMSParser {
 
 /// Parser of angles in the degrees-minutes-seconds form
 #[derive(Clone)]
-struct DMSParser {}
+struct DMSParser;
 
+#[allow(clippy::indexing_slicing)]
 impl TypedValueParser for DMSParser {
     type Value = f64;
 
@@ -57,8 +62,11 @@ impl TypedValueParser for DMSParser {
         if let Some(string) = value.to_str() {
             // If the string can be split into a vector of floats
             if let Ok(vec) = str2vec(string) {
-                // Convert these to the radians
-                return Ok(dms2rad(vec[0], vec[1], vec[2]));
+                // If there are at least three float numbers
+                if vec.len() >= 3 {
+                    // Convert these to the radians
+                    return Ok(dms2rad(vec[0], vec[1], vec[2]));
+                }
             }
         }
         // Otherwise, return an error
@@ -71,7 +79,7 @@ impl TypedValueParser for DMSParser {
 
 /// Parser of angles in the decimal degrees form
 #[derive(Clone)]
-struct DecParser {}
+struct DecParser;
 
 impl TypedValueParser for DecParser {
     type Value = f64;

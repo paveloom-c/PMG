@@ -26,6 +26,7 @@ impl<F> GalacticSpherical<F>
 where
     F: Float + Default + Display + Debug,
 {
+    /// Try to convert the object into this struct
     pub(super) fn try_from(object: &Object<F>, consts: &Consts) -> Result<Self> {
         // Unpack the data
         let (alpha, delta) = object.equatorial_s()?.into();
