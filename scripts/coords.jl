@@ -319,6 +319,7 @@ function scatter(
                 {
                     no_marks,
                     opacity = 0.25,
+                    line_width = 0.1,
                 },
                 Coordinates(if correct_infs
                     wrap_points((x_m, y_m), (x, y), (x_p, y_p))

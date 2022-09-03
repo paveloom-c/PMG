@@ -22,7 +22,6 @@ function parse_string(i)::String
         # Join the arguments in one string
         # and remove the apostrophes
         chop(join(ARGS[i:j], ' '), head=1, tail=1)
-    # Otherwise,
     else
         # Return the next argument
         ARGS[i]
@@ -47,7 +46,7 @@ for i in eachindex(ARGS)
     # Output directory
     if ARGS[i] == "-o"
         try
-            global OUTPUT_DIR = parse_string(i+1)
+            global OUTPUT_DIR = parse_string(i + 1)
         catch
             println("Couldn't parse the value of the `-o` argument.")
             exit(1)
@@ -122,7 +121,9 @@ println(pad, "> Loading the data...")
 struct Data
     name::Vector{String}
     theta::Vector{F}
-    e_theta::Vector{F}
+    ep_theta::Vector{F}
+    em_theta::Vector{F}
+    evel_theta::Vector{F}
     R::Vector{F}
     ep_R::Vector{F}
     em_R::Vector{F}
@@ -150,7 +151,6 @@ function read_bincode(path::AbstractString)::Data
                     nbytes = read(io, I)
                     # Read the string
                     String(read(io, nbytes))
-                # Otherwise,
                 else
                     # Read the value
                     read(io, type)
@@ -172,19 +172,27 @@ group = LEGEND_SHOW_SOURCES ? data.source : data.type
 # Sort the data by the number of occurrences of different types
 # (rare types will be plotted over common types)
 keys = unique(group)
-counts = Dict([ (k, count(==(k), group)) for k in keys ])
-I = sortperm(group, by=k->counts[k], rev=true)
+counts = Dict([(k, count(==(k), group)) for k in keys])
+I = sortperm(group, by=k -> counts[k], rev=true)
 group = group[I]
 theta = data.theta[I]
-e_theta = data.e_theta[I]
+ep_theta = data.ep_theta[I]
+em_theta = data.em_theta[I]
+evel_theta = data.evel_theta[I]
 R = data.R[I]
 ep_R = data.ep_R[I]
 em_R = data.em_R[I]
 
+# Compute the secondary data sets
+theta_p = theta .+ ep_theta
+R_p = R .+ ep_R
+theta_m = theta .- em_theta
+R_m = R .- em_R
+
 # Prepare labels
 markers = ["a", "b", "c", "d", "e", "g"]
-dictionary = Dict([ (k, markers[i]) for (i, k) in enumerate(keys) ])
-label = [ dictionary[k] for k in group ]
+dictionary = Dict([(k, markers[i]) for (i, k) in enumerate(keys)])
+label = [dictionary[k] for k in group]
 
 println(pad, "> Plotting the scatter plots...")
 
@@ -199,40 +207,36 @@ function max_min(c; factor=0.1)
 end
 
 "Create a scatter plot"
-function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y = F[])
+function scatter(x, y, xlabel, ylabel; x_p=F[], x_m=F[], y_p=F[], y_m=F[], evel=F[])
     # Compute the limits
     x_max, x_min = max_min(x)
     y_max, y_min = max_min(y)
     # Prepare a table
-    table = if isempty(ep_x) && isempty(em_x) && isempty(ep_y) && isempty(em_y)
-        @pgf Table(
-            {
-                meta = "label",
-            },
-            x = x,
-            y = y,
-            label = label,
-        )
-    else
-        @pgf Table(
-            {
-                meta = "label",
-                x_error_plus = "ep_x",
-                x_error_minus = "em_x",
-                y_error_plus = "ep_y",
-                y_error_minus = "em_y",
-            },
-            x = x,
-            y = y,
-            label = label,
-            ep_x = ep_x,
-            em_x = em_x,
-            ep_y = ep_y,
-            em_y = em_y,
-        )
-    end
+    table =
+        if isempty(evel)
+            @pgf Table(
+                {
+                    meta = "label",
+                },
+                x=x,
+                y=y,
+                label=label,
+            )
+        else
+            @pgf Table(
+                {
+                    meta = "label",
+                    y_error_plus = "evel",
+                    y_error_minus = "evel",
+                },
+                x=x,
+                y=y,
+                label=label,
+                evel=evel,
+            )
+        end
     # Create a plot
-    return @pgf Axis(
+    p = @pgf Axis(
         {
             xlabel = xlabel,
             ylabel = ylabel,
@@ -244,30 +248,30 @@ function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y 
             width = 200,
             grid = "both",
             minor_tick_num = 4,
-            minor_grid_style = { opacity = 0.25 },
-            major_grid_style = { opacity = 0.5 },
-            tick_label_style = { font = "\\small" },
-            tick_style = { line_width = 0.4, color = "black" },
-            "error bars/error bar style" = { line_width = 0.1, opacity = 0.25 },
+            minor_grid_style = {opacity = 0.25},
+            major_grid_style = {opacity = 0.5},
+            tick_label_style = {font = "\\small"},
+            tick_style = {line_width = 0.4, color = "black"},
+            "error bars/error bar style" = {line_width = 0.1, opacity = 0.25},
             "error bars/error mark options" = {
                 rotate = 90,
                 mark_size = 0.5,
                 line_width = 0.1,
                 opacity = 0.25,
             },
-            axis_line_style = { line_width = 1 },
+            axis_line_style = {line_width = 1},
             "axis_lines*" = "left",
-            legend_image_post_style = { mark_size = 2, line_width = 0.4 },
+            legend_image_post_style = {mark_size = 2, line_width = 0.4},
             legend_pos = "outer north east",
-            legend_style = { line_width = 1 },
+            legend_style = {line_width = 1},
             mark_size = 0.5,
             line_width = 0.15,
             "scatter/classes" = {
-                a = { mark = "x", color = colors[1] },
-                b = { mark = "+", color = colors[2] },
-                c = { mark = "asterisk", color = colors[3] },
-                d = { mark = "star", color = colors[4] },
-                e = { mark = "10-pointed star", color = colors[5] },
+                a = {mark = "x", color = colors[1]},
+                b = {mark = "+", color = colors[2]},
+                c = {mark = "asterisk", color = colors[3]},
+                d = {mark = "star", color = colors[4]},
+                e = {mark = "10-pointed star", color = colors[5]},
             },
         },
         Plot(
@@ -275,15 +279,27 @@ function scatter(x, y, xlabel, ylabel; ep_x = F[], em_x = F[], ep_y = F[], em_y 
                 scatter,
                 "only marks",
                 "scatter src" = "explicit symbolic",
-                "error bars/x dir=both",
                 "error bars/y dir=both",
-                "error bars/x explicit",
                 "error bars/y explicit",
             },
             table,
         ),
         Legend(keys),
     )
+    # Add the error lines if additional data sets are specified
+    if !isempty(x_p) && !isempty(x_m) && !isempty(y_p) && !isempty(y_m)
+        for (x, y, x_p, x_m, y_p, y_m) in zip(x, y, x_p, x_m, y_p, y_m)
+            push!(p, @pgf Plot(
+                {
+                    no_marks,
+                    opacity = 0.25,
+                    line_width = 0.1,
+                },
+                Coordinates([(x_m, y_m), (x, y), (x_p, y_p)])
+            ))
+        end
+    end
+    return p
 end
 
 # Plot the rotation curve
@@ -302,10 +318,11 @@ p = scatter(
     theta,
     L"R \; \mathrm{[kpc]}",
     L"\theta \; \mathrm{[km \; s^{-1}]}",
-    ep_x=ep_R,
-    em_x=em_R,
-    ep_y=e_theta,
-    em_y=e_theta,
+    x_p=R_p,
+    x_m=R_m,
+    y_p=theta_p,
+    y_m=theta_m,
+    evel=evel_theta,
 )
 pgfsave(joinpath(PLOTS_DIR, "Rotation curve (errors)$(POSTFIX).pdf"), p)
 

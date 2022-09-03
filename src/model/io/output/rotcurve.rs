@@ -25,12 +25,14 @@ lazy_static! {
             #
             # 1 name: Name of the object
             # 2 theta: Azimuthal velocity [km/s]
-            # 3 e_theta: Uncertainty in `theta` [km/s]
-            # 4 R: Galactocentric distance [kpc]
-            # 5 ep_R: Plus uncertainty in `R` [kpc]
-            # 6 em_R: Minus uncertainty in `R` [kpc]
-            # 7 type: Type of the object
-            # 8 source: Source of the data
+            # 3 ep_theta: Plus uncertainty in `theta` [km/s]
+            # 4 em_theta: Minus uncertainty in `theta` [km/s]
+            # 5 evel_theta: Velocity uncertainty in `theta` [km/s]
+            # 6 R: Galactocentric distance [kpc]
+            # 7 ep_R: Plus uncertainty in `R` [kpc]
+            # 8 em_R: Minus uncertainty in `R` [kpc]
+            # 9 type: Type of the object
+            # 10 source: Source of the data
             #
             # Uncertainties in the distance come from assuming maximum and minimum
             # values of the parallax. Note that they can be negative here.
@@ -98,8 +100,12 @@ struct Record<'a, F: Float + Debug> {
     name: &'a String,
     /// Azimuthal velocity (km/s)
     theta: F,
-    /// Uncertainty in `theta` (km/s)
-    e_theta: F,
+    /// Plus uncertainty in `theta` (km/s)
+    ep_theta: F,
+    /// Plus uncertainty in `theta` (km/s)
+    em_theta: F,
+    /// Velocity uncertainty in `theta` (km/s)
+    evel_theta: F,
     /// Galactocentric distance (kpc)
     #[serde(rename = "R")]
     r_g: F,
@@ -130,8 +136,10 @@ where
         let source = object.source()?;
         Ok(Self {
             name,
-            theta: theta.v,
-            e_theta: theta.e_p,
+            theta: theta.measurement.v,
+            ep_theta: theta.measurement.e_p,
+            em_theta: theta.measurement.e_m,
+            evel_theta: theta.e_vel,
             r_g: r_g.v,
             e_p_r_g: r_g.e_p,
             e_m_r_g: r_g.e_m,

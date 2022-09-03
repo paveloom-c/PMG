@@ -8,7 +8,7 @@ use autodiff::FT;
 use num::Float;
 use numeric_literals::replace_float_literals;
 
-/// Compute the uncertainty of the azimuthal velocity
+/// Compute the uncertainty of the azimuthal velocity inherited from velocities
 ///
 /// Sources: Gromov, Nikiforov, Ossipkov (2016)
 #[allow(clippy::indexing_slicing)]
@@ -28,24 +28,10 @@ pub fn compute_e_theta<F: Float + Debug>(
     v_lsr: F,
     mu_x: F,
     mu_y: F,
-    e_par: F,
     e_v_lsr: F,
     e_mu_x: F,
     e_mu_y: F,
 ) -> F {
-    // Compute the partial derivative of the
-    // azimuthal velocity by the parallax
-    let v: [FT<F>; 8] = [
-        FT::cst(alpha),
-        FT::cst(delta),
-        FT::cst(l),
-        FT::cst(b),
-        FT::var(par),
-        FT::cst(v_lsr),
-        FT::cst(mu_x),
-        FT::cst(mu_y),
-    ];
-    let d_theta_par = compute_theta(&v).deriv();
     // Compute the partial derivative of the azimuthal
     // velocity by the Local Standard of Rest velocity
     let v: [FT<F>; 8] = [
@@ -87,8 +73,7 @@ pub fn compute_e_theta<F: Float + Debug>(
     let d_theta_mu_y = compute_theta(&v).deriv();
     // Compute the uncertainty
     F::sqrt(
-        d_theta_par.powi(2) * e_par.powi(2)
-            + d_theta_v_lsr.powi(2) * e_v_lsr.powi(2)
+        d_theta_v_lsr.powi(2) * e_v_lsr.powi(2)
             + d_theta_mu_x.powi(2) * e_mu_x.powi(2)
             + d_theta_mu_y.powi(2) * e_mu_y.powi(2),
     )
