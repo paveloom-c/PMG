@@ -1,7 +1,7 @@
 //! Compute the uncertainty of the azimuthal velocity
 
 use super::compute_theta;
-use crate::model::Consts;
+use crate::model::Params;
 
 use std::fmt::Debug;
 
@@ -29,7 +29,7 @@ pub fn compute_e_theta<F: Float + Debug>(
     e_v_lsr: F,
     e_mu_x: F,
     e_mu_y: F,
-    consts: &Consts,
+    params: &Params<F>,
 ) -> F {
     // Compute the partial derivative of the azimuthal
     // velocity by the Local Standard of Rest velocity
@@ -43,7 +43,7 @@ pub fn compute_e_theta<F: Float + Debug>(
         FT::cst(mu_x),
         FT::cst(mu_y),
     ];
-    let d_theta_v_lsr = compute_theta(&v, consts).deriv();
+    let d_theta_v_lsr = compute_theta(&v, params).deriv();
     // Compute the partial derivative of the azimuthal
     // velocity by the Eastward proper motion
     let v: [FT<F>; 8] = [
@@ -56,7 +56,7 @@ pub fn compute_e_theta<F: Float + Debug>(
         FT::var(mu_x),
         FT::cst(mu_y),
     ];
-    let d_theta_mu_x = compute_theta(&v, consts).deriv();
+    let d_theta_mu_x = compute_theta(&v, params).deriv();
     // Compute the partial derivative of the azimuthal
     // velocity by the Northward proper motion
     let v: [FT<F>; 8] = [
@@ -69,7 +69,7 @@ pub fn compute_e_theta<F: Float + Debug>(
         FT::cst(mu_x),
         FT::var(mu_y),
     ];
-    let d_theta_mu_y = compute_theta(&v, consts).deriv();
+    let d_theta_mu_y = compute_theta(&v, params).deriv();
     // Compute the uncertainty
     F::sqrt(
         d_theta_v_lsr.powi(2) * e_v_lsr.powi(2)

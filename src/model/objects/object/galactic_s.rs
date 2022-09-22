@@ -1,7 +1,7 @@
 //! Galactic heliocentric spherical coordinates
 
 use super::Object;
-use crate::model::Consts;
+use crate::model::Params;
 use crate::utils::to_spherical;
 
 use std::fmt::{Debug, Display};
@@ -11,12 +11,12 @@ use num::Float;
 use numeric_literals::replace_float_literals;
 
 /// Galactic heliocentric spherical coordinates
-#[derive(Debug)]
-pub(in crate::model) struct GalacticSpherical<F: Float + Debug> {
+#[derive(Clone, Debug)]
+pub struct GalacticSpherical<F: Float + Debug> {
     /// Longitude (radians)
-    pub(in crate::model) l: F,
+    pub l: F,
     /// Latitude (radians)
-    pub(in crate::model) b: F,
+    pub b: F,
 }
 
 #[allow(clippy::unwrap_in_result)]
@@ -27,11 +27,11 @@ where
     F: Float + Default + Display + Debug,
 {
     /// Try to convert the object into this struct
-    pub(super) fn try_from(object: &Object<F>, consts: &Consts) -> Result<Self> {
+    pub(super) fn try_from(object: &Object<F>, params: &Params<F>) -> Result<Self> {
         // Unpack the data
         let (alpha, delta) = object.equatorial_s()?.into();
         // Convert to the Galactic heliocentric spherical coordinate system
-        let (l, b) = to_spherical(alpha, delta, consts);
+        let (l, b) = to_spherical(alpha, delta, params);
         Ok(Self { l, b })
     }
 }

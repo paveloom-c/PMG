@@ -11,12 +11,12 @@ use anyhow::{bail, Context, Result};
 use num::Float;
 
 /// Equatorial spherical coordinates
-#[derive(Debug)]
-pub(in crate::model) struct EquatorialSpherical<F: Float + Debug> {
+#[derive(Clone, Debug)]
+pub struct EquatorialSpherical<F: Float + Debug> {
     /// Right ascension (radians)
-    pub(in crate::model) alpha: F,
+    pub alpha: F,
     /// Declination (radians)
-    pub(in crate::model) delta: F,
+    pub delta: F,
 }
 
 impl<F> TryFrom<&input::Record<F>> for EquatorialSpherical<F>

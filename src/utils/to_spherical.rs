@@ -1,6 +1,6 @@
 //! Convert equatorial coordinates to spherical Galactic coordinates
 
-use crate::model::Consts;
+use crate::model::Params;
 
 use std::fmt::Debug;
 
@@ -11,11 +11,15 @@ use num::Float;
 /// Angles must be in radians, then radians returned.
 ///
 /// Source: [Wikipedia](https://en.wikipedia.org/wiki/Galactic_coordinate_system#Conversion_between_equatorial_and_galactic_coordinates)
-pub fn to_spherical<F: Float + Debug>(alpha: F, delta: F, consts: &Consts) -> (F, F) {
-    // Get the constants
-    let alpha_ngp: F = consts.alpha_ngp();
-    let delta_ngp: F = consts.delta_ngp();
-    let l_ncp: F = consts.l_ncp();
+pub fn to_spherical<F, F2>(alpha: F, delta: F, params: &Params<F2>) -> (F, F)
+where
+    F: Float + Debug + From<F2>,
+    F2: Float + Debug,
+{
+    // Get the parameters
+    let alpha_ngp: F = params.alpha_ngp.into();
+    let delta_ngp: F = params.delta_ngp.into();
+    let l_ncp: F = params.l_ncp.into();
     // Compute the angles
     let phi = F::atan2(
         F::cos(delta) * F::sin(alpha - alpha_ngp),
@@ -65,8 +69,8 @@ cfg_if::cfg_if! {
 #[test]
 #[allow(clippy::unwrap_used)]
 fn test() -> Result<()> {
-    // Initialize a new constants struct
-    let consts = Consts {
+    // Initialize a new parameters struct
+    let params = Params {
         alpha_ngp: 3.366_033_392_377_493,
         delta_ngp: 0.473_478_800_270_973_6,
         l_ncp: 2.145_568_156_061_669_3,
@@ -98,7 +102,7 @@ fn test() -> Result<()> {
             .with_context(|| format!("Couldn't deserialize a record from {data_path:?}"))?;
         // Compare the data
         let a = (data.l.to_radians(), data.b.to_radians());
-        let b = to_spherical(data.alpha.to_radians(), data.delta.to_radians(), &consts);
+        let b = to_spherical(data.alpha.to_radians(), data.delta.to_radians(), &params);
         ensure!(
             izip!([a.0, a.1], [b.0, b.1])
                 .all(|(v1, v2)| (v1 - v2).abs() < f64::from(f32::epsilon())),

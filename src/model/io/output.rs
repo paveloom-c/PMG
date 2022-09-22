@@ -1,6 +1,7 @@
 //! Output related
 
 pub mod coords;
+pub mod fit;
 pub mod rotcurve;
 
 use std::fs::File;

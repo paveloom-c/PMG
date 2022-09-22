@@ -9,14 +9,14 @@ use anyhow::Result;
 use num::Float;
 
 /// Galactic heliocentric Cartesian coordinates
-#[derive(Debug)]
-pub(in crate::model) struct GalacticCartesian<F: Float + Debug> {
+#[derive(Clone, Debug)]
+pub struct GalacticCartesian<F: Float + Debug> {
     /// X coordinate (kpc)
-    pub(in crate::model) x: Measurement<F>,
+    pub x: Measurement<F>,
     /// Y coordinate (kpc)
-    pub(in crate::model) y: Measurement<F>,
+    pub y: Measurement<F>,
     /// Z coordinate (kpc)
-    pub(in crate::model) z: Measurement<F>,
+    pub z: Measurement<F>,
 }
 
 #[allow(clippy::many_single_char_names)]

@@ -3,10 +3,10 @@
 mod object;
 
 use crate::model::io::input;
-use crate::model::Consts;
+use crate::model::Params;
 use crate::Goal;
 
-pub(in crate::model) use object::Object;
+pub use object::{Measurement, Object};
 
 use std::error::Error;
 use std::fmt::{Debug, Display};
@@ -20,7 +20,7 @@ use num::Float;
 use serde::de::DeserializeOwned;
 
 /// Data objects
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Objects<F: Float + Default + Debug>(Vec<Object<F>>);
 
 impl<F> Objects<F>
@@ -28,11 +28,11 @@ where
     F: Float + Default + Display + Debug,
 {
     /// Perform computations based on goals
-    pub(in crate::model) fn compute(&mut self, goals: &[Goal], consts: &Consts) -> Result<()> {
+    pub(in crate::model) fn compute(&mut self, goals: &[Goal], params: &Params<F>) -> Result<()> {
         // Perform computations for each object
         for object in self.iter_mut() {
             object
-                .compute(goals, consts)
+                .compute(goals, params)
                 .with_context(|| "Couldn't perform computations for an object")?;
         }
         Ok(())

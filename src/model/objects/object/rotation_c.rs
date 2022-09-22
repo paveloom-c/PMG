@@ -1,7 +1,7 @@
 //! Rotation curve
 
 use super::{Measurement, Object};
-use crate::model::Consts;
+use crate::model::Params;
 use crate::utils::{compute_e_theta, compute_theta_r_g};
 
 use std::fmt::{Debug, Display};
@@ -11,7 +11,7 @@ use num::Float;
 use numeric_literals::replace_float_literals;
 
 /// Azimuthal velocity (km/s)
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub(in crate::model) struct AzimuthalVelocity<F: Float + Debug> {
     /// Measurement of the value (uncertainties here are
     /// inherited from the uncertainties of the parallax)
@@ -21,7 +21,7 @@ pub(in crate::model) struct AzimuthalVelocity<F: Float + Debug> {
 }
 
 /// Rotation curve
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub(in crate::model) struct RotationCurve<F: Float + Debug> {
     /// Azimuthal velocity (km/s)
     pub(in crate::model) theta: AzimuthalVelocity<F>,
@@ -41,7 +41,7 @@ where
     F: Float + Default + Display + Debug,
 {
     /// Try to convert the object into this struct
-    pub(super) fn try_from(object: &Object<F>, consts: &Consts) -> Result<Self> {
+    pub(super) fn try_from(object: &Object<F>, params: &Params<F>) -> Result<Self> {
         // Unpack the data
         let (alpha, delta) = object.equatorial_s()?.into();
         let (l, b) = object.galactic_s()?.into();
@@ -51,15 +51,15 @@ where
         let mu_y = object.mu_y()?;
         // Compute the azimuthal velocity and the Galactocentric distance
         let (theta, r_g) =
-            compute_theta_r_g(alpha, delta, l, b, par.v, v_lsr.v, mu_x.v, mu_y.v, consts);
+            compute_theta_r_g(alpha, delta, l, b, par.v, v_lsr.v, mu_x.v, mu_y.v, params);
         let (theta_u, r_g_u) =
-            compute_theta_r_g(alpha, delta, l, b, par.v_u, v_lsr.v, mu_x.v, mu_y.v, consts);
+            compute_theta_r_g(alpha, delta, l, b, par.v_u, v_lsr.v, mu_x.v, mu_y.v, params);
         let (theta_l, r_g_l) =
-            compute_theta_r_g(alpha, delta, l, b, par.v_l, v_lsr.v, mu_x.v, mu_y.v, consts);
+            compute_theta_r_g(alpha, delta, l, b, par.v_l, v_lsr.v, mu_x.v, mu_y.v, params);
         // Compute the uncertainty in the azimuthal velocity inherited from velocities
         let e_vel_theta = compute_e_theta(
             alpha, delta, l, b, par.v, v_lsr.v, mu_x.v, mu_y.v, v_lsr.e_p, mu_x.e_p, mu_y.e_p,
-            consts,
+            params,
         );
         Ok(Self {
             theta: AzimuthalVelocity {

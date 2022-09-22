@@ -13,7 +13,7 @@
 #  8 mu_x: Eastward proper motion (1) [mas/yr]
 #  9 e_mu_x: Uncertainty in `mu_x` [mas/yr]
 # 10 mu_y: Northward proper motion [mas/yr]
-# 11 e_mu_x: Uncertainty in `mu_y` [mas/yr]
+# 11 e_mu_y: Uncertainty in `mu_y` [mas/yr]
 # 12 type: Type of the object
 # 13 source: Source of the data (2)
 # 14 reference: Reference(s)

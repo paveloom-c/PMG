@@ -7,7 +7,9 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use indoc::formatdoc;
-use num::Float;
+use num::{traits::FloatConst, Float};
+use rand::distributions::uniform::SampleUniform;
+use rand_distr::{Distribution, StandardNormal};
 use serde::Serialize;
 
 /// Name of the files
@@ -74,7 +76,8 @@ type Records<'a, F> = Vec<Record<'a, F>>;
 
 impl<'a, F> TryFrom<&'a Model<F>> for Records<'a, F>
 where
-    F: Float + Default + Display + Debug,
+    F: Float + FloatConst + SampleUniform + Default + Display + Debug,
+    StandardNormal: Distribution<F>,
 {
     type Error = anyhow::Error;
 
@@ -92,7 +95,8 @@ where
 
 impl<F> Model<F>
 where
-    F: Float + Default + Debug + Display + Serialize,
+    F: Float + FloatConst + SampleUniform + Default + Debug + Display + Serialize,
+    StandardNormal: Distribution<F>,
 {
     /// Serialize the rotation curve
     pub(in crate::model) fn serialize_to_rotcurve(
@@ -137,7 +141,7 @@ where
             #
             # Galactocentric distance to the Sun (kpc)
             # Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-            # R_0_2: = {r_0_2}
+            # R_0: {r_0}
             #
             # Standard Solar Motion toward GC (km/s)
             # Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
@@ -157,23 +161,23 @@ where
             #
             # Standard Solar Motion toward NGP (km/s)
             # Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
-            # W_SUN_STANDARD: = {w_sun_standard}
+            # W_SUN_STANDARD: {w_sun_standard}
             #
             # Linear velocities units conversion coefficient
             # Sources: Gromov, Nikiforov (2016)
             # K: {k}
             #
             ",
-            alpha_ngp = self.consts.alpha_ngp,
-            delta_ngp = self.consts.delta_ngp,
-            l_ncp = self.consts.l_ncp,
-            r_0_2 = self.consts.r_0_2,
-            u_sun_standard = self.consts.u_sun_standard,
-            u_sun = self.consts.u_sun,
-            v_sun_standard = self.consts.v_sun_standard,
-            theta_sun = self.consts.theta_sun,
-            w_sun_standard = self.consts.w_sun_standard,
-            k = self.consts.k,
+            alpha_ngp = self.params.alpha_ngp,
+            delta_ngp = self.params.delta_ngp,
+            l_ncp = self.params.l_ncp,
+            r_0 = self.params.r_0,
+            u_sun_standard = self.params.u_sun_standard,
+            u_sun = self.params.u_sun,
+            v_sun_standard = self.params.v_sun_standard,
+            theta_sun = self.params.theta_sun,
+            w_sun_standard = self.params.w_sun_standard,
+            k = self.params.k,
         );
         super::serialize_to(
             dat_dir,

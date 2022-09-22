@@ -8,13 +8,13 @@ mod measurement;
 mod rotation_c;
 
 use crate::model::io::input;
-use crate::model::Consts;
+use crate::model::Params;
 use crate::Goal;
 use distances::Distances;
 use equatorial_s::EquatorialSpherical;
 use galactic_c::GalacticCartesian;
 use galactic_s::GalacticSpherical;
-use measurement::Measurement;
+pub use measurement::Measurement;
 use rotation_c::RotationCurve;
 
 use std::error::Error;
@@ -25,8 +25,8 @@ use anyhow::{anyhow, Context, Result};
 use num::Float;
 
 /// Data object
-#[derive(Debug, Default)]
-pub(in crate::model) struct Object<F>
+#[derive(Clone, Debug, Default)]
+pub struct Object<F>
 where
     F: Float + Default + Debug,
 {
@@ -42,10 +42,10 @@ where
     mu_x: Option<Measurement<F>>,
     /// Northward proper motion (mas/yr)
     mu_y: Option<Measurement<F>>,
-    /// Distances
-    distances: Option<Distances<F>>,
     /// Galactic heliocentric spherical coordinates
     galactic_s: Option<GalacticSpherical<F>>,
+    /// Distances
+    distances: Option<Distances<F>>,
     /// Galactic heliocentric Cartesian coordinates
     galactic_c: Option<GalacticCartesian<F>>,
     /// Rotation curve
@@ -64,7 +64,7 @@ impl<F: Float + Default + Display + Debug> Object<F> {
             .ok_or_else(|| anyhow!("Couldn't unwrap the name"))
     }
     /// Unwrap the equatorial spherical coordinates
-    pub(in crate::model) fn equatorial_s(&self) -> Result<&EquatorialSpherical<F>> {
+    pub fn equatorial_s(&self) -> Result<&EquatorialSpherical<F>> {
         self.equatorial_s
             .as_ref()
             .ok_or_else(|| anyhow!("Couldn't unwrap the equatorial spherical coordinates"))
@@ -76,31 +76,31 @@ impl<F: Float + Default + Display + Debug> Object<F> {
             .ok_or_else(|| anyhow!("Couldn't unwrap the Galactic Cartesian coordinates"))
     }
     /// Unwrap the Galactic heliocentric spherical coordinates
-    pub(in crate::model) fn galactic_s(&self) -> Result<&GalacticSpherical<F>> {
+    pub fn galactic_s(&self) -> Result<&GalacticSpherical<F>> {
         self.galactic_s
             .as_ref()
             .ok_or_else(|| anyhow!("Couldn't unwrap the Galactic spherical coordinates"))
     }
     /// Unwrap the parallax
-    pub(in crate::model) fn par(&self) -> Result<&Measurement<F>> {
+    pub fn par(&self) -> Result<&Measurement<F>> {
         self.par
             .as_ref()
             .ok_or_else(|| anyhow!("Couldn't unwrap the parallax"))
     }
     /// Unwrap the Local Standard of Rest velocity
-    pub(in crate::model) fn v_lsr(&self) -> Result<&Measurement<F>> {
+    pub fn v_lsr(&self) -> Result<&Measurement<F>> {
         self.v_lsr
             .as_ref()
             .ok_or_else(|| anyhow!("Couldn't unwrap the Local Standard of Rest velocity"))
     }
     /// Unwrap the Eastward proper motion
-    pub(in crate::model) fn mu_x(&self) -> Result<&Measurement<F>> {
+    pub fn mu_x(&self) -> Result<&Measurement<F>> {
         self.mu_x
             .as_ref()
             .ok_or_else(|| anyhow!("Couldn't unwrap the Eastward proper motion"))
     }
     /// Unwrap the Northward proper motion
-    pub(in crate::model) fn mu_y(&self) -> Result<&Measurement<F>> {
+    pub fn mu_y(&self) -> Result<&Measurement<F>> {
         self.mu_y
             .as_ref()
             .ok_or_else(|| anyhow!("Couldn't unwrap the Northward proper motion"))
@@ -130,27 +130,29 @@ impl<F: Float + Default + Display + Debug> Object<F> {
             .ok_or_else(|| anyhow!("Couldn't unwrap the source of the data"))
     }
     /// Perform computations based on goals
-    pub(in crate::model) fn compute(&mut self, goals: &[Goal], consts: &Consts) -> Result<()> {
+    pub(in crate::model) fn compute(&mut self, goals: &[Goal], params: &Params<F>) -> Result<()> {
+        // If coordinates conversion was requested
         if goals.contains(&Goal::Coords) {
             // Convert equatorial coordinates to Galactic
             // heliocentric spherical coordinates
-            self.compute_galactic_s(consts)
+            self.compute_galactic_s(params)
                 .with_context(|| "Couldn't compute the Galactic spherical coordinates")?;
             // Compute the distances
-            self.compute_distances(consts)
+            self.compute_distances(params)
                 .with_context(|| "Couldn't compute the distances")?;
             // Convert equatorial coordinates to Galactic
             // heliocentric Cartesian coordinates
             self.compute_galactic_c()
                 .with_context(|| "Couldn't compute the Galactic Cartesian coordinates")?;
         }
+        // If computing of the rotation curve was requested
         if goals.contains(&Goal::RotationCurve) {
             // Convert equatorial coordinates to Galactic
             // heliocentric spherical coordinates
-            self.compute_galactic_s(consts)
+            self.compute_galactic_s(params)
                 .with_context(|| "Couldn't compute the Galactic spherical coordinates")?;
             // Compute the rotation curve
-            self.compute_rotation_c(consts)
+            self.compute_rotation_c(params)
                 .with_context(|| "Couldn't compute the rotation curve")?;
         }
         Ok(())
@@ -164,21 +166,21 @@ impl<F: Float + Default + Display + Debug> Object<F> {
     }
     /// Convert equatorial coordinates to Galactic
     /// heliocentric spherical coordinates
-    fn compute_galactic_s(&mut self, consts: &Consts) -> Result<()> {
+    pub(in crate::model) fn compute_galactic_s(&mut self, params: &Params<F>) -> Result<()> {
         self.galactic_s
-            .get_or_insert(GalacticSpherical::try_from(&*self, consts)?);
+            .get_or_insert(GalacticSpherical::try_from(&*self, params)?);
         Ok(())
     }
     /// Compute the distances
-    fn compute_distances(&mut self, consts: &Consts) -> Result<()> {
+    pub(in crate::model) fn compute_distances(&mut self, params: &Params<F>) -> Result<()> {
         self.distances
-            .get_or_insert(Distances::try_from(&*self, consts)?);
+            .get_or_insert(Distances::try_from(&*self, params)?);
         Ok(())
     }
     /// Compute the rotation curve
-    fn compute_rotation_c(&mut self, consts: &Consts) -> Result<()> {
+    fn compute_rotation_c(&mut self, params: &Params<F>) -> Result<()> {
         self.rotation_c
-            .get_or_insert(RotationCurve::try_from(&*self, consts)?);
+            .get_or_insert(RotationCurve::try_from(&*self, params)?);
         Ok(())
     }
 }

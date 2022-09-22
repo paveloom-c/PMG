@@ -1,13 +1,14 @@
 //! Model of the Galaxy
 
-mod consts;
 mod io;
 mod objects;
+mod params;
 
 use crate::cli::Args;
+use crate::utils;
 use crate::Goal;
-pub use consts::Consts;
-use objects::{Object, Objects};
+pub use objects::{Measurement, Object, Objects};
+pub use params::Params;
 
 use std::error::Error;
 use std::fmt::{Debug, Display};
@@ -15,23 +16,52 @@ use std::fs::create_dir_all;
 use std::path::Path;
 use std::str::FromStr;
 
-use anyhow::{Context, Result};
-use num::Float;
+use anyhow::{anyhow, Context, Result};
+use num::{traits::FloatConst, Float};
+use rand::distributions::uniform::SampleUniform;
+use rand_distr::Distribution;
+use rand_distr::StandardNormal;
 use serde::{de::DeserializeOwned, Serialize};
 
 /// Model of the Galaxy
 #[derive(Debug, Default)]
-pub struct Model<F: Float + Default + Display + Debug> {
-    /// Constants
-    consts: Consts,
+pub struct Model<F>
+where
+    F: Float + FloatConst + SampleUniform + Default + Display + Debug,
+    StandardNormal: Distribution<F>,
+{
+    /// Initial model parameters
+    params: Params<F>,
     /// Data objects
     objects: Objects<F>,
+    /// Fitted model parameters
+    fitted_params: Option<Params<F>>,
 }
 
-impl<F: Float + Default + Display + Debug> Model<F> {
+impl<F> Model<F>
+where
+    F: Float + FloatConst + SampleUniform + Default + Display + Debug,
+    StandardNormal: Distribution<F>,
+{
+    /// Unwrap the fit of the model
+    pub(in crate::model) fn fitted_params(&self) -> Result<&Params<F>> {
+        self.fitted_params
+            .as_ref()
+            .ok_or_else(|| anyhow!("Couldn't unwrap the name"))
+    }
     /// Perform computations based on goals
     pub fn compute(&mut self, goals: &[Goal]) -> Result<()> {
-        self.objects.compute(goals, &self.consts)?;
+        // Perform per-object goals first
+        self.objects.compute(goals, &self.params)?;
+        // If fitting of the model was requested
+        if goals.contains(&Goal::Fit) {
+            // Try to fit the model
+            self.fitted_params.get_or_insert(
+                self.params
+                    .try_fit_from(&self.objects)
+                    .with_context(|| "Couldn't fit the model")?,
+            );
+        }
         Ok(())
     }
     /// Extend the model by parsing and appending the data
@@ -70,32 +100,42 @@ impl<F: Float + Default + Display + Debug> Model<F> {
             self.serialize_to_rotcurve(dat_dir, bin_dir)
                 .with_context(|| "Couldn't write the rotation curve to a file")?;
         };
+        // Write the fit of the model if that was a goal
+        if goals.contains(&Goal::Fit) {
+            self.serialize_to_fit(dat_dir, bin_dir)
+                .with_context(|| "Couldn't write the rotation curve to a file")?;
+        };
         Ok(())
     }
 }
 
 impl<F> TryFrom<&Args> for Model<F>
 where
-    F: Float + Default + Display + Debug + FromStr + DeserializeOwned,
+    F: Float + FloatConst + SampleUniform + Default + Display + Debug + FromStr + DeserializeOwned,
     <F as FromStr>::Err: Error + Send + Sync + 'static,
+    StandardNormal: Distribution<F>,
 {
     type Error = anyhow::Error;
 
     fn try_from(args: &Args) -> Result<Self> {
         // Initialize an empty model
         let mut model = Self {
-            consts: Consts {
-                alpha_ngp: args.alpha_ngp,
-                delta_ngp: args.delta_ngp,
-                k: args.k,
-                l_ncp: args.l_ncp,
-                r_0_1: args.r_0_1,
-                r_0_2: args.r_0_2,
-                theta_sun: args.theta_sun,
-                u_sun: args.u_sun,
-                u_sun_standard: args.u_sun_standard,
-                v_sun_standard: args.v_sun_standard,
-                w_sun_standard: args.w_sun_standard,
+            params: Params {
+                alpha_ngp: utils::cast(args.alpha_ngp)?,
+                delta_ngp: utils::cast(args.delta_ngp)?,
+                k: utils::cast(args.k)?,
+                l_ncp: utils::cast(args.l_ncp)?,
+                r_0: utils::cast(args.r_0)?,
+                theta_sun: utils::cast(args.theta_sun)?,
+                u_sun: utils::cast(args.u_sun)?,
+                u_sun_standard: utils::cast(args.u_sun_standard)?,
+                v_sun_standard: utils::cast(args.v_sun_standard)?,
+                w_sun_standard: utils::cast(args.w_sun_standard)?,
+                omega_0: utils::cast(args.omega_0)?,
+                a: utils::cast(args.a)?,
+                sigma_r: utils::cast(args.sigma_r)?,
+                sigma_theta: utils::cast(args.sigma_theta)?,
+                sigma_z: utils::cast(args.sigma_z)?,
             },
             ..Default::default()
         };

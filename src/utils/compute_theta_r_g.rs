@@ -1,21 +1,22 @@
 //! Compute the azimuthal velocity and Galactocentric distance
 
-use super::to_spherical;
-use crate::model::Consts;
-use crate::utils::compute_r_g_2;
+use super::{compute_mu, compute_r_g};
+use crate::model::Params;
 
 use std::fmt::Debug;
 
+use autodiff::FT;
 use num::Float;
 use numeric_literals::replace_float_literals;
 
 /// Compute the azimuthal velocity from the array of arguments
-pub fn compute_theta<F: Float + Debug>(args: &[F; 8], consts: &Consts) -> F {
+pub fn compute_theta<F: Float + Debug>(args: &[FT<F>; 8], params: &Params<F>) -> FT<F> {
     compute_theta_r_g(
-        args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], consts,
+        args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], params,
     )
     .0
 }
+
 /// Compute the azimuthal velocity and Galactocentric distance
 ///
 /// Sources: Reid et al. (2009); Gromov, Nikiforov, Ossipkov (2016)
@@ -23,8 +24,8 @@ pub fn compute_theta<F: Float + Debug>(args: &[F; 8], consts: &Consts) -> F {
 #[allow(clippy::shadow_reuse)]
 #[allow(clippy::too_many_arguments)]
 #[allow(clippy::unwrap_used)]
-#[replace_float_literals(F::from(literal).unwrap())]
-pub fn compute_theta_r_g<F: Float + Debug>(
+#[replace_float_literals(<F as num::NumCast>::from(literal).unwrap())]
+pub fn compute_theta_r_g<F, F2>(
     alpha: F,
     delta: F,
     l: F,
@@ -33,33 +34,27 @@ pub fn compute_theta_r_g<F: Float + Debug>(
     v_lsr: F,
     mu_x: F,
     mu_y: F,
-    consts: &Consts,
-) -> (F, F) {
-    // Get the constants
-    let u_sun_standard: F = consts.u_sun_standard();
-    let u_sun: F = consts.u_sun();
-    let theta_sun: F = consts.theta_sun();
-    let v_sun_standard: F = consts.v_sun_standard();
-    let w_sun_standard: F = consts.w_sun_standard();
-    let k: F = consts.k();
-    let r_0_2: F = consts.r_0_2();
+    params: &Params<F2>,
+) -> (F, F)
+where
+    F: Float + Debug + From<F2>,
+    F2: Float + Debug,
+{
+    // Get the parameters
+    let u_sun_standard: F = params.u_sun_standard.into();
+    let u_sun: F = params.u_sun.into();
+    let theta_sun: F = params.theta_sun.into();
+    let v_sun_standard: F = params.v_sun_standard.into();
+    let w_sun_standard: F = params.w_sun_standard.into();
+    let k: F = params.k.into();
+    let r_0: F = params.r_0.into();
     // Compute the heliocentric velocity
     let v_h = v_lsr
         - (u_sun_standard * l.cos() + v_sun_standard * l.sin()) * b.cos()
         - w_sun_standard * b.sin();
-    // Convert the proper motions in equatorial
-    // coordinates from mas/yr to rad/yr
-    let mu_alpha = (mu_x / delta.cos() / 3600. / 1000.).to_radians();
-    let mu_delta = (mu_y / 3600. / 1000.).to_radians();
-    // Compute the proper motions in Galactic coordinates
-    // (the difference in the coordinates in 1-year period)
-    let (l_ahead, b_ahead) = to_spherical(alpha + mu_alpha, delta + mu_delta, consts);
-    let mu_l = l_ahead - l;
-    let mu_b = b_ahead - b;
-    // Convert the proper motions in Galactic
-    // coordinates from rad/yr to mas/yr
-    let mu_l = mu_l.to_degrees() * 3600. * 1000.;
-    let mu_b = mu_b.to_degrees() * 3600. * 1000.;
+    // Convert the proper motions in equatorial coordinates
+    // to the proper motions in Galactic coordinates
+    let (mu_l, mu_b) = compute_mu(alpha, delta, l, b, mu_x, mu_y, params);
     // Compute the heliocentric distance
     let r_h = 1. / par;
     // Compute the linear velocities
@@ -77,10 +72,10 @@ pub fn compute_theta_r_g<F: Float + Debug>(
     // Compute the projection of the heliocentric distance in the XY plane
     let d = r_h * b.cos();
     // Compute the Galactocentric distance
-    let r_g = compute_r_g_2(l, b, r_h, consts);
+    let r_g = compute_r_g(l, b, r_h, params);
     // Compute the azimuthal velocity
-    let sin_beta = d / r_g * l.sin();
-    let cos_beta = (r_0_2 - d * l.cos()) / r_g;
-    let theta = v_g * cos_beta + u_g * sin_beta;
+    let sin_lambda = d / r_g * l.sin();
+    let cos_lambda = (r_0 - d * l.cos()) / r_g;
+    let theta = v_g * cos_lambda + u_g * sin_lambda;
     (theta, r_g)
 }

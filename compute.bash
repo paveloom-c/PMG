@@ -21,10 +21,12 @@ ${PAD}          to the Galactic heliocentric spherical and
 ${PAD}          Cartesian coordinates, compute the distances;
 ${PAD}        - compute the rotation curve"
 
-cargo run -r -- -o data/output/all --goals coords rotcurve -i data/input/all.dat &>/dev/null
-cargo run -r -- -o data/output/hmsfrs --goals coords rotcurve -i data/input/hmsfrs.dat &>/dev/null
+cargo run -r -- -o data/output/all --goals coords -i data/input/all.dat --r-0 8. &>/dev/null
+cargo run -r -- -o data/output/hmsfrs --goals coords -i data/input/hmsfrs.dat --r-0 8. &>/dev/null
+cargo run -r -- -o data/output/all --goals rotcurve -i data/input/all.dat &>/dev/null
+cargo run -r -- -o data/output/hmsfrs --goals rotcurve -i data/input/hmsfrs.dat &>/dev/null
 cargo run -r -- -o data/output/hmsfrs_test --goals rotcurve -i data/input/hmsfrs.dat \
-  --u-sun 11 --theta-sun 255 --r-0-2 8.34 &>/dev/null
+  --u-sun 11 --theta-sun 255 --r-0 8.34 &>/dev/null
 
 echo -e "
 ${PAD}Step 3. Plot the comparison charts for the objects that are

@@ -122,56 +122,68 @@ pub struct Args {
     /// The right ascension of the north galactic pole (HMS angle -> radians)
     ///
     /// Source: Reid et al. (2009)
-    #[clap(long, value_parser = HMSParser {}, default_value = "12:51:26.2817", help_heading = "CONSTANTS")]
+    #[clap(long, value_parser = HMSParser {}, default_value = "12:51:26.2817", help_heading = "PARAMETERS")]
     pub alpha_ngp: f64,
     /// The declination of the north galactic pole (DMS angle -> radians)
     ///
     /// Source: Reid et al. (2009)
-    #[clap(long, value_parser = DMSParser {}, default_value = "27:07:42.013", help_heading = "CONSTANTS")]
+    #[clap(long, value_parser = DMSParser {}, default_value = "27:07:42.013", help_heading = "PARAMETERS")]
     pub delta_ngp: f64,
     /// Linear velocities units conversion coefficient
     ///
     /// Sources: Gromov, Nikiforov (2016)
-    #[clap(long, default_value_t = 4.7406, help_heading = "CONSTANTS")]
+    #[clap(long, default_value_t = 4.7406, help_heading = "PARAMETERS")]
     pub k: f64,
     /// The longitude of the north celestial pole (decimal degrees angle -> radians)
     ///
     /// Source: Reid et al. (2009)
-    #[clap(long, value_parser = DecParser {}, default_value_t = 122.932, help_heading = "CONSTANTS")]
+    #[clap(long, value_parser = DecParser {}, default_value_t = 122.932, help_heading = "PARAMETERS")]
     pub l_ncp: f64,
-    /// Galactocentric distance to the Sun (kpc) [coords]
-    #[clap(long, default_value_t = 8., help_heading = "CONSTANTS")]
-    pub r_0_1: f64,
-    /// Galactocentric distance to the Sun (kpc) [rotcurve]
+    /// Galactocentric distance to the Sun (kpc)
     ///
     /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-    #[clap(long, default_value_t = 8.15, help_heading = "CONSTANTS")]
-    pub r_0_2: f64,
+    #[clap(long, default_value_t = 8.15, help_heading = "PARAMETERS")]
+    pub r_0: f64,
     /// Full circular velocity of the Sun (km/s)
     ///
     /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-    #[clap(long, default_value_t = 247., help_heading = "CONSTANTS")]
+    #[clap(long, default_value_t = 247., help_heading = "PARAMETERS")]
     pub theta_sun: f64,
     /// Peculiar motion locally toward GC (km/s)
     ///
     /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-    #[clap(long, default_value_t = 10.7, help_heading = "CONSTANTS")]
+    #[clap(long, default_value_t = 10.7, help_heading = "PARAMETERS")]
     pub u_sun: f64,
+    /// Circular velocity of the Sun at R = R_0 (km/s/kpc)
+    #[clap(long, default_value_t = 28., help_heading = "PARAMETERS")]
+    pub omega_0: f64,
+    /// Oort's A constant (km/s/kpc)
+    #[clap(long, default_value_t = 17., help_heading = "PARAMETERS")]
+    pub a: f64,
     /// Standard Solar Motion toward GC (km/s)
     ///
     /// Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
-    #[clap(long, default_value_t = 10.3, help_heading = "CONSTANTS")]
+    #[clap(long, default_value_t = 10.3, help_heading = "PARAMETERS")]
     pub u_sun_standard: f64,
     /// Standard Solar Motion toward l = 90 degrees (km/s)
     ///
     /// Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
-    #[clap(long, default_value_t = 15.3, help_heading = "CONSTANTS")]
+    #[clap(long, default_value_t = 15.3, help_heading = "PARAMETERS")]
     pub v_sun_standard: f64,
     /// Standard Solar Motion toward NGP (km/s)
     ///
     /// Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
-    #[clap(long, default_value_t = 7.7, help_heading = "CONSTANTS")]
+    #[clap(long, default_value_t = 7.7, help_heading = "PARAMETERS")]
     pub w_sun_standard: f64,
+    /// Radial component of the ellipsoid of natural standard deviations (km/s)
+    #[clap(long, default_value_t = 6., help_heading = "PARAMETERS")]
+    pub sigma_r: f64,
+    /// Azimuthal component of the ellipsoid of natural standard deviations (km/s)
+    #[clap(long, default_value_t = 12., help_heading = "PARAMETERS")]
+    pub sigma_theta: f64,
+    /// Vertical component of the ellipsoid of natural standard deviations (km/s)
+    #[clap(long, default_value_t = 3., help_heading = "PARAMETERS")]
+    pub sigma_z: f64,
 }
 
 impl Args {

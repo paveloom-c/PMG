@@ -7,7 +7,9 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use indoc::formatdoc;
-use num::Float;
+use num::{traits::FloatConst, Float};
+use rand::distributions::uniform::SampleUniform;
+use rand_distr::{Distribution, StandardNormal};
 use serde::Serialize;
 
 /// Name of the files
@@ -118,7 +120,8 @@ type Records<'a, F> = Vec<Record<'a, F>>;
 
 impl<'a, F> TryFrom<&'a Model<F>> for Records<'a, F>
 where
-    F: Float + Default + Display + Debug,
+    F: Float + FloatConst + SampleUniform + Default + Display + Debug,
+    StandardNormal: Distribution<F>,
 {
     type Error = anyhow::Error;
 
@@ -136,7 +139,8 @@ where
 
 impl<F> Model<F>
 where
-    F: Float + Default + Debug + Display + Serialize,
+    F: Float + FloatConst + SampleUniform + Default + Debug + Display + Serialize,
+    StandardNormal: Distribution<F>,
 {
     /// Serialize the Galactic heliocentric coordinates of the objects
     pub(in crate::model) fn serialize_to_coords(
@@ -190,13 +194,13 @@ where
             # L_NCP: {l_ncp} [122.932]
             #
             # Galactocentric distance to the Sun (kpc)
-            # R_0_1: = {r_0_1}
+            # R_0: {r_0}
             #
             ",
-            alpha_ngp = self.consts.alpha_ngp,
-            delta_ngp = self.consts.delta_ngp,
-            l_ncp = self.consts.l_ncp,
-            r_0_1 = self.consts.r_0_1,
+            alpha_ngp = self.params.alpha_ngp,
+            delta_ngp = self.params.delta_ngp,
+            l_ncp = self.params.l_ncp,
+            r_0 = self.params.r_0,
         );
         super::serialize_to(
             dat_dir,

@@ -1,8 +1,8 @@
 //! Distances
 
 use super::{Measurement, Object};
-use crate::model::Consts;
-use crate::utils::compute_r_g_1;
+use crate::model::Params;
+use crate::utils::compute_r_g;
 
 use std::fmt::{Debug, Display};
 
@@ -11,7 +11,7 @@ use num::Float;
 use numeric_literals::replace_float_literals;
 
 /// Distances
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub(in crate::model) struct Distances<F: Float + Debug> {
     /// Heliocentric distance (kpc)
     pub(in crate::model) r_h: Measurement<F>,
@@ -32,7 +32,7 @@ where
     F: Float + Default + Display + Debug,
 {
     /// Try to convert the object into this struct
-    pub(super) fn try_from(object: &Object<F>, consts: &Consts) -> Result<Self> {
+    pub(super) fn try_from(object: &Object<F>, params: &Params<F>) -> Result<Self> {
         // Unpack the data
         let (l, b) = object.galactic_s()?.into();
         let par = object.par()?;
@@ -41,9 +41,9 @@ where
         let r_h_u = 1. / par.v_u;
         let r_h_l = 1. / par.v_l;
         // Compute the Galactocentric distance
-        let r_g = compute_r_g_1(l, b, r_h, consts);
-        let r_g_u = compute_r_g_1(l, b, r_h_u, consts);
-        let r_g_l = compute_r_g_1(l, b, r_h_l, consts);
+        let r_g = compute_r_g(l, b, r_h, params);
+        let r_g_u = compute_r_g(l, b, r_h_u, params);
+        let r_g_l = compute_r_g(l, b, r_h_l, params);
         Ok(Self {
             r_h: Measurement {
                 v: r_h,
