@@ -76,7 +76,7 @@ type Records<'a, F> = Vec<Record<'a, F>>;
 
 impl<'a, F> TryFrom<&'a Model<F>> for Records<'a, F>
 where
-    F: Float + FloatConst + SampleUniform + Default + Display + Debug,
+    F: Float + FloatConst + SampleUniform + Default + Display + Debug + Sync,
     StandardNormal: Distribution<F>,
 {
     type Error = anyhow::Error;
@@ -95,7 +95,7 @@ where
 
 impl<F> Model<F>
 where
-    F: Float + FloatConst + SampleUniform + Default + Debug + Display + Serialize,
+    F: Float + FloatConst + SampleUniform + Default + Debug + Display + Serialize + Sync,
     StandardNormal: Distribution<F>,
 {
     /// Serialize the rotation curve

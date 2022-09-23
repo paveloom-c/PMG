@@ -13,6 +13,7 @@ pub use objects::{Measurement, Object, Objects};
 pub use params::Params;
 
 use core::fmt::{Debug, Display};
+use core::iter::Sum;
 use core::str::FromStr;
 use std::error::Error;
 use std::fs::create_dir_all;
@@ -29,7 +30,7 @@ use serde::{de::DeserializeOwned, Serialize};
 #[derive(Debug, Default)]
 pub struct Model<F>
 where
-    F: Float + FloatConst + SampleUniform + Default + Display + Debug,
+    F: Float + Debug,
     StandardNormal: Distribution<F>,
 {
     /// Initial model parameters
@@ -44,7 +45,7 @@ where
 
 impl<F> Model<F>
 where
-    F: Float + FloatConst + SampleUniform + Default + Display + Debug,
+    F: Float + FloatConst + SampleUniform + Default + Display + Debug + Sync + Send + Sum,
     StandardNormal: Distribution<F>,
 {
     /// Unwrap the fit of the model
@@ -115,7 +116,17 @@ where
 
 impl<F> TryFrom<&Args> for Model<F>
 where
-    F: Float + FloatConst + SampleUniform + Default + Display + Debug + FromStr + DeserializeOwned,
+    F: Float
+        + FloatConst
+        + SampleUniform
+        + Default
+        + Display
+        + Debug
+        + FromStr
+        + DeserializeOwned
+        + Sync
+        + Send
+        + Sum,
     <F as FromStr>::Err: Error + Send + Sync + 'static,
     StandardNormal: Distribution<F>,
 {

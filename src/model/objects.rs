@@ -17,15 +17,17 @@ use std::path::Path;
 use anyhow::{Context, Result};
 use csv::ReaderBuilder;
 use num::Float;
+use rayon::iter::IntoParallelIterator;
+use rayon::slice::Iter as ParIter;
 use serde::de::DeserializeOwned;
 
 /// Data objects
 #[derive(Clone, Debug, Default)]
-pub struct Objects<F: Float + Default + Debug>(Vec<Object<F>>);
+pub struct Objects<F: Float + Debug>(Vec<Object<F>>);
 
 impl<F> Objects<F>
 where
-    F: Float + Default + Display + Debug,
+    F: Float + Default + Display + Debug + Sync,
 {
     /// Perform computations based on goals
     pub(in crate::model) fn compute(&mut self, goals: &[Goal], params: &Params<F>) -> Result<()> {
@@ -41,14 +43,22 @@ where
     pub(in crate::model) fn extend(&mut self, objects: Self) {
         self.0.extend(objects.0);
     }
-    /// Return an iterator over objects
+    /// Return an iterator over the objects
     pub(in crate::model) fn iter(&self) -> Iter<Object<F>> {
         self.0.iter()
+    }
+    /// Return a parallel iterator over the objects
+    pub(in crate::model) fn par_iter(&self) -> ParIter<Object<F>> {
+        self.0.into_par_iter()
     }
     /// Return an iterator over objects
     /// that allows modifying each value
     pub(in crate::model) fn iter_mut(&mut self) -> IterMut<Object<F>> {
         self.0.iter_mut()
+    }
+    /// Get the number of objects
+    pub(in crate::model) fn len(&self) -> usize {
+        self.0.len()
     }
 }
 

@@ -28,7 +28,7 @@ use num::Float;
 #[derive(Clone, Debug, Default)]
 pub struct Object<F>
 where
-    F: Float + Default + Debug,
+    F: Float + Debug,
 {
     /// Name of the object
     name: Option<String>,

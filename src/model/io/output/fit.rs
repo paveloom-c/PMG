@@ -3,6 +3,7 @@
 use crate::model::{Model, Params};
 
 use core::fmt::{Debug, Display};
+use core::iter::Sum;
 use std::path::Path;
 
 use anyhow::Result;
@@ -62,7 +63,16 @@ where
 
 impl<F> Model<F>
 where
-    F: Float + FloatConst + SampleUniform + Default + Debug + Display + Serialize,
+    F: Float
+        + FloatConst
+        + SampleUniform
+        + Default
+        + Debug
+        + Display
+        + Serialize
+        + Sync
+        + Send
+        + Sum,
     StandardNormal: Distribution<F>,
 {
     /// Serialize the rotation curve

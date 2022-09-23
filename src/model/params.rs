@@ -5,6 +5,7 @@ use crate::utils::{compute_e_mu, compute_mu, compute_r_g};
 
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
+use core::iter::Sum;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 
@@ -15,8 +16,9 @@ use num::{traits::FloatConst, Float};
 use numeric_literals::replace_float_literals;
 use rand::distributions::uniform::SampleUniform;
 use rand::prelude::Distribution;
+use rand_chacha::{rand_core::SeedableRng, ChaCha8Rng};
 use rand_distr::{Normal, StandardNormal};
-use rand_xoshiro::rand_core::SeedableRng;
+use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
 use simulated_annealing::{NeighbourMethod, Point, Schedule, Status, APF, SA};
 
 /// Model parameters
@@ -56,7 +58,7 @@ pub struct Params<F: Float + Debug> {
 
 impl<F> Params<F>
 where
-    F: Float + FloatConst + SampleUniform + Default + Display + Debug,
+    F: Float + FloatConst + SampleUniform + Default + Display + Debug + Sync + Send + Sum,
     StandardNormal: Distribution<F>,
 {
     /// Update the parameters with the point in the parameter space
@@ -92,6 +94,7 @@ where
     /// Try to fit the model of the Galaxy to the provided data
     /// objects within the specified bounds, return a new set
     /// of inferred parameters
+    #[allow(clippy::as_conversions)]
     #[allow(clippy::non_ascii_literal)]
     #[allow(clippy::shadow_unrelated)]
     #[allow(clippy::similar_names)]
@@ -105,9 +108,6 @@ where
         let log_file = File::create("fit.log").with_context(|| "Couldn't create a file")?;
         // Prepare a buffered writer
         let wtr = RefCell::new(BufWriter::new(log_file));
-        // Prepare a random number generator
-        let mut rng_1 = rand_xoshiro::Xoshiro256PlusPlus::seed_from_u64(1);
-        let mut rng_2 = rand_xoshiro::Xoshiro256PlusPlus::seed_from_u64(2);
         // Clone the objects
         let mut fit_objects = objects.clone();
         // Prepare storage for new parameters
@@ -124,14 +124,20 @@ where
         let f = |f_p: &Point<F, 9>| -> Result<F> {
             // Update the parameters
             params.update_with(f_p);
+            // Prepare storage for the results
+            let mut results: Vec<(F, F)> = vec![(0., 0.); fit_objects.len()];
             // Compute the new value of the function
             //
             // We compute many values manually here since
             // we don't need the numeric error propagation
-            fit_objects
-                .iter()
+            let l_1 = fit_objects
+                .par_iter()
+                .zip(results.par_iter_mut())
                 .enumerate()
-                .try_fold(F::zero(), |acc, (i, object)| -> Result<F> {
+                .try_fold_with(F::zero(), |acc, (i, (object, result))| -> Result<F> {
+                    // Prepare a random number generator with a specific stream
+                    let mut rng = ChaCha8Rng::seed_from_u64(1);
+                    rng.set_stream(i as u64 + 1);
                     // Unpack the data
                     let (alpha, delta) = object.equatorial_s()?.into();
                     let par = object.par()?;
@@ -237,26 +243,27 @@ where
                         neighbour: &NeighbourMethod::Normal { sd: par.e_p },
                         schedule: &Schedule::Fast,
                         status: &mut Status::None,
-                        rng: &mut rng_1,
+                        rng: &mut rng,
                     }
                     .findmin()?;
-                    // let (sum_min, par_r) = (g(&[par.v])?, &[par.v]);
-                    // Write the result to the buffer
-                    writeln!(
-                        wtr.borrow_mut(),
-                        "{i}: par: {} -> par_r: {}",
-                        par.v,
-                        par_r[0]
-                    )
-                    .ok();
                     // Compute the final sum for this object
                     let res = F::ln(F::sqrt(d_v_r))
                         + F::ln(F::sqrt(d_mu_l_cos_b))
                         + F::ln(F::sqrt(d_mu_b))
                         + sum_min;
+                    // Save the results
+                    *result = (par.v, par_r[0]);
                     // Add to the general sum
                     Ok(acc + res)
                 })
+                // Parallel fold returns an iterator over folds from
+                // different threads. We sum those to get the final results
+                .reduce(|| Ok(F::zero()), |a, b| Ok(a? + b?));
+            // Write the result to the buffer
+            for (i, &(par, par_r)) in results.iter().enumerate() {
+                writeln!(wtr.borrow_mut(), "{i}: par: {par} -> par_r: {par_r}",).ok();
+            }
+            l_1
         };
         // Find the global minimum
         let (_, p) = SA {
@@ -361,10 +368,10 @@ where
                         ),
                     )
                     .ok();
-                    wtr.borrow_mut().flush().ok();
                 }),
             },
-            rng: &mut rng_2,
+            // Same seed as above, but the stream is 0
+            rng: &mut ChaCha8Rng::seed_from_u64(1),
         }
         .findmin()
         .with_context(|| "Couldn't find the global minimum")?;
