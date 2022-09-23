@@ -3,6 +3,7 @@
 use super::Goal;
 use crate::utils::{dms2rad, hms2rad, str2vec};
 
+use core::ops::Range;
 use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Result};
@@ -106,6 +107,46 @@ impl TypedValueParser for DecParser {
     }
 }
 
+/// Parser of ranges
+#[derive(Clone)]
+struct RangeParser;
+
+impl TypedValueParser for RangeParser {
+    type Value = Range<f64>;
+
+    #[allow(clippy::indexing_slicing)]
+    fn parse_ref(
+        &self,
+        _cmd: &clap::Command,
+        _arg: Option<&clap::Arg>,
+        value: &std::ffi::OsStr,
+    ) -> Result<Self::Value, clap::Error> {
+        // If the OS string can be converted to a regular string
+        if let Some(string) = value.to_str() {
+            // Split the string by `..`
+            let substrings: Vec<&str> = string.split("..").collect();
+            // If the number of substrings is exactly two
+            if substrings.len() == 2 {
+                // If both of these substrings can be converted to floats
+                if let Ok(begin) = substrings[0].parse::<f64>() {
+                    if let Ok(end) = substrings[1].parse::<f64>() {
+                        // If the first number is smaller than the second one
+                        if begin < end {
+                            // Return the range
+                            return Ok(begin..end);
+                        }
+                    }
+                }
+            }
+        }
+        // Otherwise, return an error
+        Err(clap::Error::raw(
+            clap::ErrorKind::InvalidValue,
+            "Couldn't parse a range from the string",
+        ))
+    }
+}
+
 /// Command-line interface arguments
 #[derive(Parser)]
 #[clap(author, version, about)]
@@ -184,6 +225,33 @@ pub struct Args {
     /// Vertical component of the ellipsoid of natural standard deviations (km/s)
     #[clap(long, default_value_t = 3., help_heading = "PARAMETERS")]
     pub sigma_z: f64,
+    /// Galactocentric distance to the Sun (kpc)
+    #[clap(long, value_parser = RangeParser, default_value = "7.0..9.0", help_heading = "BOUNDS")]
+    pub r_0_bounds: Range<f64>,
+    /// Circular velocity of the Sun at R = R_0 (km/s/kpc)
+    #[clap(long, value_parser = RangeParser, default_value = "1.0..35.0", help_heading = "BOUNDS")]
+    pub omega_0_bounds: Range<f64>,
+    /// Oort's A constant (km/s/kpc)
+    #[clap(long, value_parser = RangeParser, default_value = "10.0..20.0", help_heading = "BOUNDS")]
+    pub a_bounds: Range<f64>,
+    /// Standard Solar Motion toward GC (km/s)
+    #[clap(long, value_parser = RangeParser, default_value = "10.2..10.4", help_heading = "BOUNDS")]
+    pub u_sun_standard_bounds: Range<f64>,
+    /// Standard Solar Motion toward l = 90 degrees (km/s)
+    #[clap(long, value_parser = RangeParser, default_value = "15.2..15.4", help_heading = "BOUNDS")]
+    pub v_sun_standard_bounds: Range<f64>,
+    /// Standard Solar Motion toward NGP (km/s)
+    #[clap(long, value_parser = RangeParser, default_value = "7.6..7.8", help_heading = "BOUNDS")]
+    pub w_sun_standard_bounds: Range<f64>,
+    /// Radial component of the ellipsoid of natural standard deviations (km/s)
+    #[clap(long, value_parser = RangeParser, default_value = "1.0..25.0", help_heading = "BOUNDS")]
+    pub sigma_r_bounds: Range<f64>,
+    /// Azimuthal component of the ellipsoid of natural standard deviations (km/s)
+    #[clap(long, value_parser = RangeParser, default_value = "1.0..25.0", help_heading = "BOUNDS")]
+    pub sigma_theta_bounds: Range<f64>,
+    /// Vertical component of the ellipsoid of natural standard deviations (km/s)
+    #[clap(long, value_parser = RangeParser, default_value = "1.0..25.0", help_heading = "BOUNDS")]
+    pub sigma_z_bounds: Range<f64>,
 }
 
 impl Args {

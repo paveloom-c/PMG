@@ -12,7 +12,7 @@ mod str2vec;
 mod to_cartesian;
 mod to_spherical;
 
-pub use cast::cast;
+pub use cast::{cast, cast_range};
 pub use compute_e_mu::compute_e_mu;
 pub use compute_e_theta::compute_e_theta;
 pub use compute_mu::{compute_mu, compute_mu_from};

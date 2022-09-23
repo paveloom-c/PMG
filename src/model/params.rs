@@ -1,6 +1,6 @@
 //! Model parameters
 
-use super::Objects;
+use super::{Bounds, Objects};
 use crate::utils::{compute_e_mu, compute_mu, compute_r_g};
 
 use core::cell::RefCell;
@@ -17,7 +17,7 @@ use rand::distributions::uniform::SampleUniform;
 use rand::prelude::Distribution;
 use rand_distr::{Normal, StandardNormal};
 use rand_xoshiro::rand_core::SeedableRng;
-use simulated_annealing::{Bounds, NeighbourMethod, Point, Schedule, Status, APF, SA};
+use simulated_annealing::{NeighbourMethod, Point, Schedule, Status, APF, SA};
 
 /// Model parameters
 #[derive(Default, Debug, Clone)]
@@ -89,24 +89,9 @@ where
             self.sigma_z,
         ]
     }
-    /// Return the bounds of the parameters in the parameter space
-    #[allow(clippy::unwrap_used)]
-    #[replace_float_literals(F::from(literal).unwrap())]
-    pub fn bounds() -> Bounds<F, 9> {
-        [
-            7.0..9.0,
-            1.0..35.0,
-            10.0..20.0,
-            10.2..10.4,
-            15.2..15.4,
-            7.6..7.8,
-            1.0..25.0,
-            1.0..25.0,
-            1.0..25.0,
-        ]
-    }
     /// Try to fit the model of the Galaxy to the provided data
-    /// objects, return a new set of inferred parameters
+    /// objects within the specified bounds, return a new set
+    /// of inferred parameters
     #[allow(clippy::non_ascii_literal)]
     #[allow(clippy::shadow_unrelated)]
     #[allow(clippy::similar_names)]
@@ -115,7 +100,7 @@ where
     #[allow(clippy::unwrap_used)]
     #[allow(clippy::use_debug)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub(super) fn try_fit_from(&self, objects: &Objects<F>) -> Result<Self> {
+    pub(super) fn try_fit_from(&self, bounds: &Bounds<F>, objects: &Objects<F>) -> Result<Self> {
         // Prepare a log file
         let log_file = File::create("fit.log").with_context(|| "Couldn't create a file")?;
         // Prepare a buffered writer
@@ -279,7 +264,7 @@ where
             p_0: &p_0,
             t_0: 100_000.0,
             t_min: 1.0,
-            bounds: &Params::bounds(),
+            bounds: &bounds.to_array(),
             apf: &APF::Metropolis,
             neighbour: &NeighbourMethod::Custom {
                 f: |p, bounds, rng| -> Result<Point<F, 9>> {
@@ -314,7 +299,6 @@ where
             schedule: &Schedule::Exponential { gamma: 0.95 },
             status: &mut Status::Custom {
                 f: Box::new(|k, t, f, p, best_f, best_p| {
-                    let bounds = Params::bounds();
                     writeln!(
                         wtr.borrow_mut(),
                         "{}",
@@ -365,15 +349,15 @@ where
                             best_p_6 = best_p[6],
                             best_p_7 = best_p[7],
                             best_p_8 = best_p[8],
-                            bounds_0 = bounds[0],
-                            bounds_1 = bounds[1],
-                            bounds_2 = bounds[2],
-                            bounds_3 = bounds[3],
-                            bounds_4 = bounds[4],
-                            bounds_5 = bounds[5],
-                            bounds_6 = bounds[6],
-                            bounds_7 = bounds[7],
-                            bounds_8 = bounds[8],
+                            bounds_0 = bounds.r_0,
+                            bounds_1 = bounds.omega_0,
+                            bounds_2 = bounds.a,
+                            bounds_3 = bounds.u_sun_standard,
+                            bounds_4 = bounds.v_sun_standard,
+                            bounds_5 = bounds.w_sun_standard,
+                            bounds_6 = bounds.sigma_r,
+                            bounds_7 = bounds.sigma_theta,
+                            bounds_8 = bounds.sigma_z,
                         ),
                     )
                     .ok();

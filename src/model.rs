@@ -1,5 +1,6 @@
 //! Model of the Galaxy
 
+mod bounds;
 mod io;
 mod objects;
 mod params;
@@ -7,6 +8,7 @@ mod params;
 use crate::cli::Args;
 use crate::utils;
 use crate::Goal;
+use bounds::Bounds;
 pub use objects::{Measurement, Object, Objects};
 pub use params::Params;
 
@@ -32,6 +34,8 @@ where
 {
     /// Initial model parameters
     params: Params<F>,
+    /// Bounds of the initial parameters
+    bounds: Bounds<F>,
     /// Data objects
     objects: Objects<F>,
     /// Fitted model parameters
@@ -58,7 +62,7 @@ where
             // Try to fit the model
             self.fitted_params.get_or_insert(
                 self.params
-                    .try_fit_from(&self.objects)
+                    .try_fit_from(&self.bounds, &self.objects)
                     .with_context(|| "Couldn't fit the model")?,
             );
         }
@@ -136,6 +140,17 @@ where
                 sigma_r: utils::cast(args.sigma_r)?,
                 sigma_theta: utils::cast(args.sigma_theta)?,
                 sigma_z: utils::cast(args.sigma_z)?,
+            },
+            bounds: Bounds {
+                r_0: utils::cast_range(args.r_0_bounds.clone())?,
+                omega_0: utils::cast_range(args.omega_0_bounds.clone())?,
+                a: utils::cast_range(args.a_bounds.clone())?,
+                u_sun_standard: utils::cast_range(args.u_sun_standard_bounds.clone())?,
+                v_sun_standard: utils::cast_range(args.v_sun_standard_bounds.clone())?,
+                w_sun_standard: utils::cast_range(args.w_sun_standard_bounds.clone())?,
+                sigma_r: utils::cast_range(args.sigma_r_bounds.clone())?,
+                sigma_theta: utils::cast_range(args.sigma_theta_bounds.clone())?,
+                sigma_z: utils::cast_range(args.sigma_z_bounds.clone())?,
             },
             ..Default::default()
         };
