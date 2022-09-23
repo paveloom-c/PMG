@@ -4,7 +4,7 @@ use super::{Measurement, Object};
 use crate::model::Params;
 use crate::utils::{compute_e_theta, compute_theta_r_g};
 
-use std::fmt::{Debug, Display};
+use core::fmt::{Debug, Display};
 
 use anyhow::Result;
 use num::Float;

@@ -12,11 +12,12 @@ rustflags = [
     "-Dnonstandard-style",
     "-Dunsafe_code",
     # Exceptions
-    "-Aclippy::implicit_return",
-    "-Aclippy::separated_literal_suffix",
+    "-Aclippy::arithmetic",
     "-Aclippy::default_numeric_fallback",
-    "-Aclippy::single_char_lifetime_names",
+    "-Aclippy::implicit_return",
     "-Aclippy::missing_errors_doc",
     "-Aclippy::pub_use",
     "-Aclippy::self_named_module_files",
+    "-Aclippy::separated_literal_suffix",
+    "-Aclippy::single_char_lifetime_names",
 ]

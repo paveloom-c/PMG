@@ -2,7 +2,7 @@
 
 use crate::model::Params;
 
-use std::fmt::Debug;
+use core::fmt::Debug;
 
 use num::Float;
 

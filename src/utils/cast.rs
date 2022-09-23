@@ -3,7 +3,7 @@
 use anyhow::{anyhow, Result};
 use num::{Float, ToPrimitive};
 
-use std::fmt::Debug;
+use core::fmt::Debug;
 
 /// Try to cast the number to a generic floating-point number
 #[allow(clippy::inline_always)]

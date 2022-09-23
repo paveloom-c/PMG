@@ -2,7 +2,7 @@
 
 use crate::model::{Model, Object};
 
-use std::fmt::{Debug, Display};
+use core::fmt::{Debug, Display};
 use std::path::Path;
 
 use anyhow::{Context, Result};

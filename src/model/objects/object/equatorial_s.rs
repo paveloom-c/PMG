@@ -3,9 +3,9 @@
 use crate::model::io::input;
 use crate::utils::{dms2rad, hms2rad, str2vec};
 
+use core::fmt::Debug;
+use core::str::FromStr;
 use std::error::Error;
-use std::fmt::Debug;
-use std::str::FromStr;
 
 use anyhow::{bail, Context, Result};
 use num::Float;

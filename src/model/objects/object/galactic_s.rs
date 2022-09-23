@@ -4,7 +4,7 @@ use super::Object;
 use crate::model::Params;
 use crate::utils::to_spherical;
 
-use std::fmt::{Debug, Display};
+use core::fmt::{Debug, Display};
 
 use anyhow::Result;
 use num::Float;

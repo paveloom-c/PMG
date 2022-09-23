@@ -10,11 +10,11 @@ use crate::Goal;
 pub use objects::{Measurement, Object, Objects};
 pub use params::Params;
 
+use core::fmt::{Debug, Display};
+use core::str::FromStr;
 use std::error::Error;
-use std::fmt::{Debug, Display};
 use std::fs::create_dir_all;
 use std::path::Path;
-use std::str::FromStr;
 
 use anyhow::{anyhow, Context, Result};
 use num::{traits::FloatConst, Float};

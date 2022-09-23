@@ -1,6 +1,6 @@
 //! Computation goal
 
-use std::cmp::Ord;
+use core::cmp::Ord;
 
 /// Computation goal
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]

@@ -1,8 +1,8 @@
 //! Parse a string for a vector of floats
 
+use core::fmt::Debug;
+use core::str::FromStr;
 use std::error::Error;
-use std::fmt::Debug;
-use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use num::Float;

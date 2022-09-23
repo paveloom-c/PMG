@@ -1,6 +1,6 @@
 //! Convert a degrees-minutes-seconds angle to radians
 
-use std::fmt::Debug;
+use core::fmt::Debug;
 
 use num::Float;
 use numeric_literals::replace_float_literals;

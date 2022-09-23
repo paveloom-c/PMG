@@ -3,7 +3,7 @@
 use super::{Measurement, Object};
 use crate::utils::to_cartesian;
 
-use std::fmt::{Debug, Display};
+use core::fmt::{Debug, Display};
 
 use anyhow::Result;
 use num::Float;

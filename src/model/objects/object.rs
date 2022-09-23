@@ -17,9 +17,9 @@ use galactic_s::GalacticSpherical;
 pub use measurement::Measurement;
 use rotation_c::RotationCurve;
 
+use core::fmt::{Debug, Display};
+use core::str::FromStr;
 use std::error::Error;
-use std::fmt::{Debug, Display};
-use std::str::FromStr;
 
 use anyhow::{anyhow, Context, Result};
 use num::Float;

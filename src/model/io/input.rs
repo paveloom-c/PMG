@@ -1,6 +1,6 @@
 //! Input related
 
-use std::fmt::Debug;
+use core::fmt::Debug;
 
 use num::Float;
 use serde::Deserialize;

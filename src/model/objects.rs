@@ -8,11 +8,11 @@ use crate::Goal;
 
 pub use object::{Measurement, Object};
 
+use core::fmt::{Debug, Display};
+use core::slice::{Iter, IterMut};
+use core::str::FromStr;
 use std::error::Error;
-use std::fmt::{Debug, Display};
 use std::path::Path;
-use std::slice::{Iter, IterMut};
-use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use csv::ReaderBuilder;

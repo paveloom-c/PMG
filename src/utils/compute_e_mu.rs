@@ -3,7 +3,7 @@
 use super::compute_mu_from;
 use crate::model::{Measurement, Params};
 
-use std::fmt::Debug;
+use core::fmt::Debug;
 
 use autodiff::FT;
 use num::Float;

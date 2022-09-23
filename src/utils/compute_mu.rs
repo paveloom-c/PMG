@@ -6,7 +6,7 @@
 use super::to_spherical;
 use crate::model::Params;
 
-use std::fmt::Debug;
+use core::fmt::Debug;
 
 use autodiff::FT;
 use num::Float;

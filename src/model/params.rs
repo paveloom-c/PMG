@@ -3,8 +3,8 @@
 use super::Objects;
 use crate::utils::{compute_e_mu, compute_mu, compute_r_g};
 
-use std::cell::RefCell;
-use std::fmt::{Debug, Display};
+use core::cell::RefCell;
+use core::fmt::{Debug, Display};
 use std::fs::File;
 use std::io::{BufWriter, Write};
 
