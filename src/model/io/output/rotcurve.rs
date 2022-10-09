@@ -47,7 +47,7 @@ struct Record<'a, F: Float + Debug> {
 #[allow(clippy::many_single_char_names)]
 impl<'a, F> TryFrom<&'a Object<F>> for Record<'a, F>
 where
-    F: Float + Default + Display + Debug,
+    F: Float + FloatConst + Default + Display + Debug,
 {
     type Error = anyhow::Error;
 

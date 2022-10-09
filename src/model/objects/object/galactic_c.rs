@@ -6,7 +6,7 @@ use crate::utils::to_cartesian;
 use core::fmt::{Debug, Display};
 
 use anyhow::Result;
-use num::Float;
+use num::{traits::FloatConst, Float};
 
 /// Galactic heliocentric Cartesian coordinates
 #[derive(Clone, Debug)]
@@ -22,7 +22,7 @@ pub struct GalacticCartesian<F: Float + Debug> {
 #[allow(clippy::many_single_char_names)]
 impl<F> TryFrom<&Object<F>> for GalacticCartesian<F>
 where
-    F: Float + Default + Display + Debug,
+    F: Float + FloatConst + Default + Display + Debug,
 {
     type Error = anyhow::Error;
 

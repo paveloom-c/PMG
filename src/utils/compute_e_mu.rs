@@ -6,12 +6,12 @@ use crate::model::{Measurement, Params};
 use core::fmt::Debug;
 
 use autodiff::FT;
-use num::Float;
+use num::{traits::FloatConst, Float};
 
 /// Compute the dispersion of `mu_l * cos(b)`
 #[allow(clippy::shadow_unrelated)]
 #[allow(clippy::similar_names)]
-pub fn compute_e_mu<F: Float + Debug>(
+pub fn compute_e_mu<F: Float + FloatConst + Debug>(
     alpha: F,
     delta: F,
     l: F,

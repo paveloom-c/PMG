@@ -7,7 +7,7 @@ use crate::utils::{compute_e_theta, compute_theta_r_g};
 use core::fmt::{Debug, Display};
 
 use anyhow::Result;
-use num::Float;
+use num::{traits::FloatConst, Float};
 use numeric_literals::replace_float_literals;
 
 /// Azimuthal velocity (km/s)
@@ -38,7 +38,7 @@ pub(in crate::model) struct RotationCurve<F: Float + Debug> {
 #[replace_float_literals(F::from(literal).unwrap())]
 impl<F> RotationCurve<F>
 where
-    F: Float + Default + Display + Debug,
+    F: Float + FloatConst + Default + Display + Debug,
 {
     /// Try to convert the object into this struct
     pub(super) fn try_from(object: &Object<F>, params: &Params<F>) -> Result<Self> {

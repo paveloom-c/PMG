@@ -22,7 +22,7 @@ use core::str::FromStr;
 use std::error::Error;
 
 use anyhow::{anyhow, Context, Result};
-use num::Float;
+use num::{traits::FloatConst, Float};
 
 /// Data object
 #[derive(Clone, Debug, Default)]
@@ -56,7 +56,7 @@ where
     source: Option<String>,
 }
 
-impl<F: Float + Default + Display + Debug> Object<F> {
+impl<F: Float + FloatConst + Default + Display + Debug> Object<F> {
     /// Unwrap the name of the object
     pub(in crate::model) fn name(&self) -> Result<&String> {
         self.name

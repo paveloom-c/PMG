@@ -6,7 +6,7 @@ use crate::model::Params;
 use core::fmt::Debug;
 
 use autodiff::FT;
-use num::Float;
+use num::{traits::FloatConst, Float};
 
 /// Compute the uncertainty of the azimuthal velocity inherited from velocities
 ///
@@ -17,7 +17,7 @@ use num::Float;
 #[allow(clippy::shadow_unrelated)]
 #[allow(clippy::similar_names)]
 #[allow(clippy::too_many_arguments)]
-pub fn compute_e_theta<F: Float + Debug>(
+pub fn compute_e_theta<F: Float + FloatConst + Debug>(
     alpha: F,
     delta: F,
     l: F,

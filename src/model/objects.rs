@@ -16,7 +16,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use csv::ReaderBuilder;
-use num::Float;
+use num::{traits::FloatConst, Float};
 use rayon::iter::IntoParallelIterator;
 use rayon::slice::Iter as ParIter;
 use serde::de::DeserializeOwned;
@@ -27,7 +27,7 @@ pub struct Objects<F: Float + Debug>(Vec<Object<F>>);
 
 impl<F> Objects<F>
 where
-    F: Float + Default + Display + Debug + Sync,
+    F: Float + FloatConst + Default + Display + Debug + Sync,
 {
     /// Perform computations based on goals
     pub(in crate::model) fn compute(&mut self, goals: &[Goal], params: &Params<F>) -> Result<()> {

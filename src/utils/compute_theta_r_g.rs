@@ -6,11 +6,14 @@ use crate::model::Params;
 use core::fmt::Debug;
 
 use autodiff::FT;
-use num::Float;
+use num::{traits::FloatConst, Float};
 use numeric_literals::replace_float_literals;
 
 /// Compute the azimuthal velocity from the array of arguments
-pub fn compute_theta<F: Float + Debug>(args: &[FT<F>; 8], params: &Params<F>) -> FT<F> {
+pub fn compute_theta<F: Float + FloatConst + Debug>(
+    args: &[FT<F>; 8],
+    params: &Params<F>,
+) -> FT<F> {
     compute_theta_r_g(
         args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], params,
     )
@@ -37,7 +40,7 @@ pub fn compute_theta_r_g<F, F2>(
     params: &Params<F2>,
 ) -> (F, F)
 where
-    F: Float + Debug + From<F2>,
+    F: Float + Debug + FloatConst + From<F2>,
     F2: Float + Debug,
 {
     // Get the parameters

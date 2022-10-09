@@ -120,12 +120,12 @@ where
             .iter_mut()
             .try_for_each(|object| object.compute_galactic_s(&params))
             .with_context(|| "Couldn't compute the Galactic spherical coordinates")?;
+        // Prepare storage for the results
+        let mut results: Vec<(F, F)> = vec![(0., 0.); fit_objects.len()];
         // A closure to compute the parameterized part of the negative log likelihood function of the model
         let f = |f_p: &Point<F, 9>| -> Result<F> {
             // Update the parameters
             params.update_with(f_p);
-            // Prepare storage for the results
-            let mut results: Vec<(F, F)> = vec![(0., 0.); fit_objects.len()];
             // Compute the new value of the function
             //
             // We compute many values manually here since
@@ -145,7 +145,7 @@ where
                     let mu_x = object.mu_x()?;
                     let mu_y = object.mu_y()?;
                     let (l, b) = object.galactic_s()?.into();
-                    // Compute the heliocentric distance and its squared value
+                    // Compute the heliocentric distance
                     let r_h = 1. / par.v;
                     // Compute the Galactocentric distance
                     let r_g = compute_r_g(l, b, r_h, &params);
@@ -181,7 +181,7 @@ where
                     let (sigma_mu_l_cos_b_sq, sigma_mu_b_sq) =
                         compute_e_mu(alpha, delta, l, b, mu_x, mu_y, &params);
                     // Compute the full dispersions
-                    let delim = params.k.powi(2) * r_g.powi(2);
+                    let delim = params.k.powi(2) * r_h.powi(2);
                     let d_v_r = v_lsr.e_p.powi(2) + sigma_v_r_star_sq;
                     let d_mu_l_cos_b = sigma_mu_l_cos_b_sq + sigma_v_l_star_sq / delim;
                     let d_mu_b = sigma_mu_b_sq + sigma_v_b_star_sq / delim;
@@ -250,7 +250,7 @@ where
                     let res = F::ln(F::sqrt(d_v_r))
                         + F::ln(F::sqrt(d_mu_l_cos_b))
                         + F::ln(F::sqrt(d_mu_b))
-                        + sum_min;
+                        + 0.5 * sum_min;
                     // Save the results
                     *result = (par.v, par_r[0]);
                     // Add to the general sum
