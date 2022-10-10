@@ -204,13 +204,13 @@ where
                         // Compute the difference between the Galactocentric distances
                         let delta_r = r_g_r - params.r_0;
                         // Compute the sum of the terms in the series of the rotation curve
-                        let rot_curve_series = -2. * params.a * delta_r;
+                        let rot_curve_series = 2. * params.a * delta_r;
                         // Compute the full model velocity
                         let v_r_mod =
-                            rot_curve_series * params.r_0 * sin_l * cos_b / r_g_r + v_r_sun;
+                            -rot_curve_series * params.r_0 * sin_l * cos_b / r_g_r + v_r_sun;
                         // Compute the model proper motion in longitude
                         let mu_l_cos_b_mod =
-                            (rot_curve_series * (params.r_0 * cos_l / r_h_r - cos_b) / r_g_r
+                            (-rot_curve_series * (params.r_0 * cos_l / r_h_r - cos_b) / r_g_r
                                 - params.omega_0 * cos_b
                                 + (params.u_sun_standard * sin_l - params.v_sun_standard * cos_l)
                                     / r_h_r)
