@@ -6,11 +6,8 @@ use crate::utils::{dms2rad, hms2rad, str2vec};
 use core::ops::Range;
 use std::path::{Path, PathBuf};
 
-use anyhow::{anyhow, Result};
-use clap::{
-    builder::{EnumValueParser, TypedValueParser},
-    Parser,
-};
+use anyhow::Result;
+use clap::{builder::TypedValueParser, Parser};
 
 /// Parser of angles in the hours-minutes-seconds form
 #[derive(Clone)]
@@ -22,7 +19,7 @@ impl TypedValueParser for HMSParser {
 
     fn parse_ref(
         &self,
-        _cmd: &clap::Command,
+        cmd: &clap::Command,
         _arg: Option<&clap::Arg>,
         value: &std::ffi::OsStr,
     ) -> Result<Self::Value, clap::Error> {
@@ -39,9 +36,10 @@ impl TypedValueParser for HMSParser {
         }
         // Otherwise, return an error
         Err(clap::Error::raw(
-            clap::ErrorKind::InvalidValue,
-            "Couldn't parse an angle in the HMS form from the string",
-        ))
+            clap::error::ErrorKind::InvalidValue,
+            "Couldn't parse an angle in the HMS form from the string\n",
+        )
+        .with_cmd(cmd))
     }
 }
 
@@ -55,7 +53,7 @@ impl TypedValueParser for DMSParser {
 
     fn parse_ref(
         &self,
-        _cmd: &clap::Command,
+        cmd: &clap::Command,
         _arg: Option<&clap::Arg>,
         value: &std::ffi::OsStr,
     ) -> Result<Self::Value, clap::Error> {
@@ -72,9 +70,10 @@ impl TypedValueParser for DMSParser {
         }
         // Otherwise, return an error
         Err(clap::Error::raw(
-            clap::ErrorKind::InvalidValue,
-            "Couldn't parse an angle in the DMS form from the string",
-        ))
+            clap::error::ErrorKind::InvalidValue,
+            "Couldn't parse an angle in the DMS form from the string\n",
+        )
+        .with_cmd(cmd))
     }
 }
 
@@ -87,7 +86,7 @@ impl TypedValueParser for DecParser {
 
     fn parse_ref(
         &self,
-        _cmd: &clap::Command,
+        cmd: &clap::Command,
         _arg: Option<&clap::Arg>,
         value: &std::ffi::OsStr,
     ) -> Result<Self::Value, clap::Error> {
@@ -101,9 +100,10 @@ impl TypedValueParser for DecParser {
         }
         // Otherwise, return an error
         Err(clap::Error::raw(
-            clap::ErrorKind::InvalidValue,
-            "Couldn't parse an angle in the decimal degrees form from the string",
-        ))
+            clap::error::ErrorKind::InvalidValue,
+            "Couldn't parse an angle in the decimal degrees form from the string\n",
+        )
+        .with_cmd(cmd))
     }
 }
 
@@ -117,7 +117,7 @@ impl TypedValueParser for RangeParser {
     #[allow(clippy::indexing_slicing)]
     fn parse_ref(
         &self,
-        _cmd: &clap::Command,
+        cmd: &clap::Command,
         _arg: Option<&clap::Arg>,
         value: &std::ffi::OsStr,
     ) -> Result<Self::Value, clap::Error> {
@@ -141,128 +141,159 @@ impl TypedValueParser for RangeParser {
         }
         // Otherwise, return an error
         Err(clap::Error::raw(
-            clap::ErrorKind::InvalidValue,
-            "Couldn't parse a range from the string",
-        ))
+            clap::error::ErrorKind::InvalidValue,
+            "Couldn't parse a range from the string\n",
+        )
+        .with_cmd(cmd))
+    }
+}
+
+/// Parser of paths
+#[derive(Clone)]
+pub struct PathBufParser;
+
+impl TypedValueParser for PathBufParser {
+    type Value = std::path::PathBuf;
+
+    fn parse_ref(
+        &self,
+        cmd: &clap::Command,
+        arg: Option<&clap::Arg>,
+        value: &std::ffi::OsStr,
+    ) -> Result<Self::Value, clap::Error> {
+        TypedValueParser::parse(self, cmd, arg, value.to_owned())
+    }
+
+    fn parse(
+        &self,
+        cmd: &clap::Command,
+        _arg: Option<&clap::Arg>,
+        value: std::ffi::OsString,
+    ) -> Result<Self::Value, clap::Error> {
+        if let Some(string) = value.to_str() {
+            if Path::new(string).is_file() {
+                return Ok(Self::Value::from(value));
+            }
+        }
+        Err(clap::Error::raw(
+            clap::error::ErrorKind::InvalidValue,
+            "Input must be an existing file\n",
+        )
+        .with_cmd(cmd))
     }
 }
 
 /// Command-line interface arguments
 #[derive(Parser)]
-#[clap(author, version, about)]
+#[command(author, version, about)]
+#[command(help_template(
+    "{before-help}{name} {version}\n\
+    {author-with-newline}{about-with-newline}\n\
+    {usage-heading} {usage}\n\n\
+    {all-args}{after-help}"
+))]
 pub struct Args {
     /// Output directory
-    #[clap(short, required = true)]
+    #[arg(short, required = true)]
     pub output: PathBuf,
     /// Computation goals
-    #[clap(long, multiple_values = true, required = true, value_parser = EnumValueParser::<Goal>::new())]
+    #[arg(long, required = true)]
     pub goals: Vec<Goal>,
     /// Input files
-    #[clap(short, multiple_values = true, required = true, validator = Self::validate_input)]
+    #[arg(short, required = true, value_parser = PathBufParser)]
     pub inputs: Vec<PathBuf>,
     /// The right ascension of the north galactic pole (HMS angle -> radians)
     ///
     /// Source: Reid et al. (2009)
-    #[clap(long, value_parser = HMSParser {}, default_value = "12:51:26.2817", help_heading = "PARAMETERS")]
+    #[arg(long, value_parser = HMSParser {}, default_value = "12:51:26.2817", help_heading = "PARAMETERS")]
     pub alpha_ngp: f64,
     /// The declination of the north galactic pole (DMS angle -> radians)
     ///
     /// Source: Reid et al. (2009)
-    #[clap(long, value_parser = DMSParser {}, default_value = "27:07:42.013", help_heading = "PARAMETERS")]
+    #[arg(long, value_parser = DMSParser {}, default_value = "27:07:42.013", help_heading = "PARAMETERS")]
     pub delta_ngp: f64,
     /// Linear velocities units conversion coefficient
     ///
     /// Sources: Gromov, Nikiforov (2016)
-    #[clap(long, default_value_t = 4.7406, help_heading = "PARAMETERS")]
+    #[arg(long, default_value_t = 4.7406, help_heading = "PARAMETERS")]
     pub k: f64,
     /// The longitude of the north celestial pole (decimal degrees angle -> radians)
     ///
     /// Source: Reid et al. (2009)
-    #[clap(long, value_parser = DecParser {}, default_value_t = 122.932, help_heading = "PARAMETERS")]
+    #[arg(long, value_parser = DecParser {}, default_value_t = 122.932, help_heading = "PARAMETERS")]
     pub l_ncp: f64,
     /// Galactocentric distance to the Sun (kpc)
     ///
     /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-    #[clap(long, default_value_t = 8.15, help_heading = "PARAMETERS")]
+    #[arg(long, default_value_t = 8.15, help_heading = "PARAMETERS")]
     pub r_0: f64,
     /// Full circular velocity of the Sun (km/s)
     ///
     /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-    #[clap(long, default_value_t = 247., help_heading = "PARAMETERS")]
+    #[arg(long, default_value_t = 247., help_heading = "PARAMETERS")]
     pub theta_sun: f64,
     /// Peculiar motion locally toward GC (km/s)
     ///
     /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-    #[clap(long, default_value_t = 10.7, help_heading = "PARAMETERS")]
+    #[arg(long, default_value_t = 10.7, help_heading = "PARAMETERS")]
     pub u_sun: f64,
     /// Circular velocity of the Sun at R = R_0 (km/s/kpc)
-    #[clap(long, default_value_t = 28., help_heading = "PARAMETERS")]
+    #[arg(long, default_value_t = 28., help_heading = "PARAMETERS")]
     pub omega_0: f64,
     /// Oort's A constant (km/s/kpc)
-    #[clap(long, default_value_t = 17., help_heading = "PARAMETERS")]
+    #[arg(long, default_value_t = 17., help_heading = "PARAMETERS")]
     pub a: f64,
     /// Standard Solar Motion toward GC (km/s)
     ///
     /// Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
-    #[clap(long, default_value_t = 10.3, help_heading = "PARAMETERS")]
+    #[arg(long, default_value_t = 10.3, help_heading = "PARAMETERS")]
     pub u_sun_standard: f64,
     /// Standard Solar Motion toward l = 90 degrees (km/s)
     ///
     /// Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
-    #[clap(long, default_value_t = 15.3, help_heading = "PARAMETERS")]
+    #[arg(long, default_value_t = 15.3, help_heading = "PARAMETERS")]
     pub v_sun_standard: f64,
     /// Standard Solar Motion toward NGP (km/s)
     ///
     /// Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
-    #[clap(long, default_value_t = 7.7, help_heading = "PARAMETERS")]
+    #[arg(long, default_value_t = 7.7, help_heading = "PARAMETERS")]
     pub w_sun_standard: f64,
     /// Radial component of the ellipsoid of natural standard deviations (km/s)
-    #[clap(long, default_value_t = 6., help_heading = "PARAMETERS")]
+    #[arg(long, default_value_t = 6., help_heading = "PARAMETERS")]
     pub sigma_r: f64,
     /// Azimuthal component of the ellipsoid of natural standard deviations (km/s)
-    #[clap(long, default_value_t = 12., help_heading = "PARAMETERS")]
+    #[arg(long, default_value_t = 12., help_heading = "PARAMETERS")]
     pub sigma_theta: f64,
     /// Vertical component of the ellipsoid of natural standard deviations (km/s)
-    #[clap(long, default_value_t = 3., help_heading = "PARAMETERS")]
+    #[arg(long, default_value_t = 3., help_heading = "PARAMETERS")]
     pub sigma_z: f64,
     /// Galactocentric distance to the Sun (kpc)
-    #[clap(long, value_parser = RangeParser, default_value = "7.0..9.0", help_heading = "BOUNDS")]
+    #[arg(long, value_parser = RangeParser, default_value = "7.0..9.0", help_heading = "BOUNDS")]
     pub r_0_bounds: Range<f64>,
     /// Circular velocity of the Sun at R = R_0 (km/s/kpc)
-    #[clap(long, value_parser = RangeParser, default_value = "1.0..35.0", help_heading = "BOUNDS")]
+    #[arg(long, value_parser = RangeParser, default_value = "1.0..35.0", help_heading = "BOUNDS")]
     pub omega_0_bounds: Range<f64>,
     /// Oort's A constant (km/s/kpc)
-    #[clap(long, value_parser = RangeParser, default_value = "10.0..20.0", help_heading = "BOUNDS")]
+    #[arg(long, value_parser = RangeParser, default_value = "10.0..20.0", help_heading = "BOUNDS")]
     pub a_bounds: Range<f64>,
     /// Standard Solar Motion toward GC (km/s)
-    #[clap(long, value_parser = RangeParser, default_value = "10.2..10.4", help_heading = "BOUNDS")]
+    #[arg(long, value_parser = RangeParser, default_value = "10.2..10.4", help_heading = "BOUNDS")]
     pub u_sun_standard_bounds: Range<f64>,
     /// Standard Solar Motion toward l = 90 degrees (km/s)
-    #[clap(long, value_parser = RangeParser, default_value = "15.2..15.4", help_heading = "BOUNDS")]
+    #[arg(long, value_parser = RangeParser, default_value = "15.2..15.4", help_heading = "BOUNDS")]
     pub v_sun_standard_bounds: Range<f64>,
     /// Standard Solar Motion toward NGP (km/s)
-    #[clap(long, value_parser = RangeParser, default_value = "7.6..7.8", help_heading = "BOUNDS")]
+    #[arg(long, value_parser = RangeParser, default_value = "7.6..7.8", help_heading = "BOUNDS")]
     pub w_sun_standard_bounds: Range<f64>,
     /// Radial component of the ellipsoid of natural standard deviations (km/s)
-    #[clap(long, value_parser = RangeParser, default_value = "1.0..25.0", help_heading = "BOUNDS")]
+    #[arg(long, value_parser = RangeParser, default_value = "1.0..25.0", help_heading = "BOUNDS")]
     pub sigma_r_bounds: Range<f64>,
     /// Azimuthal component of the ellipsoid of natural standard deviations (km/s)
-    #[clap(long, value_parser = RangeParser, default_value = "1.0..25.0", help_heading = "BOUNDS")]
+    #[arg(long, value_parser = RangeParser, default_value = "1.0..25.0", help_heading = "BOUNDS")]
     pub sigma_theta_bounds: Range<f64>,
     /// Vertical component of the ellipsoid of natural standard deviations (km/s)
-    #[clap(long, value_parser = RangeParser, default_value = "1.0..25.0", help_heading = "BOUNDS")]
+    #[arg(long, value_parser = RangeParser, default_value = "1.0..25.0", help_heading = "BOUNDS")]
     pub sigma_z_bounds: Range<f64>,
-}
-
-impl Args {
-    /// Check if the path to the input file is valid
-    fn validate_input(s: &str) -> Result<()> {
-        if Path::new(s).is_file() {
-            Ok(())
-        } else {
-            Err(anyhow!("Input must be an existing file"))
-        }
-    }
 }
 
 /// Parse the arguments

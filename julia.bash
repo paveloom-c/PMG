@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -e
 
 # A script to run Julia scripts (as arguments) using a daemon
 

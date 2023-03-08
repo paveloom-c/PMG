@@ -85,7 +85,7 @@ using LaTeXStrings
 using PGFPlotsX
 
 # Choose a color scheme
-colors = ColorSchemes.tol_light[2:end]
+colors = ColorSchemes.tol_bright[2:end]
 
 # Define the markers set
 marks = repeat(["*"], 5)

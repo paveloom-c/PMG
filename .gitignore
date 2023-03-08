@@ -1,9 +1,12 @@
+# Direnv
+.direnv
+
+# Nix
+result
+
 # Artifacts
 target
 public
 data/output
 plots
 *.log
-
-# Radicle
-.gitsigners
