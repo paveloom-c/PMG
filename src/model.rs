@@ -16,7 +16,7 @@ use core::fmt::{Debug, Display};
 use core::iter::Sum;
 use core::str::FromStr;
 use std::error::Error;
-use std::fs::create_dir_all;
+use std::fs;
 use std::path::Path;
 
 use anyhow::{anyhow, Context, Result};
@@ -52,7 +52,7 @@ where
     pub(in crate::model) fn fitted_params(&self) -> Result<&Params<F>> {
         self.fitted_params
             .as_ref()
-            .ok_or_else(|| anyhow!("Couldn't unwrap the name"))
+            .ok_or_else(|| anyhow!("Couldn't unwrap the fitted parameters"))
     }
     /// Perform computations based on goals
     pub fn compute(&mut self, goals: &[Goal]) -> Result<()> {
@@ -91,9 +91,9 @@ where
         // Make sure the output directories exist
         let dat_dir = &dir.join("dat");
         let bin_dir = &dir.join("bin");
-        create_dir_all(dat_dir)
+        fs::create_dir_all(dat_dir)
             .with_context(|| format!("Couldn't create the output directory {dat_dir:?}"))?;
-        create_dir_all(bin_dir)
+        fs::create_dir_all(bin_dir)
             .with_context(|| format!("Couldn't create the output directory {bin_dir:?}"))?;
         // Write the coordinates if that was a goal
         if goals.contains(&Goal::Coords) {

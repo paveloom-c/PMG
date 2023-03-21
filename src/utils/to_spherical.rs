@@ -8,7 +8,7 @@ use num::Float;
 
 /// Convert the equatorial coordinates to spherical heliocentric Galactic coordinates
 ///
-/// Angles must be in radians, then radians returned.
+/// Angles must be in radians, then radians are returned.
 ///
 /// Source: [Wikipedia](https://en.wikipedia.org/wiki/Galactic_coordinate_system#Conversion_between_equatorial_and_galactic_coordinates)
 pub fn to_spherical<F, F2>(alpha: F, delta: F, params: &Params<F2>) -> (F, F)

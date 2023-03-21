@@ -1,7 +1,7 @@
 //! Galactic heliocentric Cartesian coordinates
 
 use super::{Measurement, Object};
-use crate::utils::to_cartesian;
+use crate::utils;
 
 use core::fmt::{Debug, Display};
 
@@ -31,9 +31,9 @@ where
         let (l, b) = object.galactic_s()?.into();
         let r_h = &object.distances()?.r_h;
         // Convert to the Galactic heliocentric Cartesian coordinate system
-        let (x, y, z) = to_cartesian(l, b, r_h.v);
-        let (x_u, y_u, z_u) = to_cartesian(l, b, r_h.v_u);
-        let (x_l, y_l, z_l) = to_cartesian(l, b, r_h.v_l);
+        let (x, y, z) = utils::to_cartesian(l, b, r_h.v);
+        let (x_u, y_u, z_u) = utils::to_cartesian(l, b, r_h.v_u);
+        let (x_l, y_l, z_l) = utils::to_cartesian(l, b, r_h.v_l);
         Ok(Self {
             x: Measurement {
                 v: x,

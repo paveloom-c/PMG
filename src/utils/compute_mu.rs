@@ -39,14 +39,10 @@ where
     F: Float + Debug + FloatConst + From<F2>,
     F2: Float + Debug,
 {
-    // Note that we don't use `to_radians` and `to_degrees` methods
-    // here because those (possibly a bug) result in a loss of
-    // the value of the derivative in dual numbers
-    //
     // Convert the proper motions in equatorial
     // coordinates from mas/yr to rad/yr
-    let mu_alpha = (mu_x / delta.cos() / 3600. / 1000.) * F::PI() / 180.;
-    let mu_delta = (mu_y / 3600. / 1000.) * F::PI() / 180.;
+    let mu_alpha = (mu_x / delta.cos() / 3600. / 1000.).to_radians();
+    let mu_delta = (mu_y / 3600. / 1000.).to_radians();
     // Compute the proper motions in Galactic coordinates
     // (the difference in the coordinates in 1-year period)
     let (l_ahead, b_ahead) = to_spherical(alpha + mu_alpha, delta + mu_delta, params);
@@ -54,7 +50,7 @@ where
     let mu_b_rad = b_ahead - b;
     // Convert the proper motions in Galactic
     // coordinates from rad/yr to mas/yr
-    let mu_l = mu_l_rad * 180. / F::PI() * 3600. * 1000.;
-    let mu_b = mu_b_rad * 180. / F::PI() * 3600. * 1000.;
+    let mu_l = mu_l_rad.to_degrees() * 3600. * 1000.;
+    let mu_b = mu_b_rad.to_degrees() * 3600. * 1000.;
     (mu_l, mu_b)
 }

@@ -2,7 +2,7 @@
 
 use super::{Measurement, Object};
 use crate::model::Params;
-use crate::utils::{compute_e_theta, compute_theta_r_g};
+use crate::utils;
 
 use core::fmt::{Debug, Display};
 
@@ -51,13 +51,13 @@ where
         let mu_y = object.mu_y()?;
         // Compute the azimuthal velocity and the Galactocentric distance
         let (theta, r_g) =
-            compute_theta_r_g(alpha, delta, l, b, par.v, v_lsr.v, mu_x.v, mu_y.v, params);
+            utils::compute_theta_r_g(alpha, delta, l, b, par.v, v_lsr.v, mu_x.v, mu_y.v, params);
         let (theta_u, r_g_u) =
-            compute_theta_r_g(alpha, delta, l, b, par.v_u, v_lsr.v, mu_x.v, mu_y.v, params);
+            utils::compute_theta_r_g(alpha, delta, l, b, par.v_u, v_lsr.v, mu_x.v, mu_y.v, params);
         let (theta_l, r_g_l) =
-            compute_theta_r_g(alpha, delta, l, b, par.v_l, v_lsr.v, mu_x.v, mu_y.v, params);
+            utils::compute_theta_r_g(alpha, delta, l, b, par.v_l, v_lsr.v, mu_x.v, mu_y.v, params);
         // Compute the uncertainty in the azimuthal velocity inherited from velocities
-        let e_vel_theta = compute_e_theta(
+        let e_vel_theta = utils::compute_e_theta(
             alpha, delta, l, b, par.v, v_lsr.v, mu_x.v, mu_y.v, v_lsr.e_p, mu_x.e_p, mu_y.e_p,
             params,
         );

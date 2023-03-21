@@ -24,7 +24,7 @@ pub fn to_cartesian<F: Float + Debug>(l: F, b: F, r: F) -> (F, F, F) {
 cfg_if::cfg_if! {
     if #[cfg(test)] {
         use crate::model::Params;
-        use crate::utils::to_spherical;
+        use crate::utils;
 
         use std::path::Path;
 
@@ -123,7 +123,8 @@ fn test() -> Result<()> {
         let coords: CoordsRecord<f64> = coords_record
             .with_context(|| format!("Couldn't deserialize a record from {coords_path:?}"))?;
         // Compute the Galactic spherical coordinates
-        let (gs_l, gs_b) = to_spherical(data.alpha.to_radians(), data.delta.to_radians(), &params);
+        let (gs_l, gs_b) =
+            utils::to_spherical(data.alpha.to_radians(), data.delta.to_radians(), &params);
         // Compare the data
         let a = (coords.x, coords.y, coords.z);
         let b = to_cartesian(gs_l, gs_b, 1. / data.par);

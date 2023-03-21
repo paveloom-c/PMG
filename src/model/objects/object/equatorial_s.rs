@@ -1,7 +1,7 @@
 //! Equatorial spherical coordinates
 
 use crate::model::io::input;
-use crate::utils::{dms2rad, hms2rad, str2vec};
+use crate::utils;
 
 use core::fmt::Debug;
 use core::str::FromStr;
@@ -28,17 +28,17 @@ where
 
     fn try_from(record: &input::Record<F>) -> Result<Self> {
         // Parse the right ascension string and convert the angle to radians
-        let alpha = match str2vec(&record.alpha)
+        let alpha = match utils::str2vec(&record.alpha)
             .with_context(|| format!("Couldn't parse the string {:?}", &record.alpha))?[..]
         {
-            [hours, minutes, seconds] => hms2rad(hours, minutes, seconds),
+            [hours, minutes, seconds] => utils::hms2rad(hours, minutes, seconds),
             _ => bail!("Three values were expected"),
         };
         // Parse the declination string and convert the angle to radians
-        let delta = match str2vec(&record.delta)
+        let delta = match utils::str2vec(&record.delta)
             .with_context(|| format!("Couldn't parse the string {:?}", &record.delta))?[..]
         {
-            [degrees, minutes, seconds] => dms2rad(degrees, minutes, seconds),
+            [degrees, minutes, seconds] => utils::dms2rad(degrees, minutes, seconds),
             _ => bail!("Three values were expected"),
         };
         Ok(Self { alpha, delta })

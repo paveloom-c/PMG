@@ -1,7 +1,7 @@
 //! Model parameters
 
 use super::{Bounds, Objects};
-use crate::utils::{compute_e_mu, compute_mu, compute_r_g};
+use crate::utils;
 
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
@@ -148,7 +148,7 @@ where
                     // Compute the heliocentric distance
                     let r_h = 1. / par.v;
                     // Compute the Galactocentric distance
-                    let r_g = compute_r_g(l, b, r_h, &params);
+                    let r_g = utils::compute_r_g(l, b, r_h, &params);
                     // Compute the sines and cosines of the longitude and latitude
                     let sin_l = l.sin();
                     let sin_b = b.sin();
@@ -179,7 +179,7 @@ where
                         + sigma_z_sq * cos_b_sq;
                     // Compute the dispersions of the observed proper motions
                     let (sigma_mu_l_cos_b_sq, sigma_mu_b_sq) =
-                        compute_e_mu(alpha, delta, l, b, mu_x, mu_y, &params);
+                        utils::compute_e_mu(alpha, delta, l, b, mu_x, mu_y, &params);
                     // Compute the full dispersions
                     let delim = params.k.powi(2) * r_h.powi(2);
                     let d_v_r = v_lsr.e_p.powi(2) + sigma_v_r_star_sq;
@@ -188,7 +188,8 @@ where
                     let d_par = par.e_p.powi(2);
                     // Convert the observed proper motions in equatorial coordinates
                     // to the proper motions in Galactic coordinates
-                    let (mu_l, mu_b) = compute_mu(alpha, delta, l, b, mu_x.v, mu_y.v, &params);
+                    let (mu_l, mu_b) =
+                        utils::compute_mu(alpha, delta, l, b, mu_x.v, mu_y.v, &params);
                     // Compute the constant part of the model velocity
                     let v_r_sun = -params.u_sun_standard * cos_l * cos_b
                         - params.v_sun_standard * sin_l * cos_b
@@ -200,7 +201,7 @@ where
                         // Compute the reduced heliocentric distance and its squared value
                         let r_h_r = 1. / par_r;
                         // Compute the reduced Galactocentric distance
-                        let r_g_r = compute_r_g(l, b, r_h_r, &params);
+                        let r_g_r = utils::compute_r_g(l, b, r_h_r, &params);
                         // Compute the difference between the Galactocentric distances
                         let delta_r = r_g_r - params.r_0;
                         // Compute the sum of the terms in the series of the rotation curve

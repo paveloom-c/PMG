@@ -2,7 +2,7 @@
 
 use super::Object;
 use crate::model::Params;
-use crate::utils::to_spherical;
+use crate::utils;
 
 use core::fmt::{Debug, Display};
 
@@ -31,7 +31,7 @@ where
         // Unpack the data
         let (alpha, delta) = object.equatorial_s()?.into();
         // Convert to the Galactic heliocentric spherical coordinate system
-        let (l, b) = to_spherical(alpha, delta, params);
+        let (l, b) = utils::to_spherical(alpha, delta, params);
         Ok(Self { l, b })
     }
 }

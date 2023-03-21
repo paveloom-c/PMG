@@ -1,7 +1,7 @@
 //! Command-line interface
 
 use super::Goal;
-use crate::utils::{dms2rad, hms2rad, str2vec};
+use crate::utils;
 
 use core::ops::Range;
 use std::path::{Path, PathBuf};
@@ -26,11 +26,11 @@ impl TypedValueParser for HMSParser {
         // If the OS string can be converted to a regular string
         if let Some(string) = value.to_str() {
             // If the string can be split into a vector of floats
-            if let Ok(vec) = str2vec(string) {
+            if let Ok(vec) = utils::str2vec(string) {
                 // If there are at least three float numbers
                 if vec.len() >= 3 {
                     // Convert these to the radians
-                    return Ok(hms2rad(vec[0], vec[1], vec[2]));
+                    return Ok(utils::hms2rad(vec[0], vec[1], vec[2]));
                 }
             }
         }
@@ -60,11 +60,11 @@ impl TypedValueParser for DMSParser {
         // If the OS string can be converted to a regular string
         if let Some(string) = value.to_str() {
             // If the string can be split into a vector of floats
-            if let Ok(vec) = str2vec(string) {
+            if let Ok(vec) = utils::str2vec(string) {
                 // If there are at least three float numbers
                 if vec.len() >= 3 {
                     // Convert these to the radians
-                    return Ok(dms2rad(vec[0], vec[1], vec[2]));
+                    return Ok(utils::dms2rad(vec[0], vec[1], vec[2]));
                 }
             }
         }

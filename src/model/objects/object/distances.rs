@@ -2,7 +2,7 @@
 
 use super::{Measurement, Object};
 use crate::model::Params;
-use crate::utils::compute_r_g;
+use crate::utils;
 
 use core::fmt::{Debug, Display};
 
@@ -41,9 +41,9 @@ where
         let r_h_u = 1. / par.v_u;
         let r_h_l = 1. / par.v_l;
         // Compute the Galactocentric distance
-        let r_g = compute_r_g(l, b, r_h, params);
-        let r_g_u = compute_r_g(l, b, r_h_u, params);
-        let r_g_l = compute_r_g(l, b, r_h_l, params);
+        let r_g = utils::compute_r_g(l, b, r_h, params);
+        let r_g_u = utils::compute_r_g(l, b, r_h_u, params);
+        let r_g_l = utils::compute_r_g(l, b, r_h_l, params);
         Ok(Self {
             r_h: Measurement {
                 v: r_h,
