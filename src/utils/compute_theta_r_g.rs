@@ -52,7 +52,7 @@ where
     let k: F = params.k.into();
     let r_0: F = params.r_0.into();
     // Compute the heliocentric velocity
-    let v_h = v_lsr
+    let v_r = v_lsr
         - (u_sun_standard * l.cos() + v_sun_standard * l.sin()) * b.cos()
         - w_sun_standard * b.sin();
     // Convert the proper motions in equatorial coordinates
@@ -65,7 +65,7 @@ where
     let v_b = k * r_h * mu_b;
     // Convert the velocities to the Cartesian
     // heliocentric coordinate system
-    let v_aux = v_h * b.cos() - v_b * b.sin();
+    let v_aux = v_r * b.cos() - v_b * b.sin();
     let u = v_aux * l.cos() - v_l * l.sin();
     let v = v_aux * l.sin() + v_l * l.cos();
     // Convert to the Galactocentric coordinate
