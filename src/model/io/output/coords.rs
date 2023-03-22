@@ -1,6 +1,6 @@
 //! Galactic heliocentric coordinates of the objects
 
-use crate::model::{Model, Object};
+use crate::model::{Measurement, Model, Object};
 
 use core::fmt::{Debug, Display};
 use std::path::Path;
@@ -85,9 +85,9 @@ where
 
     fn try_from(object: &'a Object<F>) -> Result<Self> {
         let name = object.name()?;
-        let (l, b) = object.galactic_s()?.into();
+        let (r_h, l, b) = object.galactic_s()?.into();
         let (x, y, z) = object.galactic_c()?.into();
-        let (r_h, r_g) = object.distances()?.into();
+        let r_g: &Measurement<F> = object.r_g()?.into();
         let obj_type = object.obj_type()?;
         let source = object.source()?;
         Ok(Self {

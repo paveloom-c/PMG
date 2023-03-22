@@ -1,24 +1,11 @@
 //! Compute the azimuthal velocity and Galactocentric distance
 
-use super::{compute_mu, compute_r_g};
 use crate::model::Params;
 
 use core::fmt::Debug;
 
-use autodiff::FT;
 use num::{traits::FloatConst, Float};
 use numeric_literals::replace_float_literals;
-
-/// Compute the azimuthal velocity from the array of arguments
-pub fn compute_theta<F: Float + FloatConst + Debug>(
-    args: &[FT<F>; 8],
-    params: &Params<F>,
-) -> FT<F> {
-    compute_theta_r_g(
-        args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], params,
-    )
-    .0
-}
 
 /// Compute the azimuthal velocity and Galactocentric distance
 ///
@@ -28,17 +15,18 @@ pub fn compute_theta<F: Float + FloatConst + Debug>(
 #[allow(clippy::too_many_arguments)]
 #[allow(clippy::unwrap_used)]
 #[replace_float_literals(<F as num::NumCast>::from(literal).unwrap())]
-pub fn compute_theta_r_g<F, F2>(
+pub fn compute_theta<F, F2>(
     alpha: F,
     delta: F,
     l: F,
     b: F,
-    par: F,
+    r_h: F,
+    r_g: F,
     v_lsr: F,
     mu_x: F,
     mu_y: F,
     params: &Params<F2>,
-) -> (F, F)
+) -> F
 where
     F: Float + Debug + FloatConst + From<F2>,
     F2: Float + Debug,
@@ -57,9 +45,7 @@ where
         - w_sun_standard * b.sin();
     // Convert the proper motions in equatorial coordinates
     // to the proper motions in Galactic coordinates
-    let (mu_l, mu_b) = compute_mu(alpha, delta, l, b, mu_x, mu_y, params);
-    // Compute the heliocentric distance
-    let r_h = 1. / par;
+    let (mu_l, mu_b) = super::compute_mu(alpha, delta, l, b, mu_x, mu_y, params);
     // Compute the linear velocities
     let v_l = k * r_h * mu_l * b.cos();
     let v_b = k * r_h * mu_b;
@@ -74,11 +60,8 @@ where
     let v_g = v + theta_sun;
     // Compute the projection of the heliocentric distance in the XY plane
     let d = r_h * b.cos();
-    // Compute the Galactocentric distance
-    let r_g = compute_r_g(l, b, r_h, params);
     // Compute the azimuthal velocity
     let sin_lambda = d / r_g * l.sin();
     let cos_lambda = (r_0 - d * l.cos()) / r_g;
-    let theta = v_g * cos_lambda + u_g * sin_lambda;
-    (theta, r_g)
+    v_g * cos_lambda + u_g * sin_lambda
 }

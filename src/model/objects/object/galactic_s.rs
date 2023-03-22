@@ -1,6 +1,6 @@
 //! Galactic heliocentric spherical coordinates
 
-use super::Object;
+use super::{Measurement, Object};
 use crate::model::Params;
 use crate::utils;
 
@@ -13,6 +13,8 @@ use numeric_literals::replace_float_literals;
 /// Galactic heliocentric spherical coordinates
 #[derive(Clone, Debug)]
 pub struct GalacticSpherical<F: Float + Debug> {
+    /// Heliocentric distance (kpc)
+    pub r_h: Measurement<F>,
     /// Longitude (radians)
     pub l: F,
     /// Latitude (radians)
@@ -30,14 +32,29 @@ where
     pub(super) fn try_from(object: &Object<F>, params: &Params<F>) -> Result<Self> {
         // Unpack the data
         let (alpha, delta) = object.equatorial_s()?.into();
+        let par = object.par()?;
         // Convert to the Galactic heliocentric spherical coordinate system
         let (l, b) = utils::to_spherical(alpha, delta, params);
-        Ok(Self { l, b })
+        // Compute the heliocentric distance
+        let r_h = 1. / par.v;
+        let r_h_u = 1. / par.v_u;
+        let r_h_l = 1. / par.v_l;
+        Ok(Self {
+            r_h: Measurement {
+                v: r_h,
+                v_u: r_h_u,
+                v_l: r_h_l,
+                e_p: r_h_u - r_h,
+                e_m: r_h - r_h_l,
+            },
+            l,
+            b,
+        })
     }
 }
 
-impl<F: Float + Debug> From<&GalacticSpherical<F>> for (F, F) {
-    fn from(s: &GalacticSpherical<F>) -> Self {
-        (s.l, s.b)
+impl<'a, F: Float + Debug> From<&'a GalacticSpherical<F>> for (&'a Measurement<F>, F, F) {
+    fn from(s: &'a GalacticSpherical<F>) -> Self {
+        (&s.r_h, s.l, s.b)
     }
 }

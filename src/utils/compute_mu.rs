@@ -8,18 +8,8 @@ use crate::model::Params;
 
 use core::fmt::Debug;
 
-use autodiff::FT;
 use num::{traits::FloatConst, Float};
 use numeric_literals::replace_float_literals;
-
-/// Compute proper motions in equatorial
-/// coordinates from the array of arguments
-pub fn compute_mu_from<F: Float + FloatConst + Debug>(
-    args: &[FT<F>; 6],
-    params: &Params<F>,
-) -> (FT<F>, FT<F>) {
-    compute_mu(args[0], args[1], args[2], args[3], args[4], args[5], params)
-}
 
 /// Convert proper motions in equatorial coordinates
 /// to proper motions in Galactic coordinates

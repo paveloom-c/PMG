@@ -1,6 +1,5 @@
 //! Compute the dispersion of `mu_l * cos(b)`
 
-use super::compute_mu_from;
 use crate::model::{Measurement, Params};
 
 use core::fmt::Debug;
@@ -8,7 +7,26 @@ use core::fmt::Debug;
 use autodiff::FT;
 use num::{traits::FloatConst, Float};
 
-/// Compute the dispersion of `mu_l * cos(b)`
+/// Compute proper motions in equatorial
+/// coordinates from the array of arguments
+pub fn compute_mu_from<F: Float + FloatConst + Debug>(
+    args: &[FT<F>; 6],
+    params: &Params<F>,
+) -> (FT<F>, FT<F>) {
+    // Alias the arguments
+    let alpha = args[0];
+    let delta = args[1];
+    let l = args[2];
+    let b = args[3];
+    let mu_x = args[4];
+    let mu_y = args[5];
+    // Compute proper motions in equatorial coordinates
+    super::compute_mu(alpha, delta, l, b, mu_x, mu_y, params)
+}
+
+/// Compute the dispersions of `mu_l * cos(b)` and `mu_b`
+///
+/// Note that only values with independent errors are in the parameters.
 #[allow(clippy::shadow_unrelated)]
 #[allow(clippy::similar_names)]
 pub fn compute_e_mu<F: Float + FloatConst + Debug>(

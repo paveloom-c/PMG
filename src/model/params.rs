@@ -144,11 +144,9 @@ where
                     let v_lsr = object.v_lsr()?;
                     let mu_x = object.mu_x()?;
                     let mu_y = object.mu_y()?;
-                    let (l, b) = object.galactic_s()?.into();
-                    // Compute the heliocentric distance
-                    let r_h = 1. / par.v;
+                    let (r_h, l, b) = object.galactic_s()?.into();
                     // Compute the Galactocentric distance
-                    let r_g = utils::compute_r_g(l, b, r_h, &params);
+                    let r_g = utils::compute_r_g(l, b, r_h.v, &params);
                     // Compute the sines and cosines of the longitude and latitude
                     let sin_l = l.sin();
                     let sin_b = b.sin();
@@ -164,8 +162,8 @@ where
                     let sigma_theta_sq = params.sigma_theta.powi(2);
                     let sigma_z_sq = params.sigma_z.powi(2);
                     // Compute the squares of the sines and cosines of the Galactocentric longitude
-                    let sin_lambda_sq = ((r_h * cos_b * sin_l) / r_g).powi(2);
-                    let cos_lambda_sq = ((params.r_0 - r_h * cos_b * cos_l) / r_g).powi(2);
+                    let sin_lambda_sq = ((r_h.v * cos_b * sin_l) / r_g).powi(2);
+                    let cos_lambda_sq = ((params.r_0 - r_h.v * cos_b * cos_l) / r_g).powi(2);
                     // Compute auxiliary sums of the squares of the sines and cosines
                     let sum_1 = cos_lambda_sq * cos_l_sq + sin_lambda_sq * sin_l_sq;
                     let sum_2 = sin_lambda_sq * cos_l_sq + cos_lambda_sq * sin_l_sq;
@@ -181,7 +179,7 @@ where
                     let (sigma_mu_l_cos_b_sq, sigma_mu_b_sq) =
                         utils::compute_e_mu(alpha, delta, l, b, mu_x, mu_y, &params);
                     // Compute the full dispersions
-                    let delim = params.k.powi(2) * r_h.powi(2);
+                    let delim = params.k.powi(2) * r_h.v.powi(2);
                     let d_v_r = v_lsr.e_p.powi(2) + sigma_v_r_star_sq;
                     let d_mu_l_cos_b = sigma_mu_l_cos_b_sq + sigma_v_l_star_sq / delim;
                     let d_mu_b = sigma_mu_b_sq + sigma_v_b_star_sq / delim;

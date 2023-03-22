@@ -1,21 +1,21 @@
 //! Data object
 
-mod distances;
 mod equatorial_s;
 mod galactic_c;
 mod galactic_s;
 mod measurement;
-mod rotation_c;
+mod r_g;
+mod theta;
 
 use crate::model::io::input;
 use crate::model::Params;
 use crate::Goal;
-use distances::Distances;
 use equatorial_s::EquatorialSpherical;
 use galactic_c::GalacticCartesian;
 use galactic_s::GalacticSpherical;
 pub use measurement::Measurement;
-use rotation_c::RotationCurve;
+use r_g::GalactocentricDistance;
+use theta::AzimuthalVelocity;
 
 use core::fmt::{Debug, Display};
 use core::str::FromStr;
@@ -44,12 +44,12 @@ where
     mu_y: Option<Measurement<F>>,
     /// Galactic heliocentric spherical coordinates
     galactic_s: Option<GalacticSpherical<F>>,
-    /// Distances
-    distances: Option<Distances<F>>,
+    /// Galactocentric distance (kpc)
+    r_g: Option<GalactocentricDistance<F>>,
     /// Galactic heliocentric Cartesian coordinates
     galactic_c: Option<GalacticCartesian<F>>,
-    /// Rotation curve
-    rotation_c: Option<RotationCurve<F>>,
+    /// Azimuthal velocity
+    theta: Option<AzimuthalVelocity<F>>,
     /// Type of the object
     obj_type: Option<String>,
     /// Source of the data
@@ -105,17 +105,17 @@ impl<F: Float + FloatConst + Default + Display + Debug> Object<F> {
             .as_ref()
             .ok_or_else(|| anyhow!("Couldn't unwrap the Northward proper motion"))
     }
-    /// Unwrap the distances
-    pub(in crate::model) fn distances(&self) -> Result<&Distances<F>> {
-        self.distances
+    /// Unwrap the Galactocentric distance
+    pub(in crate::model) fn r_g(&self) -> Result<&GalactocentricDistance<F>> {
+        self.r_g
             .as_ref()
-            .ok_or_else(|| anyhow!("Couldn't unwrap the distances"))
+            .ok_or_else(|| anyhow!("Couldn't unwrap the Galactocentric distance"))
     }
-    /// Unwrap the rotation curve
-    pub(in crate::model) fn rotation_c(&self) -> Result<&RotationCurve<F>> {
-        self.rotation_c
+    /// Unwrap the azimuthal velocity
+    pub(in crate::model) fn theta(&self) -> Result<&AzimuthalVelocity<F>> {
+        self.theta
             .as_ref()
-            .ok_or_else(|| anyhow!("Couldn't unwrap the rotation curve"))
+            .ok_or_else(|| anyhow!("Couldn't unwrap the azimuthal velocity"))
     }
     /// Unwrap the type of the object
     pub(in crate::model) fn obj_type(&self) -> Result<&String> {
@@ -137,23 +137,26 @@ impl<F: Float + FloatConst + Default + Display + Debug> Object<F> {
             // heliocentric spherical coordinates
             self.compute_galactic_s(params)
                 .with_context(|| "Couldn't compute the Galactic spherical coordinates")?;
-            // Compute the distances
-            self.compute_distances(params)
-                .with_context(|| "Couldn't compute the distances")?;
+            // Compute the Galactocentric distance
+            self.compute_r_g(params)
+                .with_context(|| "Couldn't compute the Galactocentric distances")?;
             // Convert equatorial coordinates to Galactic
             // heliocentric Cartesian coordinates
             self.compute_galactic_c()
                 .with_context(|| "Couldn't compute the Galactic Cartesian coordinates")?;
         }
-        // If computing of the rotation curve was requested
+        // If there is a goal to compute the rotation curve
         if goals.contains(&Goal::RotationCurve) {
             // Convert equatorial coordinates to Galactic
             // heliocentric spherical coordinates
             self.compute_galactic_s(params)
                 .with_context(|| "Couldn't compute the Galactic spherical coordinates")?;
-            // Compute the rotation curve
-            self.compute_rotation_c(params)
-                .with_context(|| "Couldn't compute the rotation curve")?;
+            // Compute the Galactocentric distance
+            self.compute_r_g(params)
+                .with_context(|| "Couldn't compute the Galactocentric distances")?;
+            // Compute the azimuthal velocity
+            self.compute_theta(params)
+                .with_context(|| "Couldn't compute the azimuthal velocity")?;
         }
         Ok(())
     }
@@ -171,16 +174,16 @@ impl<F: Float + FloatConst + Default + Display + Debug> Object<F> {
             .get_or_insert(GalacticSpherical::try_from(&*self, params)?);
         Ok(())
     }
-    /// Compute the distances
-    pub(in crate::model) fn compute_distances(&mut self, params: &Params<F>) -> Result<()> {
-        self.distances
-            .get_or_insert(Distances::try_from(&*self, params)?);
+    /// Compute the Galactocentric distance
+    pub(in crate::model) fn compute_r_g(&mut self, params: &Params<F>) -> Result<()> {
+        self.r_g
+            .get_or_insert(GalactocentricDistance::try_from(&*self, params)?);
         Ok(())
     }
-    /// Compute the rotation curve
-    fn compute_rotation_c(&mut self, params: &Params<F>) -> Result<()> {
-        self.rotation_c
-            .get_or_insert(RotationCurve::try_from(&*self, params)?);
+    /// Compute the azimuthal velocity
+    fn compute_theta(&mut self, params: &Params<F>) -> Result<()> {
+        self.theta
+            .get_or_insert(AzimuthalVelocity::try_from(&*self, params)?);
         Ok(())
     }
 }

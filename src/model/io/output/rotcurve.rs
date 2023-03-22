@@ -1,6 +1,6 @@
 //! Rotation curve
 
-use crate::model::{Model, Object};
+use crate::model::{Measurement, Model, Object};
 
 use core::fmt::{Debug, Display};
 use std::path::Path;
@@ -53,14 +53,15 @@ where
 
     fn try_from(object: &'a Object<F>) -> Result<Self> {
         let name = object.name()?;
-        let (theta, r_g) = object.rotation_c()?.into();
+        let r_g: &Measurement<F> = object.r_g()?.into();
+        let theta = object.theta()?;
         let obj_type = object.obj_type()?;
         let source = object.source()?;
         Ok(Self {
             name,
-            theta: theta.measurement.v,
-            ep_theta: theta.measurement.e_p,
-            em_theta: theta.measurement.e_m,
+            theta: theta.m.v,
+            ep_theta: theta.m.e_p,
+            em_theta: theta.m.e_m,
             evel_theta: theta.e_vel,
             r_g: r_g.v,
             e_p_r_g: r_g.e_p,

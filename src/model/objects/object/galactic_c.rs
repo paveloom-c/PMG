@@ -28,8 +28,7 @@ where
 
     fn try_from(object: &Object<F>) -> Result<Self> {
         // Unpack the data
-        let (l, b) = object.galactic_s()?.into();
-        let r_h = &object.distances()?.r_h;
+        let (r_h, l, b) = object.galactic_s()?.into();
         // Convert to the Galactic heliocentric Cartesian coordinate system
         let (x, y, z) = utils::to_cartesian(l, b, r_h.v);
         let (x_u, y_u, z_u) = utils::to_cartesian(l, b, r_h.v_u);
