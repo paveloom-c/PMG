@@ -7,6 +7,7 @@ mod measurement;
 mod mu;
 mod r_g;
 mod theta;
+mod velocities_spherical;
 
 use crate::model::io::input;
 use crate::model::Params;
@@ -70,6 +71,12 @@ where
     /// Uncertainty in azimuthal velocity (km/s)
     /// inherited from the velocities
     pub e_vel_theta: Option<F>,
+    /// Heliocentric velocity in distance (km/s)
+    pub v_r: Option<Measurement<F>>,
+    /// Heliocentric velocity in longitude (km/s)
+    pub v_l: Option<Measurement<F>>,
+    /// Heliocentric velocity in latitude (km/s)
+    pub v_b: Option<Measurement<F>>,
 }
 
 impl<F: Float + FloatConst + Default + Display + Debug> Object<F> {
@@ -82,6 +89,8 @@ impl<F: Float + FloatConst + Default + Display + Debug> Object<F> {
             self.compute_r_h();
             self.compute_r_g(params);
             self.compute_mu_l_mu_b(params);
+            self.compute_v_r(params);
+            self.compute_v_l_v_b(params);
             if compute_coords {
                 self.compute_x_y_z();
             }

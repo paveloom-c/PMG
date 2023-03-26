@@ -92,6 +92,33 @@ struct Record<'a, F: Float + Debug> {
     /// Minus uncertainty in `mu_b` (mas/yr)
     #[serde(rename = "em_mu_b")]
     e_m_mu_b: F,
+    /// Heliocentric velocity in distance (km/s)
+    #[serde(rename = "V_r")]
+    v_r: F,
+    /// Plus uncertainty in `v_r` (mas/yr)
+    #[serde(rename = "ep_V_r")]
+    e_p_v_r: F,
+    /// Minus uncertainty in `v_r` (mas/yr)
+    #[serde(rename = "em_V_r")]
+    e_m_v_r: F,
+    /// Heliocentric velocity in longitude (km/s)
+    #[serde(rename = "V_l")]
+    v_l: F,
+    /// Plus uncertainty in `v_l` (mas/yr)
+    #[serde(rename = "ep_V_l")]
+    e_p_v_l: F,
+    /// Minus uncertainty in `v_l` (mas/yr)
+    #[serde(rename = "em_V_l")]
+    e_m_v_l: F,
+    /// Heliocentric velocity in latitude (km/s)
+    #[serde(rename = "V_b")]
+    v_b: F,
+    /// Plus uncertainty in `v_b` (mas/yr)
+    #[serde(rename = "ep_V_b")]
+    e_p_v_b: F,
+    /// Minus uncertainty in `v_b` (mas/yr)
+    #[serde(rename = "em_V_b")]
+    e_m_v_b: F,
 }
 
 #[allow(clippy::many_single_char_names)]
@@ -105,6 +132,8 @@ where
     #[allow(clippy::unwrap_used)]
     fn try_from(object: &'a Object<F>) -> Result<Self> {
         let name = object.name.as_ref().unwrap();
+        let obj_type = object.obj_type.as_ref().unwrap();
+        let source = object.source.as_ref().unwrap();
         let l = object.l.unwrap();
         let b = object.b.unwrap();
         let r_h = object.r_h.as_ref().unwrap();
@@ -114,8 +143,9 @@ where
         let z = object.z.as_ref().unwrap();
         let mu_l = object.mu_l.as_ref().unwrap();
         let mu_b = object.mu_b.as_ref().unwrap();
-        let obj_type = object.obj_type.as_ref().unwrap();
-        let source = object.source.as_ref().unwrap();
+        let v_r = object.v_r.as_ref().unwrap();
+        let v_l = object.v_l.as_ref().unwrap();
+        let v_b = object.v_b.as_ref().unwrap();
         Ok(Self {
             name,
             obj_type,
@@ -143,6 +173,15 @@ where
             mu_b: mu_b.v,
             e_p_mu_b: mu_b.e_p,
             e_m_mu_b: mu_b.e_m,
+            v_r: v_r.v,
+            e_p_v_r: v_r.e_p,
+            e_m_v_r: v_r.e_m,
+            v_l: v_l.v,
+            e_p_v_l: v_l.e_p,
+            e_m_v_l: v_l.e_m,
+            v_b: v_b.v,
+            e_p_v_b: v_b.e_p,
+            e_m_v_b: v_b.e_m,
         })
     }
 }
@@ -213,6 +252,15 @@ where
             # 24 mu_b: Proper motion in latitude [mas/yr]
             # 25 ep_mu_b: Plus uncertainty in `mu_b` [mas/yr]
             # 26 em_mu_b: Minus uncertainty in `mu_b` [mas/yr]
+            # 27 V_r: Heliocentric velocity in distance [mas/yr]
+            # 28 ep_V_r: Plus uncertainty in `v_r` [mas/yr]
+            # 29 em_V_r: Minus uncertainty in `v_r` [mas/yr]
+            # 30 V_l: Heliocentric velocity in longitude [mas/yr]
+            # 31 ep_V_l: Plus uncertainty in `v_l` [mas/yr]
+            # 32 em_V_l: Minus uncertainty in `v_l` [mas/yr]
+            # 33 V_b: Heliocentric velocity in latitude [mas/yr]
+            # 34 ep_V_b: Plus uncertainty in `v_b` [mas/yr]
+            # 35 em_V_b: Minus uncertainty in `v_b` [mas/yr]
             #
             # Uncertainties come from assuming maximum and minimum values of the parallax.
             # Note that they are not independent from each other and can be negative here.

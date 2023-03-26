@@ -23,31 +23,20 @@ where
         F2: Float + Debug + Into<F>,
     {
         // Unpack the data
-        let v_lsr = self.v_lsr.as_ref().unwrap();
         let l = self.l.unwrap();
         let b = self.b.unwrap();
-        let mu_l = self.mu_l.as_ref().unwrap();
-        let mu_b = self.mu_b.as_ref().unwrap();
+        let v_r = self.v_r.as_ref().unwrap();
+        let v_l = self.v_l.as_ref().unwrap();
+        let v_b = self.v_b.as_ref().unwrap();
         // Get the parameters
-        let u_sun_standard: F = params.u_sun_standard.into();
         let u_sun: F = params.u_sun.into();
         let theta_sun: F = params.theta_sun.into();
-        let v_sun_standard: F = params.v_sun_standard.into();
-        let w_sun_standard: F = params.w_sun_standard.into();
-        let k: F = params.k.into();
         let r_0: F = params.r_0.into();
-        // Compute the heliocentric velocity
-        let v_r = v_lsr.v
-            - (u_sun_standard * l.cos() + v_sun_standard * l.sin()) * b.cos()
-            - w_sun_standard * b.sin();
-        // Compute the linear velocities
-        let v_l = k * r_h * mu_l.v * b.cos();
-        let v_b = k * r_h * mu_b.v;
         // Convert the velocities to the Cartesian
         // heliocentric coordinate system
-        let v_aux = v_r * b.cos() - v_b * b.sin();
-        let u = v_aux * l.cos() - v_l * l.sin();
-        let v = v_aux * l.sin() + v_l * l.cos();
+        let v_aux = v_r.v * b.cos() - v_b.v * b.sin();
+        let u = v_aux * l.cos() - v_l.v * l.sin();
+        let v = v_aux * l.sin() + v_l.v * l.cos();
         // Convert to the Galactocentric coordinate
         // system associated with the Sun
         let u_g = u + u_sun;
