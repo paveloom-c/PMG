@@ -154,6 +154,15 @@ struct Data
     v_b::Vector{F}
     ep_v_b::Vector{F}
     em_v_b::Vector{F}
+    u::Vector{F}
+    ep_u::Vector{F}
+    em_u::Vector{F}
+    v::Vector{F}
+    ep_v::Vector{F}
+    em_v::Vector{F}
+    w::Vector{F}
+    ep_w::Vector{F}
+    em_w::Vector{F}
 end
 
 "Read binary files in the `bincode` format"

@@ -6,13 +6,13 @@ use core::fmt::{Debug, Display};
 
 use num::{traits::FloatConst, Float};
 
+#[allow(clippy::unwrap_used)]
 #[allow(clippy::many_single_char_names)]
 impl<F> Object<F>
 where
     F: Float + FloatConst + Default + Display + Debug,
 {
-    /// Compute the coordinates with a specific galactocentric distance
-    #[allow(clippy::unwrap_used)]
+    /// Compute the coordinates with the specific values
     fn compute_x_y_z_with(&self, r_h: F) -> (F, F, F) {
         // Unpack the data
         let l = self.l.unwrap();
@@ -25,7 +25,6 @@ where
     }
     /// Convert the galactic heliocentric spherical coordinates
     /// to Galactic heliocentric Cartesian coordinates
-    #[allow(clippy::unwrap_used)]
     pub fn compute_x_y_z(&mut self) {
         // Unpack the data
         let r_h = self.r_h.as_ref().unwrap();
@@ -53,6 +52,53 @@ where
             v_l: z_l,
             e_p: z_u - z,
             e_m: z - z_l,
+        });
+    }
+    /// Compute the velocities in the Galactic
+    /// heliocentric Cartesian coordinates system
+    /// with the specific values
+    fn compute_u_v_w_with(&self, v_r: F, v_l: F, v_b: F) -> (F, F, F) {
+        // Unpack the data
+        let l = self.l.unwrap();
+        let b = self.b.unwrap();
+        // Compute the velocities
+        let aux_vel = v_r * b.cos() - v_b * b.sin();
+        let u = aux_vel * l.cos() - v_l * l.sin();
+        let v = aux_vel * l.sin() + v_l * l.cos();
+        let w = v_b * b.cos() + v_r * b.sin();
+        (u, v, w)
+    }
+    /// Compute the velocities in the Galactic
+    /// heliocentric Cartesian coordinates system
+    pub fn compute_u_v_w(&mut self) {
+        // Unpack the data
+        let v_r = self.v_r.as_ref().unwrap();
+        let v_l = self.v_l.as_ref().unwrap();
+        let v_b = self.v_b.as_ref().unwrap();
+        // Convert to the Galactic heliocentric Cartesian coordinate system
+        let (u, v, w) = self.compute_u_v_w_with(v_r.v, v_l.v, v_b.v);
+        let (u_u, v_u, w_u) = self.compute_u_v_w_with(v_r.v_u, v_l.v_u, v_b.v_u);
+        let (u_l, v_l_, w_l) = self.compute_u_v_w_with(v_r.v_l, v_l.v_l, v_b.v_l);
+        self.u = Some(Measurement {
+            v: u,
+            v_u: u_u,
+            v_l: u_l,
+            e_p: u_u - u,
+            e_m: u - u_l,
+        });
+        self.v = Some(Measurement {
+            v,
+            v_u,
+            v_l: v_l_,
+            e_p: v_u - v,
+            e_m: v - v_l_,
+        });
+        self.w = Some(Measurement {
+            v: w,
+            v_u: w_u,
+            v_l: w_l,
+            e_p: w_u - w,
+            e_m: w - w_l,
         });
     }
 }

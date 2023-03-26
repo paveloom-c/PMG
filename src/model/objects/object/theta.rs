@@ -25,22 +25,16 @@ where
         // Unpack the data
         let l = self.l.unwrap();
         let b = self.b.unwrap();
-        let v_r = self.v_r.as_ref().unwrap();
-        let v_l = self.v_l.as_ref().unwrap();
-        let v_b = self.v_b.as_ref().unwrap();
+        let u = self.u.as_ref().unwrap();
+        let v = self.v.as_ref().unwrap();
         // Get the parameters
         let u_sun: F = params.u_sun.into();
         let theta_sun: F = params.theta_sun.into();
         let r_0: F = params.r_0.into();
-        // Convert the velocities to the Cartesian
-        // heliocentric coordinate system
-        let v_aux = v_r.v * b.cos() - v_b.v * b.sin();
-        let u = v_aux * l.cos() - v_l.v * l.sin();
-        let v = v_aux * l.sin() + v_l.v * l.cos();
         // Convert to the Galactocentric coordinate
         // system associated with the Sun
-        let u_g = u + u_sun;
-        let v_g = v + theta_sun;
+        let u_g = u.v + u_sun;
+        let v_g = v.v + theta_sun;
         // Compute the projection of the heliocentric distance in the XY plane
         let d = r_h * b.cos();
         // Compute the azimuthal velocity
@@ -123,6 +117,9 @@ where
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
         object.compute_mu_l_mu_b_nominal(params);
+        object.compute_v_r(params);
+        object.compute_v_l_v_b(params);
+        object.compute_u_v_w();
         object.compute_theta_nominal(params);
         let d_theta_v_lsr = object.theta.as_ref().unwrap().v.deriv();
         // Compute the partial derivative of the azimuthal
@@ -138,6 +135,9 @@ where
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
         object.compute_mu_l_mu_b_nominal(params);
+        object.compute_v_r(params);
+        object.compute_v_l_v_b(params);
+        object.compute_u_v_w();
         object.compute_theta_nominal(params);
         let d_theta_mu_x = object.theta.as_ref().unwrap().v.deriv();
         // Compute the partial derivative of the azimuthal
@@ -153,6 +153,9 @@ where
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
         object.compute_mu_l_mu_b_nominal(params);
+        object.compute_v_r(params);
+        object.compute_v_l_v_b(params);
+        object.compute_u_v_w();
         object.compute_theta_nominal(params);
         let d_theta_mu_y = object.theta.as_ref().unwrap().v.deriv();
         // Compute the uncertainty

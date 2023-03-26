@@ -16,8 +16,7 @@ impl<F> Object<F>
 where
     F: Float + FloatConst + Default + Display + Debug,
 {
-    /// Compute the galactocentric distance with
-    /// the specific heliocentric distance
+    /// Compute the galactocentric distance with the specific values
     fn compute_r_g_with<F2>(&self, r_h: F, params: &Params<F2>) -> F
     where
         F2: Float + Debug + Into<F>,
