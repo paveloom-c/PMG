@@ -57,7 +57,7 @@ where
     /// Perform computations based on goals
     pub fn compute(&mut self, goals: &[Goal]) -> Result<()> {
         // Perform per-object goals first
-        self.objects.compute(goals, &self.params)?;
+        self.objects.compute(goals, &self.params);
         // If fitting of the model was requested
         if goals.contains(&Goal::Fit) {
             // Try to fit the model

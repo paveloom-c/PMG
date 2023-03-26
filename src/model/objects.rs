@@ -17,8 +17,8 @@ use std::path::Path;
 use anyhow::{Context, Result};
 use csv::ReaderBuilder;
 use num::{traits::FloatConst, Float};
-use rayon::iter::IntoParallelIterator;
-use rayon::slice::Iter as ParIter;
+use rayon::iter::IntoParallelRefMutIterator;
+use rayon::slice::IterMut as ParIterMut;
 use serde::de::DeserializeOwned;
 
 /// Data objects
@@ -27,17 +27,14 @@ pub struct Objects<F: Float + Debug>(Vec<Object<F>>);
 
 impl<F> Objects<F>
 where
-    F: Float + FloatConst + Default + Display + Debug + Sync,
+    F: Float + FloatConst + Default + Display + Debug + Send + Sync,
 {
     /// Perform computations based on goals
-    pub(in crate::model) fn compute(&mut self, goals: &[Goal], params: &Params<F>) -> Result<()> {
+    pub(in crate::model) fn compute(&mut self, goals: &[Goal], params: &Params<F>) {
         // Perform computations for each object
         for object in self.iter_mut() {
-            object
-                .compute(goals, params)
-                .with_context(|| "Couldn't perform computations for an object")?;
+            object.compute(goals, params);
         }
-        Ok(())
     }
     /// Extend the vector of objects
     pub(in crate::model) fn extend(&mut self, objects: Self) {
@@ -48,8 +45,8 @@ where
         self.0.iter()
     }
     /// Return a parallel iterator over the objects
-    pub(in crate::model) fn par_iter(&self) -> ParIter<Object<F>> {
-        self.0.into_par_iter()
+    pub(in crate::model) fn par_iter_mut(&mut self) -> ParIterMut<Object<F>> {
+        self.0.par_iter_mut()
     }
     /// Return an iterator over objects
     /// that allows modifying each value

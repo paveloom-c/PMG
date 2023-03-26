@@ -1,6 +1,6 @@
 //! Model parameters
 
-use super::{Bounds, Objects};
+use super::{Bounds, Measurement, Object, Objects};
 use crate::utils;
 
 use core::cell::RefCell;
@@ -116,10 +116,10 @@ where
         let p_0 = params.to_point();
         // Prepare the spherical coordinates
         // (we don't optimize the angle parameters here)
-        fit_objects
-            .iter_mut()
-            .try_for_each(|object| object.compute_galactic_s(&params))
-            .with_context(|| "Couldn't compute the Galactic spherical coordinates")?;
+        fit_objects.iter_mut().for_each(|object| {
+            object.compute_l_b(&params);
+            object.compute_r_h();
+        });
         // Prepare storage for the results
         let mut results: Vec<(F, F)> = vec![(0., 0.); fit_objects.len()];
         // A closure to compute the parameterized part of the negative log likelihood function of the model
@@ -131,22 +131,26 @@ where
             // We compute many values manually here since
             // we don't need the numeric error propagation
             let l_1 = fit_objects
-                .par_iter()
+                .par_iter_mut()
                 .zip(results.par_iter_mut())
                 .enumerate()
                 .try_fold_with(F::zero(), |acc, (i, (object, result))| -> Result<F> {
                     // Prepare a random number generator with a specific stream
                     let mut rng = ChaCha8Rng::seed_from_u64(1);
                     rng.set_stream(i as u64 + 1);
-                    // Unpack the data
-                    let (alpha, delta) = object.equatorial_s()?.into();
-                    let par = object.par()?;
-                    let v_lsr = object.v_lsr()?;
-                    let mu_x = object.mu_x()?;
-                    let mu_y = object.mu_y()?;
-                    let (r_h, l, b) = object.galactic_s()?.into();
                     // Compute the Galactocentric distance
-                    let r_g = utils::compute_r_g(l, b, r_h.v, &params);
+                    object.compute_r_g(&params);
+                    // Unpack the data
+                    let alpha = object.alpha.unwrap();
+                    let delta = object.delta.unwrap();
+                    let v_lsr = object.v_lsr.as_ref().unwrap();
+                    let mu_x = object.mu_x.as_ref().unwrap();
+                    let mu_y = object.mu_y.as_ref().unwrap();
+                    let par = object.par.as_ref().unwrap();
+                    let r_h = object.r_h.as_ref().unwrap();
+                    let l = object.l.unwrap();
+                    let b = object.b.unwrap();
+                    let r_g = object.r_g.as_ref().unwrap().v;
                     // Compute the sines and cosines of the longitude and latitude
                     let sin_l = l.sin();
                     let sin_b = b.sin();
@@ -194,12 +198,21 @@ where
                         - params.w_sun_standard * sin_b;
                     // Prepare a closure for finding the reduced parallax
                     let g = |g_p: &Point<F, 1>| -> Result<F> {
-                        // Alias the current point as the reduced parallax
-                        let par_r = g_p[0];
-                        // Compute the reduced heliocentric distance and its squared value
-                        let r_h_r = 1. / par_r;
-                        // Compute the reduced Galactocentric distance
-                        let r_g_r = utils::compute_r_g(l, b, r_h_r, &params);
+                        // Create an object for reduced values
+                        let mut object_r = Object {
+                            par: Some(Measurement {
+                                v: g_p[0],
+                                ..Default::default()
+                            }),
+                            ..Default::default()
+                        };
+                        // Compute the values
+                        object_r.compute_r_h_nominal();
+                        object_r.compute_r_g_nominal(&params);
+                        // Unpack the data
+                        let par_r = object_r.par.unwrap().v;
+                        let r_h_r = object_r.r_h.unwrap().v;
+                        let r_g_r = object_r.r_g.unwrap().v;
                         // Compute the difference between the Galactocentric distances
                         let delta_r = r_g_r - params.r_0;
                         // Compute the sum of the terms in the series of the rotation curve

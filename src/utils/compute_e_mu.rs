@@ -9,7 +9,7 @@ use num::{traits::FloatConst, Float};
 
 /// Compute proper motions in equatorial
 /// coordinates from the array of arguments
-pub fn compute_mu_from<F: Float + FloatConst + Debug>(
+pub fn compute_mu_from<F: Float + FloatConst + Debug + Default>(
     args: &[FT<F>; 6],
     params: &Params<F>,
 ) -> (FT<F>, FT<F>) {
@@ -29,7 +29,7 @@ pub fn compute_mu_from<F: Float + FloatConst + Debug>(
 /// Note that only values with independent errors are in the parameters.
 #[allow(clippy::shadow_unrelated)]
 #[allow(clippy::similar_names)]
-pub fn compute_e_mu<F: Float + FloatConst + Debug>(
+pub fn compute_e_mu<F: Float + FloatConst + Debug + Default>(
     alpha: F,
     delta: F,
     l: F,

@@ -3,8 +3,7 @@
 
 #![allow(clippy::module_name_repetitions)]
 
-use super::to_spherical;
-use crate::model::Params;
+use crate::model::{Object, Params};
 
 use core::fmt::Debug;
 
@@ -26,8 +25,8 @@ pub fn compute_mu<F, F2>(
     params: &Params<F2>,
 ) -> (F, F)
 where
-    F: Float + Debug + FloatConst + From<F2>,
-    F2: Float + Debug,
+    F: Float + Debug + Default + FloatConst,
+    F2: Float + Debug + Into<F>,
 {
     // Convert the proper motions in equatorial
     // coordinates from mas/yr to rad/yr
@@ -35,7 +34,14 @@ where
     let mu_delta = (mu_y / 3600. / 1000.).to_radians();
     // Compute the proper motions in Galactic coordinates
     // (the difference in the coordinates in 1-year period)
-    let (l_ahead, b_ahead) = to_spherical(alpha + mu_alpha, delta + mu_delta, params);
+    let mut object = Object {
+        alpha: Some(alpha + mu_alpha),
+        delta: Some(delta + mu_delta),
+        ..Default::default()
+    };
+    object.compute_l_b(params);
+    let l_ahead = object.l.unwrap();
+    let b_ahead = object.b.unwrap();
     let mu_l_rad = l_ahead - l;
     let mu_b_rad = b_ahead - b;
     // Convert the proper motions in Galactic

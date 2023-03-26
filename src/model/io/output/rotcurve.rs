@@ -1,6 +1,6 @@
 //! Rotation curve
 
-use crate::model::{Measurement, Model, Object};
+use crate::model::{Model, Object};
 
 use core::fmt::{Debug, Display};
 use std::path::Path;
@@ -19,7 +19,7 @@ const NAME: &str = "rotcurve";
 #[derive(Serialize)]
 struct Record<'a, F: Float + Debug> {
     /// Name
-    name: &'a String,
+    name: &'a str,
     /// Azimuthal velocity (km/s)
     theta: F,
     /// Plus uncertainty in `theta` (km/s)
@@ -39,9 +39,9 @@ struct Record<'a, F: Float + Debug> {
     e_m_r_g: F,
     /// Type of the object
     #[serde(rename = "type")]
-    obj_type: &'a String,
+    obj_type: &'a str,
     /// Source of the data
-    source: &'a String,
+    source: &'a str,
 }
 
 #[allow(clippy::many_single_char_names)]
@@ -51,18 +51,21 @@ where
 {
     type Error = anyhow::Error;
 
+    #[allow(clippy::unwrap_in_result)]
+    #[allow(clippy::unwrap_used)]
     fn try_from(object: &'a Object<F>) -> Result<Self> {
-        let name = object.name()?;
-        let r_g: &Measurement<F> = object.r_g()?.into();
-        let theta = object.theta()?;
-        let obj_type = object.obj_type()?;
-        let source = object.source()?;
+        let name = object.name.as_ref().unwrap();
+        let r_g = object.r_g.as_ref().unwrap();
+        let theta = object.theta.as_ref().unwrap();
+        let e_vel_theta = object.e_vel_theta.unwrap();
+        let obj_type = object.obj_type.as_ref().unwrap();
+        let source = object.source.as_ref().unwrap();
         Ok(Self {
             name,
-            theta: theta.m.v,
-            ep_theta: theta.m.e_p,
-            em_theta: theta.m.e_m,
-            evel_theta: theta.e_vel,
+            theta: theta.v,
+            ep_theta: theta.e_p,
+            em_theta: theta.e_m,
+            evel_theta: e_vel_theta,
             r_g: r_g.v,
             e_p_r_g: r_g.e_p,
             e_m_r_g: r_g.e_m,
@@ -77,7 +80,7 @@ type Records<'a, F> = Vec<Record<'a, F>>;
 
 impl<'a, F> TryFrom<&'a Model<F>> for Records<'a, F>
 where
-    F: Float + FloatConst + SampleUniform + Default + Display + Debug + Sync,
+    F: Float + FloatConst + SampleUniform + Default + Display + Debug + Send + Sync,
     StandardNormal: Distribution<F>,
 {
     type Error = anyhow::Error;
@@ -96,7 +99,7 @@ where
 
 impl<F> Model<F>
 where
-    F: Float + FloatConst + SampleUniform + Default + Debug + Display + Serialize + Sync,
+    F: Float + FloatConst + SampleUniform + Default + Debug + Display + Serialize + Send + Sync,
     StandardNormal: Distribution<F>,
 {
     /// Serialize the rotation curve

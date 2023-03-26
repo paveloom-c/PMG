@@ -5,7 +5,7 @@ use core::fmt::Debug;
 use num::Float;
 
 /// Measurement data
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Measurement<F: Float + Debug> {
     /// Nominal value
     pub v: F,
