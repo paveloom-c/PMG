@@ -213,10 +213,21 @@ function max_min(c; factor=0.1)
 end
 
 "Create a scatter plot"
-function scatter(x, y, xlabel, ylabel; x_p=F[], x_m=F[], y_p=F[], y_m=F[], evel=F[])
+function scatter(
+    x,
+    y,
+    xlabel,
+    ylabel;
+    x_p=F[],
+    x_m=F[],
+    y_p=F[],
+    y_m=F[],
+    evel=F[],
+)
     # Compute the limits
     x_max, x_min = max_min(x)
     y_max, y_min = max_min(y)
+    x_min = 0
     # Prepare a table
     table =
         if isempty(evel)

@@ -263,11 +263,15 @@ function scatter(
     y_m=F[],
     axis_equal=false,
     crosses=false,
-    correct_infs=false
+    correct_infs=false,
+    start_x_from_zero=false,
 )
     # Compute the limits
     x_max, x_min = max_min(x)
     y_max, y_min = max_min(y)
+    if start_x_from_zero
+        x_min = 0
+    end
     "Correct for infinite values on the XY, XZ, YZ plots"
     function wrap_points(x_m::Tuple{F,F}, p::Tuple{F,F}, x_p::Tuple{F,F})
         # The singularity point exists in the case of
@@ -523,7 +527,13 @@ pgfsave(joinpath(PLOTS_DIR, "YZ (equal axes, errors)$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (R, Z) plane
 println(pad, "    for RZ...")
-p = scatter(R, Z, L"R \; \mathrm{[kpc]}", L"Z \; \mathrm{[kpc]}")
+p = scatter(
+    R,
+    Z,
+    L"R \; \mathrm{[kpc]}",
+    L"Z \; \mathrm{[kpc]}",
+    start_x_from_zero=true,
+)
 pgfsave(joinpath(PLOTS_DIR, "RZ$(POSTFIX).pdf"), p)
 
 # Plot a scatter plot in the (R, Z) plane with equal axes
@@ -534,6 +544,7 @@ p = scatter(
     L"R \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
     axis_equal=true,
+    start_x_from_zero=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "RZ (equal axes)$(POSTFIX).pdf"), p)
 
@@ -548,6 +559,7 @@ p = scatter(
     x_m=R_m,
     y_p=Z_p,
     y_m=Z_m,
+    start_x_from_zero=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "RZ (errors)$(POSTFIX).pdf"), p)
 
@@ -563,6 +575,7 @@ p = scatter(
     y_p=Z_p,
     y_m=Z_m,
     axis_equal=true,
+    start_x_from_zero=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "RZ (equal axes, errors)$(POSTFIX).pdf"), p)
 
