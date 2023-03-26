@@ -70,6 +70,29 @@ where
     }
     /// Compute the velocities in the Galactic
     /// heliocentric Cartesian coordinates system
+    /// (nominal values only)
+    pub fn compute_u_v_w_nominal(&mut self) {
+        // Unpack the data
+        let v_r = self.v_r.as_ref().unwrap();
+        let v_l = self.v_l.as_ref().unwrap();
+        let v_b = self.v_b.as_ref().unwrap();
+        // Convert to the Galactic heliocentric Cartesian coordinate system
+        let (u, v, w) = self.compute_u_v_w_with(v_r.v, v_l.v, v_b.v);
+        self.u = Some(Measurement {
+            v: u,
+            ..Default::default()
+        });
+        self.v = Some(Measurement {
+            v,
+            ..Default::default()
+        });
+        self.w = Some(Measurement {
+            v: w,
+            ..Default::default()
+        });
+    }
+    /// Compute the velocities in the Galactic
+    /// heliocentric Cartesian coordinates system
     pub fn compute_u_v_w(&mut self) {
         // Unpack the data
         let v_r = self.v_r.as_ref().unwrap();

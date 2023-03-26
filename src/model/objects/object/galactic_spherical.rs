@@ -86,6 +86,20 @@ where
             - w_sun_standard * b.sin()
     }
     /// Compute the heliocentric velocity in distance
+    /// (nominal value only)
+    pub fn compute_v_r_nominal<F2>(&mut self, params: &Params<F2>)
+    where
+        F2: Float + Debug + Into<F>,
+    {
+        // Unpack the data
+        let v_lsr = self.v_lsr.as_ref().unwrap();
+        // Compute the heliocentric velocity
+        self.v_r = Some(Measurement {
+            v: self.compute_v_r_with(v_lsr.v, params),
+            ..Default::default()
+        });
+    }
+    /// Compute the heliocentric velocity in distance
     pub fn compute_v_r<F2>(&mut self, params: &Params<F2>)
     where
         F2: Float + Debug + Into<F>,
@@ -118,6 +132,28 @@ where
         let v_l = k * r_h * mu_l * b.cos();
         let v_b = k * r_h * mu_b;
         (v_l, v_b)
+    }
+    /// Compute the velocities in longitude and latitude
+    /// (nominal values only)
+    #[allow(clippy::similar_names)]
+    pub fn compute_v_l_v_b_nominal<F2>(&mut self, params: &Params<F2>)
+    where
+        F2: Float + Debug + Into<F>,
+    {
+        // Unpack the data
+        let r_h = self.r_h.as_ref().unwrap();
+        let mu_l = self.mu_l.as_ref().unwrap();
+        let mu_b = self.mu_b.as_ref().unwrap();
+        // Compute the heliocentric velocity
+        let (v_l, v_b) = self.compute_v_l_v_b_with(r_h.v, mu_l.v, mu_b.v, params);
+        self.v_l = Some(Measurement {
+            v: v_l,
+            ..Default::default()
+        });
+        self.v_b = Some(Measurement {
+            v: v_b,
+            ..Default::default()
+        });
     }
     /// Compute the velocities in longitude and latitude
     #[allow(clippy::similar_names)]

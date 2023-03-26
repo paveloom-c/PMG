@@ -117,9 +117,9 @@ where
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
         object.compute_mu_l_mu_b_nominal(params);
-        object.compute_v_r(params);
-        object.compute_v_l_v_b(params);
-        object.compute_u_v_w();
+        object.compute_v_r_nominal(params);
+        object.compute_v_l_v_b_nominal(params);
+        object.compute_u_v_w_nominal();
         object.compute_theta_nominal(params);
         let d_theta_v_lsr = object.theta.as_ref().unwrap().v.deriv();
         // Compute the partial derivative of the azimuthal
@@ -135,9 +135,9 @@ where
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
         object.compute_mu_l_mu_b_nominal(params);
-        object.compute_v_r(params);
-        object.compute_v_l_v_b(params);
-        object.compute_u_v_w();
+        object.compute_v_r_nominal(params);
+        object.compute_v_l_v_b_nominal(params);
+        object.compute_u_v_w_nominal();
         object.compute_theta_nominal(params);
         let d_theta_mu_x = object.theta.as_ref().unwrap().v.deriv();
         // Compute the partial derivative of the azimuthal
@@ -153,9 +153,9 @@ where
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
         object.compute_mu_l_mu_b_nominal(params);
-        object.compute_v_r(params);
-        object.compute_v_l_v_b(params);
-        object.compute_u_v_w();
+        object.compute_v_r_nominal(params);
+        object.compute_v_l_v_b_nominal(params);
+        object.compute_u_v_w_nominal();
         object.compute_theta_nominal(params);
         let d_theta_mu_y = object.theta.as_ref().unwrap().v.deriv();
         // Compute the uncertainty
