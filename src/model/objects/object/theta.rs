@@ -2,7 +2,6 @@
 
 use super::{Measurement, Object};
 use crate::model::Params;
-use crate::utils;
 
 use core::fmt::{Debug, Display};
 
@@ -24,13 +23,11 @@ where
         F2: Float + Debug + Into<F>,
     {
         // Unpack the data
-        let alpha = self.alpha.unwrap();
-        let delta = self.delta.unwrap();
         let v_lsr = self.v_lsr.as_ref().unwrap();
-        let mu_x = self.mu_x.as_ref().unwrap();
-        let mu_y = self.mu_y.as_ref().unwrap();
         let l = self.l.unwrap();
         let b = self.b.unwrap();
+        let mu_l = self.mu_l.as_ref().unwrap();
+        let mu_b = self.mu_b.as_ref().unwrap();
         // Get the parameters
         let u_sun_standard: F = params.u_sun_standard.into();
         let u_sun: F = params.u_sun.into();
@@ -43,12 +40,9 @@ where
         let v_r = v_lsr.v
             - (u_sun_standard * l.cos() + v_sun_standard * l.sin()) * b.cos()
             - w_sun_standard * b.sin();
-        // Convert the proper motions in equatorial coordinates
-        // to the proper motions in Galactic coordinates
-        let (mu_l, mu_b) = utils::compute_mu(alpha, delta, l, b, mu_x.v, mu_y.v, params);
         // Compute the linear velocities
-        let v_l = k * r_h * mu_l * b.cos();
-        let v_b = k * r_h * mu_b;
+        let v_l = k * r_h * mu_l.v * b.cos();
+        let v_b = k * r_h * mu_b.v;
         // Convert the velocities to the Cartesian
         // heliocentric coordinate system
         let v_aux = v_r * b.cos() - v_b * b.sin();
@@ -139,6 +133,7 @@ where
         };
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
+        object.compute_mu_l_mu_b_nominal(params);
         object.compute_theta_nominal(params);
         let d_theta_v_lsr = object.theta.as_ref().unwrap().v.deriv();
         // Compute the partial derivative of the azimuthal
@@ -153,6 +148,7 @@ where
         });
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
+        object.compute_mu_l_mu_b_nominal(params);
         object.compute_theta_nominal(params);
         let d_theta_mu_x = object.theta.as_ref().unwrap().v.deriv();
         // Compute the partial derivative of the azimuthal
@@ -167,6 +163,7 @@ where
         });
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
+        object.compute_mu_l_mu_b_nominal(params);
         object.compute_theta_nominal(params);
         let d_theta_mu_y = object.theta.as_ref().unwrap().v.deriv();
         // Compute the uncertainty

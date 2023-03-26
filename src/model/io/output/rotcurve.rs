@@ -20,6 +20,11 @@ const NAME: &str = "rotcurve";
 struct Record<'a, F: Float + Debug> {
     /// Name
     name: &'a str,
+    /// Type of the object
+    #[serde(rename = "type")]
+    obj_type: &'a str,
+    /// Source of the data
+    source: &'a str,
     /// Azimuthal velocity (km/s)
     theta: F,
     /// Plus uncertainty in `theta` (km/s)
@@ -37,11 +42,6 @@ struct Record<'a, F: Float + Debug> {
     /// Minus uncertainty in `r_g` (km/s)
     #[serde(rename = "em_R")]
     e_m_r_g: F,
-    /// Type of the object
-    #[serde(rename = "type")]
-    obj_type: &'a str,
-    /// Source of the data
-    source: &'a str,
 }
 
 #[allow(clippy::many_single_char_names)]
@@ -62,6 +62,8 @@ where
         let source = object.source.as_ref().unwrap();
         Ok(Self {
             name,
+            obj_type,
+            source,
             theta: theta.v,
             ep_theta: theta.e_p,
             em_theta: theta.e_m,
@@ -69,8 +71,6 @@ where
             r_g: r_g.v,
             e_p_r_g: r_g.e_p,
             e_m_r_g: r_g.e_m,
-            obj_type,
-            source,
         })
     }
 }
@@ -115,16 +115,16 @@ where
             #
             # Descriptions:
             #
-            # 1 name: Name of the object
-            # 2 theta: Azimuthal velocity [km/s]
-            # 3 ep_theta: Plus uncertainty in `theta` [km/s]
-            # 4 em_theta: Minus uncertainty in `theta` [km/s]
-            # 5 evel_theta: Velocity uncertainty in `theta` [km/s]
-            # 6 R: Galactocentric distance [kpc]
-            # 7 ep_R: Plus uncertainty in `R` [kpc]
-            # 8 em_R: Minus uncertainty in `R` [kpc]
-            # 9 type: Type of the object
-            # 10 source: Source of the data
+            # 1  name: Name of the object
+            # 2  type: Type of the object
+            # 3  source: Source of the data
+            # 4  theta: Azimuthal velocity [km/s]
+            # 5  ep_theta: Plus uncertainty in `theta` [km/s]
+            # 6  em_theta: Minus uncertainty in `theta` [km/s]
+            # 7  evel_theta: Velocity uncertainty in `theta` [km/s]
+            # 8  R: Galactocentric distance [kpc]
+            # 9  ep_R: Plus uncertainty in `R` [kpc]
+            # 10 em_R: Minus uncertainty in `R` [kpc]
             #
             # Uncertainties in the distance come from assuming maximum and minimum
             # values of the parallax. Note that they can be negative here.

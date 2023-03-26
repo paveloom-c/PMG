@@ -120,6 +120,8 @@ println(pad, "> Loading the data...")
 
 struct Data
     name::Vector{String}
+    type::Vector{String}
+    source::Vector{String}
     l::Vector{F}
     b::Vector{F}
     X::Vector{F}
@@ -137,8 +139,12 @@ struct Data
     R::Vector{F}
     ep_R::Vector{F}
     em_R::Vector{F}
-    type::Vector{String}
-    source::Vector{String}
+    mu_l::Vector{F}
+    ep_mu_l::Vector{F}
+    em_mu_l::Vector{F}
+    mu_b::Vector{F}
+    ep_mu_b::Vector{F}
+    em_mu_b::Vector{F}
 end
 
 "Read binary files in the `bincode` format"

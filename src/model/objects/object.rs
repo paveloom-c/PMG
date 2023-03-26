@@ -4,6 +4,7 @@ mod equatorial_spherical;
 mod galactic_cartesian;
 mod galactic_spherical;
 mod measurement;
+mod mu;
 mod r_g;
 mod theta;
 
@@ -49,6 +50,10 @@ where
     pub l: Option<F>,
     /// Latitude (radians)
     pub b: Option<F>,
+    /// Proper motion in longitude
+    pub mu_l: Option<Measurement<F>>,
+    /// Proper motion in latitude
+    pub mu_b: Option<Measurement<F>>,
     /// Galactocentric distance (kpc)
     pub r_g: Option<Measurement<F>>,
     /// X coordinate (kpc)
@@ -70,20 +75,20 @@ where
 impl<F: Float + FloatConst + Default + Display + Debug> Object<F> {
     /// Perform computations based on goals
     pub(in crate::model) fn compute(&mut self, goals: &[Goal], params: &Params<F>) {
-        // If coordinates conversion was requested
-        if goals.contains(&Goal::Coords) {
+        let compute_coords = goals.contains(&Goal::Coords);
+        let compute_rotation_curve = goals.contains(&Goal::RotationCurve);
+        if compute_coords || compute_rotation_curve {
             self.compute_l_b(params);
             self.compute_r_h();
             self.compute_r_g(params);
-            self.compute_x_y_z();
-        }
-        // If there is a goal to compute the rotation curve
-        if goals.contains(&Goal::RotationCurve) {
-            self.compute_l_b(params);
-            self.compute_r_h();
-            self.compute_r_g(params);
-            self.compute_theta(params);
-            self.compute_e_vel_theta(params);
+            self.compute_mu_l_mu_b(params);
+            if compute_coords {
+                self.compute_x_y_z();
+            }
+            if compute_rotation_curve {
+                self.compute_theta(params);
+                self.compute_e_vel_theta(params);
+            }
         }
     }
 }

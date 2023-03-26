@@ -1,7 +1,6 @@
 //! Model parameters
 
 use super::{Bounds, Measurement, Object, Objects};
-use crate::utils;
 
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
@@ -140,16 +139,15 @@ where
                     rng.set_stream(i as u64 + 1);
                     // Compute the Galactocentric distance
                     object.compute_r_g(&params);
+                    object.compute_mu_l_mu_b_nominal(&params);
                     // Unpack the data
-                    let alpha = object.alpha.unwrap();
-                    let delta = object.delta.unwrap();
                     let v_lsr = object.v_lsr.as_ref().unwrap();
-                    let mu_x = object.mu_x.as_ref().unwrap();
-                    let mu_y = object.mu_y.as_ref().unwrap();
                     let par = object.par.as_ref().unwrap();
                     let r_h = object.r_h.as_ref().unwrap();
                     let l = object.l.unwrap();
                     let b = object.b.unwrap();
+                    let mu_l = object.mu_l.as_ref().unwrap();
+                    let mu_b = object.mu_b.as_ref().unwrap();
                     let r_g = object.r_g.as_ref().unwrap().v;
                     // Compute the sines and cosines of the longitude and latitude
                     let sin_l = l.sin();
@@ -180,18 +178,13 @@ where
                         + sigma_theta_sq * sum_2 * sin_b_sq
                         + sigma_z_sq * cos_b_sq;
                     // Compute the dispersions of the observed proper motions
-                    let (sigma_mu_l_cos_b_sq, sigma_mu_b_sq) =
-                        utils::compute_e_mu(alpha, delta, l, b, mu_x, mu_y, &params);
+                    let (sigma_mu_l_cos_b_sq, sigma_mu_b_sq) = object.compute_e_mu_l_mu_b(&params);
                     // Compute the full dispersions
                     let delim = params.k.powi(2) * r_h.v.powi(2);
                     let d_v_r = v_lsr.e_p.powi(2) + sigma_v_r_star_sq;
                     let d_mu_l_cos_b = sigma_mu_l_cos_b_sq + sigma_v_l_star_sq / delim;
                     let d_mu_b = sigma_mu_b_sq + sigma_v_b_star_sq / delim;
                     let d_par = par.e_p.powi(2);
-                    // Convert the observed proper motions in equatorial coordinates
-                    // to the proper motions in Galactic coordinates
-                    let (mu_l, mu_b) =
-                        utils::compute_mu(alpha, delta, l, b, mu_x.v, mu_y.v, &params);
                     // Compute the constant part of the model velocity
                     let v_r_sun = -params.u_sun_standard * cos_l * cos_b
                         - params.v_sun_standard * sin_l * cos_b
@@ -238,8 +231,8 @@ where
                                 / params.k;
                         // Compute the weighted sum of squared differences
                         let sum = (v_lsr.v - v_r_mod).powi(2) / d_v_r
-                            + (mu_l * cos_b - mu_l_cos_b_mod).powi(2) / d_mu_l_cos_b
-                            + (mu_b - mu_b_mod).powi(2) / d_mu_b
+                            + (mu_l.v * cos_b - mu_l_cos_b_mod).powi(2) / d_mu_l_cos_b
+                            + (mu_b.v - mu_b_mod).powi(2) / d_mu_b
                             + (par.v - par_r).powi(2) / d_par;
                         // Return it as the result
                         Ok(sum)

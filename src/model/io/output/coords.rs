@@ -20,6 +20,11 @@ const NAME: &str = "coords";
 struct Record<'a, F: Float + Debug> {
     /// Name
     name: &'a str,
+    /// Type of the object
+    #[serde(rename = "type")]
+    obj_type: &'a str,
+    /// Source of the data
+    source: &'a str,
     /// Longitude (deg)
     l: F,
     /// Latitude (deg)
@@ -69,11 +74,24 @@ struct Record<'a, F: Float + Debug> {
     /// Minus uncertainty in `r_g` (kpc)
     #[serde(rename = "em_R")]
     e_m_r_g: F,
-    /// Type of the object
-    #[serde(rename = "type")]
-    obj_type: &'a str,
-    /// Source of the data
-    source: &'a str,
+    /// Proper motion on longitude (mas/yr)
+    #[serde(rename = "mu_l")]
+    mu_l: F,
+    /// Plus uncertainty in `mu_l` (mas/yr)
+    #[serde(rename = "ep_mu_l")]
+    e_p_mu_l: F,
+    /// Minus uncertainty in `mu_l` (mas/yr)
+    #[serde(rename = "em_mu_l")]
+    e_m_mu_l: F,
+    /// Proper motion on latitude (mas/yr)
+    #[serde(rename = "mu_b")]
+    mu_b: F,
+    /// Plus uncertainty in `mu_b` (mas/yr)
+    #[serde(rename = "ep_mu_b")]
+    e_p_mu_b: F,
+    /// Minus uncertainty in `mu_b` (mas/yr)
+    #[serde(rename = "em_mu_b")]
+    e_m_mu_b: F,
 }
 
 #[allow(clippy::many_single_char_names)]
@@ -94,10 +112,14 @@ where
         let x = object.x.as_ref().unwrap();
         let y = object.y.as_ref().unwrap();
         let z = object.z.as_ref().unwrap();
+        let mu_l = object.mu_l.as_ref().unwrap();
+        let mu_b = object.mu_b.as_ref().unwrap();
         let obj_type = object.obj_type.as_ref().unwrap();
         let source = object.source.as_ref().unwrap();
         Ok(Self {
             name,
+            obj_type,
+            source,
             l: l.to_degrees(),
             b: b.to_degrees(),
             x: x.v,
@@ -115,8 +137,12 @@ where
             r_g: r_g.v,
             e_p_r_g: r_g.e_p,
             e_m_r_g: r_g.e_m,
-            obj_type,
-            source,
+            mu_l: mu_l.v,
+            e_p_mu_l: mu_l.e_p,
+            e_m_mu_l: mu_l.e_m,
+            mu_b: mu_b.v,
+            e_p_mu_b: mu_b.e_p,
+            e_m_mu_b: mu_b.e_m,
         })
     }
 }
@@ -162,25 +188,31 @@ where
             # Descriptions:
             #
             # 1  name: Name of the object
-            # 2  l: Longitude [deg]
-            # 3  b: Latitude [deg]
-            # 4  X: X coordinate [kpc]
-            # 5  ep_X: Plus uncertainty in `X` [kpc]
-            # 6  em_X: Minus uncertainty in `X` [kpc]
-            # 7  Y: Y coordinate [kpc]
-            # 8  ep_Y: Plus uncertainty in `Y` [kpc]
-            # 9  em_Y: Minus uncertainty in `Y` [kpc]
-            # 10 Z: Z coordinate [kpc]
-            # 11 ep_Z: Plus uncertainty in `Z` [kpc]
-            # 12 em_Z: Minus uncertainty in `Z` [kpc]
-            # 13 r: Heliocentric distance [kpc]
-            # 14 ep_r: Plus uncertainty in `r` [kpc]
-            # 15 em_r: Minus uncertainty in `r` [kpc]
-            # 16 R: Galactocentric distance [kpc]
-            # 17 ep_R: Plus uncertainty in `R` [kpc]
-            # 18 em_R: Minus uncertainty in `R` [kpc]
-            # 19 type: Type of the object
-            # 20 source: Source of the data
+            # 2  type: Type of the object
+            # 3  source: Source of the data
+            # 4  l: Longitude [deg]
+            # 5  b: Latitude [deg]
+            # 6  X: X coordinate [kpc]
+            # 7  ep_X: Plus uncertainty in `X` [kpc]
+            # 8  em_X: Minus uncertainty in `X` [kpc]
+            # 9  Y: Y coordinate [kpc]
+            # 10 ep_Y: Plus uncertainty in `Y` [kpc]
+            # 11 em_Y: Minus uncertainty in `Y` [kpc]
+            # 12 Z: Z coordinate [kpc]
+            # 13 ep_Z: Plus uncertainty in `Z` [kpc]
+            # 14 em_Z: Minus uncertainty in `Z` [kpc]
+            # 15 r: Heliocentric distance [kpc]
+            # 16 ep_r: Plus uncertainty in `r` [kpc]
+            # 17 em_r: Minus uncertainty in `r` [kpc]
+            # 18 R: Galactocentric distance [kpc]
+            # 19 ep_R: Plus uncertainty in `R` [kpc]
+            # 20 em_R: Minus uncertainty in `R` [kpc]
+            # 21 mu_l: Proper motion in longitude [mas/yr]
+            # 22 ep_mu_l: Plus uncertainty in `mu_l` [mas/yr]
+            # 23 em_mu_l: Minus uncertainty in `mu_l` [mas/yr]
+            # 24 mu_b: Proper motion in latitude [mas/yr]
+            # 25 ep_mu_b: Plus uncertainty in `mu_b` [mas/yr]
+            # 26 em_mu_b: Minus uncertainty in `mu_b` [mas/yr]
             #
             # Uncertainties come from assuming maximum and minimum values of the parallax.
             # Note that they are not independent from each other and can be negative here.
