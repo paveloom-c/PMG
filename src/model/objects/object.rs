@@ -19,6 +19,7 @@ use std::error::Error;
 
 use anyhow::Result;
 use num::{traits::FloatConst, Float};
+use numeric_literals::replace_float_literals;
 
 /// Data object
 #[derive(Clone, Debug, Default)]
@@ -115,6 +116,9 @@ where
 {
     type Error = anyhow::Error;
 
+    #[allow(clippy::unwrap_in_result)]
+    #[allow(clippy::unwrap_used)]
+    #[replace_float_literals(F::from(literal).unwrap())]
     fn try_from(record: input::Record<F>) -> Result<Self> {
         let mut object = Self::default();
         object.try_parse_alpha(&record)?;
@@ -125,11 +129,19 @@ where
         object.par = Some(Measurement {
             v: record.par,
             v_u: record.par + record.e_par,
-            // In some cases the uncertainty of the value can be greater than the nominal value,
-            // hence leading to negative results in this subtraction. We avoid this here,
-            // since there is no such thing as a negative parallax. In case of zero
-            // being the maximum value, we will get the `Inf` distance along the way
-            v_l: F::max(F::zero(), record.par - record.e_par),
+            // In some cases the uncertainty of the value can be greater than
+            // the nominal value, hence leading to non-positive results in this
+            // subtraction. We avoid this here since there is no such thing
+            // as a non-positive parallax. Instead, we assume the distance to be
+            // a finite, but sufficiently big value.
+            v_l: {
+                let v_l = record.par - record.e_par;
+                if v_l > 0.0 {
+                    v_l
+                } else {
+                    1. / 50.
+                }
+            },
             e_p: record.e_par,
             e_m: record.e_par,
         });

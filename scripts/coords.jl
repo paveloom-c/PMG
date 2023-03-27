@@ -263,7 +263,6 @@ function scatter(
     y_m=F[],
     axis_equal=false,
     crosses=false,
-    correct_infs=false,
     start_x_from_zero=false,
 )
     # Compute the limits
@@ -271,18 +270,6 @@ function scatter(
     y_max, y_min = max_min(y)
     if start_x_from_zero
         x_min = 0
-    end
-    "Correct for infinite values on the XY, XZ, YZ plots"
-    function wrap_points(x_m::Tuple{F,F}, p::Tuple{F,F}, x_p::Tuple{F,F})
-        # The singularity point exists in the case of
-        # parallax being zero (for the minus uncertainty)
-        if x_m == (Inf, Inf)
-            return [(x_max, x_p[2] / x_p[1] * x_max), p, x_p]
-        elseif x_m == (-Inf, -Inf)
-            return [(x_min, x_p[2] / x_p[1] * x_min), p, x_p]
-        else
-            return [x_m, p, x_p]
-        end
     end
     # Define the markers set
     marks = if crosses
@@ -349,11 +336,7 @@ function scatter(
                     opacity = 0.25,
                     line_width = 0.1,
                 },
-                Coordinates(if correct_infs
-                    wrap_points((x_m, y_m), (x, y), (x_p, y_p))
-                else
-                    [(x_m, y_m), (x, y), (x_p, y_p)]
-                end)
+                Coordinates([(x_m, y_m), (x, y), (x_p, y_p)])
             ))
         end
     end
@@ -368,7 +351,6 @@ p = scatter(
     L"X \; \mathrm{[kpc]}",
     L"Y \; \mathrm{[kpc]}",
     axis_equal=true,
-    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XY$(POSTFIX).pdf"), p)
 
@@ -384,7 +366,6 @@ p = scatter(
     y_p=Y_p,
     y_m=Y_m,
     axis_equal=true,
-    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XY (errors)$(POSTFIX).pdf"), p)
 
@@ -397,7 +378,6 @@ p = scatter(
     L"Y \; \mathrm{[kpc]}",
     axis_equal=true,
     crosses=true,
-    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XY (crosses)$(POSTFIX).pdf"), p)
 
@@ -414,7 +394,6 @@ p = scatter(
     y_m=Y_m,
     axis_equal=true,
     crosses=true,
-    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XY (crosses, errors)$(POSTFIX).pdf"), p)
 
@@ -425,7 +404,6 @@ p = scatter(
     Z,
     L"X \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
-    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XZ$(POSTFIX).pdf"), p)
 
@@ -437,7 +415,6 @@ p = scatter(
     L"X \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
     axis_equal=true,
-    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XZ (equal axes)$(POSTFIX).pdf"), p)
 
@@ -452,7 +429,6 @@ p = scatter(
     x_m=X_m,
     y_p=Z_p,
     y_m=Z_m,
-    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XZ (errors)$(POSTFIX).pdf"), p)
 
@@ -468,7 +444,6 @@ p = scatter(
     y_p=Z_p,
     y_m=Z_m,
     axis_equal=true,
-    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "XZ (equal axes, errors)$(POSTFIX).pdf"), p)
 
@@ -479,7 +454,6 @@ p = scatter(
     Z,
     L"Y \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
-    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "YZ$(POSTFIX).pdf"), p)
 
@@ -490,7 +464,6 @@ p = scatter(
     L"Y \; \mathrm{[kpc]}",
     L"Z \; \mathrm{[kpc]}",
     axis_equal=true,
-    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "YZ (equal axes)$(POSTFIX).pdf"), p)
 
@@ -505,7 +478,6 @@ p = scatter(
     x_m=Y_m,
     y_p=Z_p,
     y_m=Z_m,
-    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "YZ (errors)$(POSTFIX).pdf"), p)
 
@@ -521,7 +493,6 @@ p = scatter(
     y_p=Z_p,
     y_m=Z_m,
     axis_equal=true,
-    correct_infs=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "YZ (equal axes, errors)$(POSTFIX).pdf"), p)
 
