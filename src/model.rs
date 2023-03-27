@@ -17,7 +17,7 @@ use core::iter::Sum;
 use core::str::FromStr;
 use std::error::Error;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Context, Result};
 use num::{traits::FloatConst, Float};
@@ -27,7 +27,7 @@ use rand_distr::StandardNormal;
 use serde::{de::DeserializeOwned, Serialize};
 
 /// Model of the Galaxy
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Model<F>
 where
     F: Float + Debug,
@@ -41,6 +41,10 @@ where
     objects: Objects<F>,
     /// Fitted model parameters
     fitted_params: Option<Params<F>>,
+    /// Computation goal
+    goal: Goal,
+    /// Output directory
+    output_dir: PathBuf,
 }
 
 impl<F> Model<F>
@@ -55,17 +59,18 @@ where
             .ok_or_else(|| anyhow!("Couldn't unwrap the fitted parameters"))
     }
     /// Perform computations based on the goal
-    pub fn compute(&mut self, goal: Goal) -> Result<()> {
-        match goal {
+    pub fn compute(&mut self) -> Result<()> {
+        match self.goal {
             Goal::Objects => {
                 // Perform per-object computations
                 self.objects.compute(&self.params);
             }
             Goal::Fit => {
+                // Prepare a trace file
                 // Try to fit the model
-                self.fitted_params.get_or_insert(
+                self.fitted_params = Some(
                     self.params
-                        .try_fit_from(&self.bounds, &self.objects)
+                        .try_fit_from(&self.objects, &self.bounds, &self.output_dir)
                         .with_context(|| "Couldn't fit the model")?,
                 );
             }
@@ -87,19 +92,19 @@ where
     }
     /// Write the model data to files in the
     /// output directory based on the goal
-    pub fn write_to(&self, dir: &Path, goal: Goal) -> Result<()>
+    pub fn write(&self) -> Result<()>
     where
         F: Serialize,
     {
         // Make sure the output directories exist
-        let dat_dir = &dir.join("dat");
-        let bin_dir = &dir.join("bin");
+        let dat_dir = &self.output_dir.join("dat");
+        let bin_dir = &self.output_dir.join("bin");
         fs::create_dir_all(dat_dir)
             .with_context(|| format!("Couldn't create the output directory {dat_dir:?}"))?;
         fs::create_dir_all(bin_dir)
             .with_context(|| format!("Couldn't create the output directory {bin_dir:?}"))?;
         // Serialize data
-        match goal {
+        match self.goal {
             Goal::Objects => {
                 self.serialize_to_objects(dat_dir, bin_dir)
                     .with_context(|| "Couldn't write the objects to a file")?;
@@ -162,8 +167,18 @@ where
                 sigma_theta: utils::cast_range(args.sigma_theta_bounds.clone())?,
                 sigma_z: utils::cast_range(args.sigma_z_bounds.clone())?,
             },
-            ..Default::default()
+            objects: Objects::<F>::default(),
+            fitted_params: None,
+            goal: args.goal,
+            output_dir: args.output_dir.clone(),
         };
+        // Make sure the output directory exists
+        fs::create_dir_all(&model.output_dir).with_context(|| {
+            format!(
+                "Couldn't create the output directory {:?}",
+                &model.output_dir
+            )
+        })?;
         // Extend it using the data from the files
         for path in &args.inputs {
             model

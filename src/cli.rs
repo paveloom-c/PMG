@@ -195,7 +195,7 @@ impl TypedValueParser for PathBufParser {
 pub struct Args {
     /// Output directory
     #[arg(short, required = true)]
-    pub output: PathBuf,
+    pub output_dir: PathBuf,
     /// Computation goal
     #[arg(long, required = true)]
     pub goal: Goal,

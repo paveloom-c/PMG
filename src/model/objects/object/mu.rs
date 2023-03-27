@@ -62,8 +62,6 @@ where
         let delta = self.delta.unwrap();
         let mu_x = self.mu_x.as_ref().unwrap();
         let mu_y = self.mu_y.as_ref().unwrap();
-        let l = self.l.unwrap();
-        let b = self.b.unwrap();
         // Compute the observed dispersions
         let d_mu_x = mu_x.e_p.powi(2);
         let d_mu_y = mu_y.e_p.powi(2);
@@ -73,8 +71,6 @@ where
         let mut object = Object {
             alpha: Some(FT::cst(alpha)),
             delta: Some(FT::cst(delta)),
-            l: Some(FT::cst(l)),
-            b: Some(FT::cst(b)),
             mu_x: Some(Measurement {
                 v: FT::var(mu_x.v),
                 ..Default::default()
@@ -85,6 +81,7 @@ where
             }),
             ..Default::default()
         };
+        object.compute_l_b(params);
         object.compute_mu_l_mu_b(params);
         let deriv_mu_l_cos_b_mu_x_sq = object.mu_l.unwrap().deriv().powi(2);
         let deriv_mu_b_mu_x_sq = object.mu_b.unwrap().deriv().powi(2);
@@ -99,6 +96,7 @@ where
             v: FT::var(mu_y.v),
             ..Default::default()
         });
+        object.compute_l_b(params);
         object.compute_mu_l_mu_b(params);
         let deriv_mu_l_cos_b_mu_y_sq = object.mu_l.unwrap().deriv().powi(2);
         let deriv_mu_b_mu_y_sq = object.mu_b.unwrap().deriv().powi(2);

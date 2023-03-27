@@ -7,6 +7,7 @@ use core::fmt::{Debug, Display};
 use core::iter::Sum;
 use std::fs::File;
 use std::io::{BufWriter, Write};
+use std::path::Path;
 
 use anyhow::{anyhow, Context, Result};
 use indoc::formatdoc;
@@ -102,9 +103,15 @@ where
     #[allow(clippy::unwrap_used)]
     #[allow(clippy::use_debug)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub(super) fn try_fit_from(&self, bounds: &Bounds<F>, objects: &Objects<F>) -> Result<Self> {
+    pub(super) fn try_fit_from(
+        &self,
+        objects: &Objects<F>,
+        bounds: &Bounds<F>,
+        output_dir: &Path,
+    ) -> Result<Self> {
         // Prepare a log file
-        let log_file = File::create("fit.log").with_context(|| "Couldn't create a file")?;
+        let log_file =
+            File::create(output_dir.join("fit.log")).with_context(|| "Couldn't create a file")?;
         // Prepare a buffered writer
         let wtr = RefCell::new(BufWriter::new(log_file));
         // Clone the objects
@@ -137,7 +144,7 @@ where
                     // Prepare a random number generator with a specific stream
                     let mut rng = ChaCha8Rng::seed_from_u64(1);
                     rng.set_stream(i as u64 + 1);
-                    // Compute the Galactocentric distance
+                    // Compute some values
                     object.compute_r_g(&params);
                     object.compute_mu_l_mu_b(&params);
                     // Unpack the data
@@ -193,6 +200,8 @@ where
                     let g = |g_p: &Point<F, 1>| -> Result<F> {
                         // Create an object for reduced values
                         let mut object_r = Object {
+                            l: Some(l),
+                            b: Some(b),
                             par: Some(Measurement {
                                 v: g_p[0],
                                 ..Default::default()

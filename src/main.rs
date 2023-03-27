@@ -20,12 +20,12 @@ pub fn main() -> Result<()> {
         .with_context(|| "Couldn't load the data from the input files")?;
     // Perform computations based on the goal
     model
-        .compute(args.goal)
+        .compute()
         .with_context(|| "Couldn't perform computations")?;
     // Write the model data to files in the
     // output directory based on the goal
     model
-        .write_to(&args.output, args.goal)
+        .write()
         .with_context(|| "Couldn't write the model data")?;
     Ok(())
 }

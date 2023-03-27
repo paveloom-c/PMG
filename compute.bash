@@ -12,12 +12,20 @@ echo "${PAD}Step 1. Instantiate the project"
 cargo build -r &>/dev/null
 julia --project=. -e "using Pkg; Pkg.instantiate()"
 
-echo -e "\n${PAD}Step 2. Perform per-object computations"
+echo -e "\n${PAD}Step 2. Perform computations"
 
+echo -e "\n${PAD}> Per-object data..."
 cargo run -r -- -o data/output/all --goal objects -i data/input/all.dat &>/dev/null
 cargo run -r -- -o data/output/hmsfrs --goal objects -i data/input/hmsfrs.dat &>/dev/null
 cargo run -r -- -o data/output/hmsfrs_test --goal objects -i data/input/hmsfrs.dat \
   --u-sun 11 --theta-sun 255 --r-0 8.34 &>/dev/null
+
+echo -e "${PAD}> Fit all..."
+cargo run -r -- -o data/output/all --goal fit -i data/input/all.dat &>/dev/null
+echo -e "${PAD}> Fit center..."
+cargo run -r -- -o data/output/center --goal fit -i data/input/center.dat &>/dev/null
+echo -e "${PAD}> HMSFRs..."
+cargo run -r -- -o data/output/hmsfrs --goal fit -i data/input/hmsfrs.dat &>/dev/null
 
 echo -e "
 ${PAD}Step 3. Plot the comparison charts for the objects that are
@@ -45,3 +53,7 @@ echo -e "${PAD}HMSFRs:"
 ./julia.bash scripts/rotcurve.jl -s -o "HMSFRs" data/output/hmsfrs/
 echo -e "${PAD}HMSFRs (test):"
 ./julia.bash scripts/rotcurve.jl -s --with-test -o "'HMSFRs (Test)'" data/output/hmsfrs_test
+
+echo -e "${PAD}Step 6. Zip the results\n"
+
+zip -rq results.zip data plots
