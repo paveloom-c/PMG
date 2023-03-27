@@ -56,12 +56,13 @@ where
     }
     /// Compute the velocities in the Galactic
     /// heliocentric Cartesian coordinates system
-    /// with the specific values
-    fn compute_u_v_w_with(&self, v_r: F, v_l: F, v_b: F) -> (F, F, F) {
+    /// (with the specific values)
+    pub fn compute_u_v_w_with(&self, v_l: F, v_b: F) -> (F, F, F) {
         // Unpack the data
         let l = self.l.unwrap();
         let b = self.b.unwrap();
-        // Compute the velocities
+        let v_r = self.v_r.unwrap();
+        // Convert to the Galactic heliocentric Cartesian coordinate system
         let aux_vel = v_r * b.cos() - v_b * b.sin();
         let u = aux_vel * l.cos() - v_l * l.sin();
         let v = aux_vel * l.sin() + v_l * l.cos();
@@ -73,11 +74,10 @@ where
     /// (nominal values only)
     pub fn compute_u_v_w_nominal(&mut self) {
         // Unpack the data
-        let v_r = self.v_r.as_ref().unwrap();
         let v_l = self.v_l.as_ref().unwrap();
         let v_b = self.v_b.as_ref().unwrap();
         // Convert to the Galactic heliocentric Cartesian coordinate system
-        let (u, v, w) = self.compute_u_v_w_with(v_r.v, v_l.v, v_b.v);
+        let (u, v, w) = self.compute_u_v_w_with(v_l.v, v_b.v);
         self.u = Some(Measurement {
             v: u,
             ..Default::default()
@@ -95,13 +95,12 @@ where
     /// heliocentric Cartesian coordinates system
     pub fn compute_u_v_w(&mut self) {
         // Unpack the data
-        let v_r = self.v_r.as_ref().unwrap();
         let v_l = self.v_l.as_ref().unwrap();
         let v_b = self.v_b.as_ref().unwrap();
         // Convert to the Galactic heliocentric Cartesian coordinate system
-        let (u, v, w) = self.compute_u_v_w_with(v_r.v, v_l.v, v_b.v);
-        let (u_u, v_u, w_u) = self.compute_u_v_w_with(v_r.v_u, v_l.v_u, v_b.v_u);
-        let (u_l, v_l_, w_l) = self.compute_u_v_w_with(v_r.v_l, v_l.v_l, v_b.v_l);
+        let (u, v, w) = self.compute_u_v_w_with(v_l.v, v_b.v);
+        let (u_u, v_u, w_u) = self.compute_u_v_w_with(v_l.v_u, v_b.v_u);
+        let (u_l, v_l_, w_l) = self.compute_u_v_w_with(v_l.v_l, v_b.v_l);
         self.u = Some(Measurement {
             v: u,
             v_u: u_u,

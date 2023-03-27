@@ -52,9 +52,9 @@ where
     /// Latitude (radians)
     pub b: Option<F>,
     /// Proper motion in longitude
-    pub mu_l: Option<Measurement<F>>,
+    pub mu_l: Option<F>,
     /// Proper motion in latitude
-    pub mu_b: Option<Measurement<F>>,
+    pub mu_b: Option<F>,
     /// Galactocentric distance (kpc)
     pub r_g: Option<Measurement<F>>,
     /// X coordinate (kpc)
@@ -72,7 +72,7 @@ where
     /// inherited from the velocities
     pub e_vel_theta: Option<F>,
     /// Heliocentric velocity in distance (km/s)
-    pub v_r: Option<Measurement<F>>,
+    pub v_r: Option<F>,
     /// Heliocentric velocity in longitude (km/s)
     pub v_l: Option<Measurement<F>>,
     /// Heliocentric velocity in latitude (km/s)

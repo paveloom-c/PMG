@@ -77,30 +77,12 @@ struct Record<'a, F: Float + Debug> {
     /// Proper motion on longitude (mas/yr)
     #[serde(rename = "mu_l")]
     mu_l: F,
-    /// Plus uncertainty in `mu_l` (mas/yr)
-    #[serde(rename = "ep_mu_l")]
-    e_p_mu_l: F,
-    /// Minus uncertainty in `mu_l` (mas/yr)
-    #[serde(rename = "em_mu_l")]
-    e_m_mu_l: F,
     /// Proper motion on latitude (mas/yr)
     #[serde(rename = "mu_b")]
     mu_b: F,
-    /// Plus uncertainty in `mu_b` (mas/yr)
-    #[serde(rename = "ep_mu_b")]
-    e_p_mu_b: F,
-    /// Minus uncertainty in `mu_b` (mas/yr)
-    #[serde(rename = "em_mu_b")]
-    e_m_mu_b: F,
     /// Heliocentric velocity in distance (km/s)
     #[serde(rename = "V_r")]
     v_r: F,
-    /// Plus uncertainty in `v_r` (km/s)
-    #[serde(rename = "ep_V_r")]
-    e_p_v_r: F,
-    /// Minus uncertainty in `v_r` (km/s)
-    #[serde(rename = "em_V_r")]
-    e_m_v_r: F,
     /// Heliocentric velocity in longitude (km/s)
     #[serde(rename = "V_l")]
     v_l: F,
@@ -129,22 +111,22 @@ struct Record<'a, F: Float + Debug> {
     #[serde(rename = "em_U")]
     e_m_u: F,
     /// V coordinate (km/s)
-    #[serde(rename = "v")]
+    #[serde(rename = "V")]
     v: F,
     /// Plus uncertainty in `v` (km/s)
-    #[serde(rename = "ep_v")]
+    #[serde(rename = "ep_V")]
     e_p_v: F,
     /// Minus uncertainty in `v` (km/s)
-    #[serde(rename = "em_v")]
+    #[serde(rename = "em_V")]
     e_m_v: F,
     /// W coordinate (km/s)
-    #[serde(rename = "w")]
+    #[serde(rename = "W")]
     w: F,
     /// Plus uncertainty in `w` (km/s)
-    #[serde(rename = "ep_w")]
+    #[serde(rename = "ep_W")]
     e_p_w: F,
     /// Minus uncertainty in `w` (km/s)
-    #[serde(rename = "em_w")]
+    #[serde(rename = "em_W")]
     e_m_w: F,
 }
 
@@ -168,9 +150,9 @@ where
         let x = object.x.as_ref().unwrap();
         let y = object.y.as_ref().unwrap();
         let z = object.z.as_ref().unwrap();
-        let mu_l = object.mu_l.as_ref().unwrap();
-        let mu_b = object.mu_b.as_ref().unwrap();
-        let v_r = object.v_r.as_ref().unwrap();
+        let mu_l = object.mu_l.unwrap();
+        let mu_b = object.mu_b.unwrap();
+        let v_r = object.v_r.unwrap();
         let v_l = object.v_l.as_ref().unwrap();
         let v_b = object.v_b.as_ref().unwrap();
         let u = object.u.as_ref().unwrap();
@@ -197,15 +179,9 @@ where
             r_g: r_g.v,
             e_p_r_g: r_g.e_p,
             e_m_r_g: r_g.e_m,
-            mu_l: mu_l.v,
-            e_p_mu_l: mu_l.e_p,
-            e_m_mu_l: mu_l.e_m,
-            mu_b: mu_b.v,
-            e_p_mu_b: mu_b.e_p,
-            e_m_mu_b: mu_b.e_m,
-            v_r: v_r.v,
-            e_p_v_r: v_r.e_p,
-            e_m_v_r: v_r.e_m,
+            mu_l,
+            mu_b,
+            v_r,
             v_l: v_l.v,
             e_p_v_l: v_l.e_p,
             e_m_v_l: v_l.e_m,
@@ -286,29 +262,23 @@ where
             # 19 ep_R: Plus uncertainty in `R` [kpc]
             # 20 em_R: Minus uncertainty in `R` [kpc]
             # 21 mu_l: Proper motion in longitude [mas/yr]
-            # 22 ep_mu_l: Plus uncertainty in `mu_l` [mas/yr]
-            # 23 em_mu_l: Minus uncertainty in `mu_l` [mas/yr]
-            # 24 mu_b: Proper motion in latitude [mas/yr]
-            # 25 ep_mu_b: Plus uncertainty in `mu_b` [mas/yr]
-            # 26 em_mu_b: Minus uncertainty in `mu_b` [mas/yr]
-            # 27 V_r: Heliocentric velocity in distance [km/s]
-            # 28 ep_V_r: Plus uncertainty in `V_r` [km/s]
-            # 29 em_V_r: Minus uncertainty in `V_r` [km/s]
-            # 30 V_l: Heliocentric velocity in longitude [km/s]
-            # 31 ep_V_l: Plus uncertainty in `V_l` [km/s]
-            # 32 em_V_l: Minus uncertainty in `V_l` [km/s]
-            # 33 V_b: Heliocentric velocity in latitude [km/s]
-            # 34 ep_V_b: Plus uncertainty in `V_b` [km/s]
-            # 35 em_V_b: Minus uncertainty in `V_b` [km/s]
-            # 36 U: U coordinate [km/s]
-            # 37 ep_U: Plus uncertainty in `U` [km/s]
-            # 38 em_U: Minus uncertainty in `U` [km/s]
-            # 39 V: V coordinate [km/s]
-            # 40 ep_V: Plus uncertainty in `V` [km/s]
-            # 41 em_V: Minus uncertainty in `V` [km/s]
-            # 42 W: W coordinate [km/s]
-            # 43 ep_W: Plus uncertainty in `W` [km/s]
-            # 44 em_W: Minus uncertainty in `W` [km/s]
+            # 22 mu_b: Proper motion in latitude [mas/yr]
+            # 23 V_r: Heliocentric velocity in distance [km/s]
+            # 24 V_l: Heliocentric velocity in longitude [km/s]
+            # 25 ep_V_l: Plus uncertainty in `V_l` [km/s]
+            # 26 em_V_l: Minus uncertainty in `V_l` [km/s]
+            # 27 V_b: Heliocentric velocity in latitude [km/s]
+            # 28 ep_V_b: Plus uncertainty in `V_b` [km/s]
+            # 29 em_V_b: Minus uncertainty in `V_b` [km/s]
+            # 30 U: U coordinate [km/s]
+            # 31 ep_U: Plus uncertainty in `U` [km/s]
+            # 32 em_U: Minus uncertainty in `U` [km/s]
+            # 33 V: V coordinate [km/s]
+            # 34 ep_V: Plus uncertainty in `V` [km/s]
+            # 35 em_V: Minus uncertainty in `V` [km/s]
+            # 36 W: W coordinate [km/s]
+            # 37 ep_W: Plus uncertainty in `W` [km/s]
+            # 38 em_W: Minus uncertainty in `W` [km/s]
             #
             # Uncertainties come from assuming maximum and minimum values of the parallax.
             # Note that they are not independent from each other and can be negative here.

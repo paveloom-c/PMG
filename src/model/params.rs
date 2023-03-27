@@ -139,15 +139,15 @@ where
                     rng.set_stream(i as u64 + 1);
                     // Compute the Galactocentric distance
                     object.compute_r_g(&params);
-                    object.compute_mu_l_mu_b_nominal(&params);
+                    object.compute_mu_l_mu_b(&params);
                     // Unpack the data
                     let v_lsr = object.v_lsr.as_ref().unwrap();
                     let par = object.par.as_ref().unwrap();
                     let r_h = object.r_h.as_ref().unwrap();
                     let l = object.l.unwrap();
                     let b = object.b.unwrap();
-                    let mu_l = object.mu_l.as_ref().unwrap();
-                    let mu_b = object.mu_b.as_ref().unwrap();
+                    let mu_l = object.mu_l.unwrap();
+                    let mu_b = object.mu_b.unwrap();
                     let r_g = object.r_g.as_ref().unwrap();
                     // Compute the sines and cosines of the longitude and latitude
                     let sin_l = l.sin();
@@ -231,8 +231,8 @@ where
                                 / params.k;
                         // Compute the weighted sum of squared differences
                         let sum = (v_lsr.v - v_r_mod).powi(2) / d_v_r
-                            + (mu_l.v * cos_b - mu_l_cos_b_mod).powi(2) / d_mu_l_cos_b
-                            + (mu_b.v - mu_b_mod).powi(2) / d_mu_b
+                            + (mu_l * cos_b - mu_l_cos_b_mod).powi(2) / d_mu_l_cos_b
+                            + (mu_b - mu_b_mod).powi(2) / d_mu_b
                             + (par.v - par_r).powi(2) / d_par;
                         // Return it as the result
                         Ok(sum)

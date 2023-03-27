@@ -118,8 +118,8 @@ where
         };
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
-        object.compute_mu_l_mu_b_nominal(params);
-        object.compute_v_r_nominal(params);
+        object.compute_mu_l_mu_b(params);
+        object.compute_v_r(params);
         object.compute_v_l_v_b_nominal(params);
         object.compute_u_v_w_nominal();
         object.compute_theta_nominal(params);
@@ -136,8 +136,8 @@ where
         });
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
-        object.compute_mu_l_mu_b_nominal(params);
-        object.compute_v_r_nominal(params);
+        object.compute_mu_l_mu_b(params);
+        object.compute_v_r(params);
         object.compute_v_l_v_b_nominal(params);
         object.compute_u_v_w_nominal();
         object.compute_theta_nominal(params);
@@ -154,8 +154,8 @@ where
         });
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
-        object.compute_mu_l_mu_b_nominal(params);
-        object.compute_v_r_nominal(params);
+        object.compute_mu_l_mu_b(params);
+        object.compute_v_r(params);
         object.compute_v_l_v_b_nominal(params);
         object.compute_u_v_w_nominal();
         object.compute_theta_nominal(params);

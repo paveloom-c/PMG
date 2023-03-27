@@ -140,14 +140,8 @@ struct Data
     ep_R::Vector{F}
     em_R::Vector{F}
     mu_l::Vector{F}
-    ep_mu_l::Vector{F}
-    em_mu_l::Vector{F}
     mu_b::Vector{F}
-    ep_mu_b::Vector{F}
-    em_mu_b::Vector{F}
     v_r::Vector{F}
-    ep_v_r::Vector{F}
-    em_v_r::Vector{F}
     v_l::Vector{F}
     ep_v_l::Vector{F}
     em_v_l::Vector{F}
