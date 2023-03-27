@@ -110,7 +110,7 @@ colors = ColorSchemes.tol_bright[2:end]
 CURRENT_DIR = @__DIR__
 ROOT_DIR = dirname(CURRENT_DIR)
 PLOTS_DIR = joinpath(ROOT_DIR, "plots", OUTPUT_DIR)
-DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "bin", "coords.bin")
+DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "bin", "objects.bin")
 
 # Make sure the needed directories exist
 mkpath(PLOTS_DIR)
@@ -141,22 +141,26 @@ struct Data
     em_R::Vector{F}
     mu_l::Vector{F}
     mu_b::Vector{F}
-    v_r::Vector{F}
-    v_l::Vector{F}
-    ep_v_l::Vector{F}
-    em_v_l::Vector{F}
-    v_b::Vector{F}
-    ep_v_b::Vector{F}
-    em_v_b::Vector{F}
-    u::Vector{F}
-    ep_u::Vector{F}
-    em_u::Vector{F}
-    v::Vector{F}
-    ep_v::Vector{F}
-    em_v::Vector{F}
-    w::Vector{F}
-    ep_w::Vector{F}
-    em_w::Vector{F}
+    V_r::Vector{F}
+    V_l::Vector{F}
+    ep_V_l::Vector{F}
+    em_V_l::Vector{F}
+    V_b::Vector{F}
+    ep_V_b::Vector{F}
+    em_V_b::Vector{F}
+    U::Vector{F}
+    ep_U::Vector{F}
+    em_U::Vector{F}
+    V::Vector{F}
+    ep_V::Vector{F}
+    em_V::Vector{F}
+    W::Vector{F}
+    ep_W::Vector{F}
+    em_W::Vector{F}
+    Θ::Vector{F}
+    ep_Θ::Vector{F}
+    em_Θ::Vector{F}
+    evel_Θ::Vector{F}
 end
 
 "Read binary files in the `bincode` format"
@@ -554,5 +558,8 @@ p = scatter(
     axis_equal=true,
 )
 pgfsave(joinpath(PLOTS_DIR, "lb$(POSTFIX).pdf"), p)
+
+# Mark data for garbage collection
+data = nothing
 
 println()

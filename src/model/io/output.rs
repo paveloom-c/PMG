@@ -1,8 +1,7 @@
 //! Output related
 
-pub mod coords;
 pub mod fit;
-pub mod rotcurve;
+pub mod objects;
 
 use std::fs::File;
 use std::io::{BufWriter, Write};

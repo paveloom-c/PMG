@@ -10,7 +10,6 @@ mod theta;
 
 use crate::model::io::input;
 use crate::model::Params;
-use crate::Goal;
 pub use measurement::Measurement;
 
 use core::fmt::{Debug, Display};
@@ -86,26 +85,18 @@ where
 }
 
 impl<F: Float + FloatConst + Default + Display + Debug> Object<F> {
-    /// Perform computations based on goals
-    pub(in crate::model) fn compute(&mut self, goals: &[Goal], params: &Params<F>) {
-        let compute_coords = goals.contains(&Goal::Coords);
-        let compute_rotation_curve = goals.contains(&Goal::RotationCurve);
-        if compute_coords || compute_rotation_curve {
-            self.compute_l_b(params);
-            self.compute_r_h();
-            self.compute_r_g(params);
-            self.compute_mu_l_mu_b(params);
-            self.compute_v_r(params);
-            self.compute_v_l_v_b(params);
-            self.compute_u_v_w();
-            if compute_coords {
-                self.compute_x_y_z();
-            }
-            if compute_rotation_curve {
-                self.compute_theta(params);
-                self.compute_e_vel_theta(params);
-            }
-        }
+    /// Perform per-object computations
+    pub(in crate::model) fn compute(&mut self, params: &Params<F>) {
+        self.compute_l_b(params);
+        self.compute_r_h();
+        self.compute_r_g(params);
+        self.compute_mu_l_mu_b(params);
+        self.compute_v_r(params);
+        self.compute_v_l_v_b(params);
+        self.compute_u_v_w();
+        self.compute_x_y_z();
+        self.compute_theta(params);
+        self.compute_e_vel_theta(params);
     }
 }
 

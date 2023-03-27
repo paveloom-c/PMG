@@ -1,4 +1,4 @@
-//! Galactic heliocentric coordinates of the objects
+//! Per-object data
 
 use crate::model::{Model, Object};
 
@@ -13,7 +13,7 @@ use rand_distr::{Distribution, StandardNormal};
 use serde::Serialize;
 
 /// Name of the files
-const NAME: &str = "coords";
+const NAME: &str = "objects";
 
 /// Output data record
 #[derive(Serialize)]
@@ -128,6 +128,14 @@ struct Record<'a, F: Float + Debug> {
     /// Minus uncertainty in `w` (km/s)
     #[serde(rename = "em_W")]
     e_m_w: F,
+    /// Azimuthal velocity (km/s)
+    theta: F,
+    /// Plus uncertainty in `theta` (km/s)
+    e_p_theta: F,
+    /// Plus uncertainty in `theta` (km/s)
+    e_m_theta: F,
+    /// Velocity uncertainty in `theta` (km/s)
+    e_vel_theta: F,
 }
 
 #[allow(clippy::many_single_char_names)]
@@ -158,6 +166,8 @@ where
         let u = object.u.as_ref().unwrap();
         let v = object.v.as_ref().unwrap();
         let w = object.w.as_ref().unwrap();
+        let theta = object.theta.as_ref().unwrap();
+        let e_vel_theta = object.e_vel_theta.unwrap();
         Ok(Self {
             name,
             obj_type,
@@ -197,6 +207,10 @@ where
             w: w.v,
             e_p_w: w.e_p,
             e_m_w: w.e_m,
+            theta: theta.v,
+            e_p_theta: theta.e_p,
+            e_m_theta: theta.e_m,
+            e_vel_theta,
         })
     }
 }
@@ -228,8 +242,9 @@ where
     F: Float + FloatConst + SampleUniform + Default + Debug + Display + Serialize + Send + Sync,
     StandardNormal: Distribution<F>,
 {
-    /// Serialize the Galactic heliocentric coordinates of the objects
-    pub(in crate::model) fn serialize_to_coords(
+    /// Serialize the per-object data
+    #[allow(clippy::too_many_lines)]
+    pub(in crate::model) fn serialize_to_objects(
         &self,
         dat_dir: &Path,
         bin_dir: &Path,
@@ -237,7 +252,7 @@ where
         // Prepare a header
         let header = formatdoc!(
             "
-            # Galactic heliocentric coordinates of the objects
+            # Per-object data
             #
             # Descriptions:
             #
@@ -279,6 +294,10 @@ where
             # 36 W: W coordinate [km/s]
             # 37 ep_W: Plus uncertainty in `W` [km/s]
             # 38 em_W: Minus uncertainty in `W` [km/s]
+            # 39 theta: Azimuthal velocity [km/s]
+            # 40 ep_theta: Plus uncertainty in `theta` [km/s]
+            # 41 em_theta: Minus uncertainty in `theta` [km/s]
+            # 42 evel_theta: Velocity uncertainty in `theta` [km/s]
             #
             # Uncertainties come from assuming maximum and minimum values of the parallax.
             # Note that they are not independent from each other and can be negative here.
@@ -293,6 +312,10 @@ where
             # Source: Reid et al. (2009)
             # DELTA_NGP: {delta_ngp} [27:07:42.013]
             #
+            # Linear velocities units conversion coefficient
+            # Sources: Gromov, Nikiforov (2016)
+            # K: {k}
+            #
             # The longitude of the north celestial pole (decimal degrees angle -> radians)
             # Source: Reid et al. (2009)
             # L_NCP: {l_ncp} [122.932]
@@ -300,11 +323,37 @@ where
             # Galactocentric distance to the Sun (kpc)
             # R_0: {r_0}
             #
+            # Full circular velocity of the Sun (km/s)
+            # Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
+            # THETA_SUN: {theta_sun}
+            #
+            # Peculiar motion locally toward GC (km/s)
+            # Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
+            # U_SUN: {u_sun}
+            #
+            # Standard Solar Motion toward GC (km/s)
+            # Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
+            # U_SUN_STANDARD: {u_sun_standard}
+            #
+            # Standard Solar Motion toward l = 90 degrees (km/s)
+            # Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
+            # V_SUN_STANDARD: {v_sun_standard}
+            #
+            # Standard Solar Motion toward NGP (km/s)
+            # Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
+            # W_SUN_STANDARD: {w_sun_standard}
+            #
             ",
             alpha_ngp = self.params.alpha_ngp,
             delta_ngp = self.params.delta_ngp,
+            k = self.params.k,
             l_ncp = self.params.l_ncp,
             r_0 = self.params.r_0,
+            theta_sun = self.params.theta_sun,
+            u_sun = self.params.u_sun,
+            u_sun_standard = self.params.u_sun_standard,
+            v_sun_standard = self.params.v_sun_standard,
+            w_sun_standard = self.params.w_sun_standard,
         );
         super::serialize_to(
             dat_dir,

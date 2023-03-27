@@ -18,14 +18,14 @@ pub fn main() -> Result<()> {
     // Initialize a model from the input data
     let mut model = Model::<f64>::try_from(&args)
         .with_context(|| "Couldn't load the data from the input files")?;
-    // Perform computations based on the goals
+    // Perform computations based on the goal
     model
-        .compute(&args.goals)
+        .compute(args.goal)
         .with_context(|| "Couldn't perform computations")?;
     // Write the model data to files in the
-    // output directory based on the goals
+    // output directory based on the goal
     model
-        .write_to(&args.output, &args.goals)
+        .write_to(&args.output, args.goal)
         .with_context(|| "Couldn't write the model data")?;
     Ok(())
 }

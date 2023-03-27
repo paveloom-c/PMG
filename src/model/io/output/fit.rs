@@ -75,13 +75,13 @@ where
         + Sum,
     StandardNormal: Distribution<F>,
 {
-    /// Serialize the rotation curve
+    /// Serialize the fitted parameters
     #[allow(clippy::non_ascii_literal)]
     pub(in crate::model) fn serialize_to_fit(&self, dat_dir: &Path, bin_dir: &Path) -> Result<()> {
         // Prepare a header
         let header = formatdoc!(
             "
-            # Rotation curve
+            # Fitted parameters
             #
             # Descriptions:
             #

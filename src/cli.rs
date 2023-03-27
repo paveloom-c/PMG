@@ -196,9 +196,9 @@ pub struct Args {
     /// Output directory
     #[arg(short, required = true)]
     pub output: PathBuf,
-    /// Computation goals
+    /// Computation goal
     #[arg(long, required = true)]
-    pub goals: Vec<Goal>,
+    pub goal: Goal,
     /// Input files
     #[arg(short, required = true, value_parser = PathBufParser)]
     pub inputs: Vec<PathBuf>,
@@ -298,10 +298,5 @@ pub struct Args {
 
 /// Parse the arguments
 pub fn parse() -> Args {
-    // Parse the arguments
-    let mut args = Args::parse();
-    // Sort and dedup the goals
-    args.goals.sort();
-    args.goals.dedup();
-    args
+    Args::parse()
 }

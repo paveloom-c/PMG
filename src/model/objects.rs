@@ -4,7 +4,6 @@ mod object;
 
 use crate::model::io::input;
 use crate::model::Params;
-use crate::Goal;
 
 pub use object::{Measurement, Object};
 
@@ -29,11 +28,11 @@ impl<F> Objects<F>
 where
     F: Float + FloatConst + Default + Display + Debug + Send + Sync,
 {
-    /// Perform computations based on goals
-    pub(in crate::model) fn compute(&mut self, goals: &[Goal], params: &Params<F>) {
+    /// Perform per-object computations
+    pub(in crate::model) fn compute(&mut self, params: &Params<F>) {
         // Perform computations for each object
         for object in self.iter_mut() {
-            object.compute(goals, params);
+            object.compute(params);
         }
     }
     /// Extend the vector of objects

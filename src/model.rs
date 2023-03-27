@@ -54,18 +54,21 @@ where
             .as_ref()
             .ok_or_else(|| anyhow!("Couldn't unwrap the fitted parameters"))
     }
-    /// Perform computations based on goals
-    pub fn compute(&mut self, goals: &[Goal]) -> Result<()> {
-        // Perform per-object goals first
-        self.objects.compute(goals, &self.params);
-        // If fitting of the model was requested
-        if goals.contains(&Goal::Fit) {
-            // Try to fit the model
-            self.fitted_params.get_or_insert(
-                self.params
-                    .try_fit_from(&self.bounds, &self.objects)
-                    .with_context(|| "Couldn't fit the model")?,
-            );
+    /// Perform computations based on the goal
+    pub fn compute(&mut self, goal: Goal) -> Result<()> {
+        match goal {
+            Goal::Objects => {
+                // Perform per-object computations
+                self.objects.compute(&self.params);
+            }
+            Goal::Fit => {
+                // Try to fit the model
+                self.fitted_params.get_or_insert(
+                    self.params
+                        .try_fit_from(&self.bounds, &self.objects)
+                        .with_context(|| "Couldn't fit the model")?,
+                );
+            }
         }
         Ok(())
     }
@@ -83,8 +86,8 @@ where
         Ok(())
     }
     /// Write the model data to files in the
-    /// output directory based on the goals
-    pub fn write_to(&self, dir: &Path, goals: &[Goal]) -> Result<()>
+    /// output directory based on the goal
+    pub fn write_to(&self, dir: &Path, goal: Goal) -> Result<()>
     where
         F: Serialize,
     {
@@ -95,21 +98,17 @@ where
             .with_context(|| format!("Couldn't create the output directory {dat_dir:?}"))?;
         fs::create_dir_all(bin_dir)
             .with_context(|| format!("Couldn't create the output directory {bin_dir:?}"))?;
-        // Write the coordinates if that was a goal
-        if goals.contains(&Goal::Coords) {
-            self.serialize_to_coords(dat_dir, bin_dir)
-                .with_context(|| "Couldn't write the Galactic coordinates to a file")?;
-        };
-        // Write the rotation curve if that was a goal
-        if goals.contains(&Goal::RotationCurve) {
-            self.serialize_to_rotcurve(dat_dir, bin_dir)
-                .with_context(|| "Couldn't write the rotation curve to a file")?;
-        };
-        // Write the fit of the model if that was a goal
-        if goals.contains(&Goal::Fit) {
-            self.serialize_to_fit(dat_dir, bin_dir)
-                .with_context(|| "Couldn't write the rotation curve to a file")?;
-        };
+        // Serialize data
+        match goal {
+            Goal::Objects => {
+                self.serialize_to_objects(dat_dir, bin_dir)
+                    .with_context(|| "Couldn't write the objects to a file")?;
+            }
+            Goal::Fit => {
+                self.serialize_to_fit(dat_dir, bin_dir)
+                    .with_context(|| "Couldn't write the fitted parameters to a file")?;
+            }
+        }
         Ok(())
     }
 }

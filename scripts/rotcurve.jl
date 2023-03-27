@@ -116,7 +116,7 @@ colors = ColorSchemes.tol_bright[2:end]
 CURRENT_DIR = @__DIR__
 ROOT_DIR = dirname(CURRENT_DIR)
 PLOTS_DIR = joinpath(ROOT_DIR, "plots", OUTPUT_DIR)
-DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "bin", "rotcurve.bin")
+DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "bin", "objects.bin")
 
 # Make sure the needed directories exist
 mkpath(PLOTS_DIR)
@@ -128,13 +128,45 @@ struct Data
     name::Vector{String}
     type::Vector{String}
     source::Vector{String}
-    theta::Vector{F}
-    ep_theta::Vector{F}
-    em_theta::Vector{F}
-    evel_theta::Vector{F}
+    l::Vector{F}
+    b::Vector{F}
+    X::Vector{F}
+    ep_X::Vector{F}
+    em_X::Vector{F}
+    Y::Vector{F}
+    ep_Y::Vector{F}
+    em_Y::Vector{F}
+    Z::Vector{F}
+    ep_Z::Vector{F}
+    em_Z::Vector{F}
+    r::Vector{F}
+    ep_r::Vector{F}
+    em_r::Vector{F}
     R::Vector{F}
     ep_R::Vector{F}
     em_R::Vector{F}
+    mu_l::Vector{F}
+    mu_b::Vector{F}
+    V_r::Vector{F}
+    V_l::Vector{F}
+    ep_V_l::Vector{F}
+    em_V_l::Vector{F}
+    V_b::Vector{F}
+    ep_V_b::Vector{F}
+    em_V_b::Vector{F}
+    U::Vector{F}
+    ep_U::Vector{F}
+    em_U::Vector{F}
+    V::Vector{F}
+    ep_V::Vector{F}
+    em_V::Vector{F}
+    W::Vector{F}
+    ep_W::Vector{F}
+    em_W::Vector{F}
+    Θ::Vector{F}
+    ep_Θ::Vector{F}
+    em_Θ::Vector{F}
+    evel_Θ::Vector{F}
 end
 
 "Read binary files in the `bincode` format"
@@ -181,18 +213,18 @@ keys = unique(group)
 counts = Dict([(k, count(==(k), group)) for k in keys])
 I = sortperm(group, by=k -> counts[k], rev=true)
 group = group[I]
-theta = data.theta[I]
-ep_theta = data.ep_theta[I]
-em_theta = data.em_theta[I]
-evel_theta = data.evel_theta[I]
+Θ = data.Θ[I]
+ep_Θ = data.ep_Θ[I]
+em_Θ = data.em_Θ[I]
+evel_Θ = data.evel_Θ[I]
 R = data.R[I]
 ep_R = data.ep_R[I]
 em_R = data.em_R[I]
 
 # Compute the secondary data sets
-theta_p = theta .+ ep_theta
+Θ_p = Θ .+ ep_Θ
 R_p = R .+ ep_R
-theta_m = theta .- em_theta
+Θ_m = Θ .- em_Θ
 R_m = R .- em_R
 
 # Prepare labels
@@ -323,7 +355,7 @@ end
 println(pad, "    for Rotation curve...")
 p = scatter(
     R,
-    theta,
+    Θ,
     L"R \; \mathrm{[kpc]}",
     L"\theta \; \mathrm{[km \; s^{-1}]}",
 )
@@ -332,14 +364,14 @@ pgfsave(joinpath(PLOTS_DIR, "Rotation curve$(POSTFIX).pdf"), p)
 println(pad, "    for Rotation curve (errors)...")
 p = scatter(
     R,
-    theta,
+    Θ,
     L"R \; \mathrm{[kpc]}",
     L"\theta \; \mathrm{[km \; s^{-1}]}",
     x_p=R_p,
     x_m=R_m,
-    y_p=theta_p,
-    y_m=theta_m,
-    evel=evel_theta,
+    y_p=Θ_p,
+    y_m=Θ_m,
+    evel=evel_Θ,
 )
 pgfsave(joinpath(PLOTS_DIR, "Rotation curve (errors)$(POSTFIX).pdf"), p)
 
@@ -364,5 +396,8 @@ if PLOT_TEST
     )
     pgfsave(joinpath(PLOTS_DIR, "Rotation curve (test)$(POSTFIX).pdf"), p)
 end
+
+# Mark data for garbage collection
+data = nothing
 
 println()
