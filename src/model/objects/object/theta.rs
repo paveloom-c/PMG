@@ -85,19 +85,15 @@ where
         // Unpack the data
         let alpha = self.alpha.unwrap();
         let delta = self.delta.unwrap();
+        let par = self.par.as_ref().unwrap();
         let v_lsr = self.v_lsr.as_ref().unwrap();
         let mu_x = self.mu_x.as_ref().unwrap();
         let mu_y = self.mu_y.as_ref().unwrap();
-        let l = self.l.unwrap();
-        let b = self.b.unwrap();
-        let par = self.par.as_ref().unwrap();
         // Compute the partial derivative of the azimuthal
         // velocity by the Local Standard of Rest velocity
         let mut object = Object {
             alpha: Some(FT::cst(alpha)),
             delta: Some(FT::cst(delta)),
-            l: Some(FT::cst(l)),
-            b: Some(FT::cst(b)),
             par: Some(Measurement {
                 v: FT::cst(par.v),
                 ..Default::default()
@@ -116,6 +112,7 @@ where
             }),
             ..Default::default()
         };
+        object.compute_l_b(params);
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
         object.compute_mu_l_mu_b(params);
@@ -134,6 +131,7 @@ where
             v: FT::var(mu_x.v),
             ..Default::default()
         });
+        object.compute_l_b(params);
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
         object.compute_mu_l_mu_b(params);
@@ -152,6 +150,7 @@ where
             v: FT::var(mu_y.v),
             ..Default::default()
         });
+        object.compute_l_b(params);
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
         object.compute_mu_l_mu_b(params);
