@@ -148,7 +148,7 @@ where
                     let b = object.b.unwrap();
                     let mu_l = object.mu_l.as_ref().unwrap();
                     let mu_b = object.mu_b.as_ref().unwrap();
-                    let r_g = object.r_g.as_ref().unwrap().v;
+                    let r_g = object.r_g.as_ref().unwrap();
                     // Compute the sines and cosines of the longitude and latitude
                     let sin_l = l.sin();
                     let sin_b = b.sin();
@@ -164,8 +164,8 @@ where
                     let sigma_theta_sq = params.sigma_theta.powi(2);
                     let sigma_z_sq = params.sigma_z.powi(2);
                     // Compute the squares of the sines and cosines of the Galactocentric longitude
-                    let sin_lambda_sq = ((r_h.v * cos_b * sin_l) / r_g).powi(2);
-                    let cos_lambda_sq = ((params.r_0 - r_h.v * cos_b * cos_l) / r_g).powi(2);
+                    let sin_lambda_sq = ((r_h.v * cos_b * sin_l) / r_g.v).powi(2);
+                    let cos_lambda_sq = ((params.r_0 - r_h.v * cos_b * cos_l) / r_g.v).powi(2);
                     // Compute auxiliary sums of the squares of the sines and cosines
                     let sum_1 = cos_lambda_sq * cos_l_sq + sin_lambda_sq * sin_l_sq;
                     let sum_2 = sin_lambda_sq * cos_l_sq + cos_lambda_sq * sin_l_sq;

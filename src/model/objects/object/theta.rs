@@ -18,23 +18,21 @@ where
 {
     /// Compute the azimuthal velocity with the specific values
     #[allow(clippy::many_single_char_names)]
-    fn compute_theta_with<F2>(&self, r_h: F, r_g: F, params: &Params<F2>) -> F
+    fn compute_theta_with<F2>(&self, r_h: F, r_g: F, u: F, v: F, params: &Params<F2>) -> F
     where
         F2: Float + Debug + Into<F>,
     {
         // Unpack the data
         let l = self.l.unwrap();
         let b = self.b.unwrap();
-        let u = self.u.as_ref().unwrap();
-        let v = self.v.as_ref().unwrap();
         // Get the parameters
         let u_sun: F = params.u_sun.into();
         let theta_sun: F = params.theta_sun.into();
         let r_0: F = params.r_0.into();
         // Convert to the Galactocentric coordinate
         // system associated with the Sun
-        let u_g = u.v + u_sun;
-        let v_g = v.v + theta_sun;
+        let u_g = u + u_sun;
+        let v_g = v + theta_sun;
         // Compute the projection of the heliocentric distance in the XY plane
         let d = r_h * b.cos();
         // Compute the azimuthal velocity
@@ -49,8 +47,10 @@ where
     {
         let r_h = self.r_h.as_ref().unwrap();
         let r_g = self.r_g.as_ref().unwrap();
+        let u = self.u.as_ref().unwrap();
+        let v = self.v.as_ref().unwrap();
         self.theta = Some(Measurement {
-            v: self.compute_theta_with(r_h.v, r_g.v, params),
+            v: self.compute_theta_with(r_h.v, r_g.v, u.v, v.v, params),
             ..Default::default()
         });
     }
@@ -62,10 +62,12 @@ where
         // Unpack the data
         let r_h = self.r_h.as_ref().unwrap();
         let r_g = self.r_g.as_ref().unwrap();
+        let u = self.u.as_ref().unwrap();
+        let v = self.v.as_ref().unwrap();
         // Compute the azimuthal velocity
-        let theta = self.compute_theta_with(r_h.v, r_g.v, params);
-        let theta_u = self.compute_theta_with(r_h.v_u, r_g.v_u, params);
-        let theta_l = self.compute_theta_with(r_h.v_l, r_g.v_l, params);
+        let theta = self.compute_theta_with(r_h.v, r_g.v, u.v, v.v, params);
+        let theta_u = self.compute_theta_with(r_h.v_u, r_g.v_u, u.v_u, v.v_u, params);
+        let theta_l = self.compute_theta_with(r_h.v_l, r_g.v_l, u.v_l, v.v_l, params);
         self.theta = Some(Measurement {
             v: theta,
             v_u: theta_u,
