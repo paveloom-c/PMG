@@ -28,7 +28,7 @@
 
         src = ./.;
 
-        cargoSha256 = "sha256-bMelaLwqi1Pen4EA3L1xmt7A+85r17TkCyWtDNiNHgE=";
+        cargoSha256 = "sha256-p8WCTOPf/UuMn6/YPBkCmzyX493qEgH1GKvMXi0TstU=";
       };
     });
 }

@@ -3,7 +3,7 @@ name = "pmg"
 version = "0.1.0"
 authors = ["Pavel Sobolev <paveloom@riseup.net>"]
 edition = "2021"
-rust-version = "1.64.0"
+rust-version = "1.67.1"
 description = "Using a parametric model of the Galaxy to infer its parameters"
 documentation = "https://github.com/paveloom-c/PMG"
 readme = "README.md"
@@ -21,10 +21,10 @@ strip = true
 
 [dependencies]
 anyhow = "=1.0.70"
-autodiff = "=0.6.0"
+autodiff = "=0.7.0"
 bincode = "=1.3.3"
 cfg-if = "=1.0.0"
-clap = { version = "=4.1.11", features = ["derive"] }
+clap = { version = "=4.2.0", features = ["derive"] }
 csv = "=1.2.1"
 indoc = "=2.0.1"
 itertools = "=0.10.5"
@@ -34,5 +34,5 @@ rand = "=0.8.5"
 rand_chacha = "=0.3.1"
 rand_distr = "=0.4.3"
 rayon = "=1.7.0"
-serde = {version = "=1.0.158", features = ["derive"] }
+serde = {version = "=1.0.159", features = ["derive"] }
 simulated_annealing = "=0.2.0"
