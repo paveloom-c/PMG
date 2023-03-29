@@ -8,7 +8,10 @@ use numeric_literals::replace_float_literals;
 /// Convert an hours-minutes-seconds angle to radians
 #[allow(clippy::unwrap_used)]
 #[replace_float_literals(F::from(literal).unwrap())]
-pub fn hms2rad<F: Float + Debug>(hours: F, minutes: F, seconds: F) -> F {
+pub fn hms2rad<F>(hours: F, minutes: F, seconds: F) -> F
+where
+    F: Float + Debug,
+{
     (hours * 15. + minutes / 4. + seconds / 240.).to_radians()
 }
 

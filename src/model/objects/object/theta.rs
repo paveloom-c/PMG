@@ -3,23 +3,21 @@
 use super::{Measurement, Object};
 use crate::model::Params;
 
-use core::fmt::{Debug, Display};
+use core::fmt::Debug;
 
 use autodiff::FT;
-use num::{traits::FloatConst, Float};
+use num::Float;
 use numeric_literals::replace_float_literals;
 
 #[allow(clippy::unwrap_in_result)]
 #[allow(clippy::unwrap_used)]
 #[replace_float_literals(F::from(literal).unwrap())]
-impl<F> Object<F>
-where
-    F: Float + FloatConst + Default + Display + Debug,
-{
+impl<F> Object<F> {
     /// Compute the azimuthal velocity with the specific values
     #[allow(clippy::many_single_char_names)]
     fn compute_theta_with<F2>(&self, r_h: F, r_g: F, u: F, v: F, params: &Params<F2>) -> F
     where
+        F: Float + Debug,
         F2: Float + Debug + Into<F>,
     {
         // Unpack the data
@@ -43,6 +41,7 @@ where
     /// Compute the azimuthal velocity (nominal value only)
     pub fn compute_theta_nominal<F2>(&mut self, params: &Params<F2>)
     where
+        F: Float + Debug + Default,
         F2: Float + Debug + Into<F>,
     {
         let r_h = self.r_h.as_ref().unwrap();
@@ -57,6 +56,7 @@ where
     /// Compute the azimuthal velocity
     pub fn compute_theta<F2>(&mut self, params: &Params<F2>)
     where
+        F: Float + Debug,
         F2: Float + Debug + Into<F>,
     {
         // Unpack the data
@@ -81,7 +81,10 @@ where
     /// Note that we compute all values again, starting from the independent errors
     ///
     /// Sources: Gromov, Nikiforov, Ossipkov (2016)
-    pub(super) fn compute_e_vel_theta(&mut self, params: &Params<F>) {
+    pub(super) fn compute_e_vel_theta(&mut self, params: &Params<F>)
+    where
+        F: Float + Debug + Default,
+    {
         // Unpack the data
         let alpha = self.alpha.unwrap();
         let delta = self.delta.unwrap();

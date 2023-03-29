@@ -14,14 +14,13 @@ pub use objects::{Measurement, Object, Objects};
 pub use params::Params;
 
 use core::fmt::{Debug, Display};
-use core::iter::Sum;
 use core::str::FromStr;
 use std::error::Error;
 use std::fs;
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
-use num::{traits::FloatConst, Float};
+use num::Float;
 use rand::distributions::uniform::SampleUniform;
 use rand_distr::Distribution;
 use rand_distr::StandardNormal;
@@ -29,11 +28,7 @@ use serde::{de::DeserializeOwned, Serialize};
 
 /// Model of the Galaxy
 #[derive(Debug)]
-pub struct Model<F>
-where
-    F: Float + Debug,
-    StandardNormal: Distribution<F>,
-{
+pub struct Model<F> {
     /// Initial model parameters
     params: Params<F>,
     /// Fitted model parameters
@@ -48,13 +43,13 @@ where
     output_dir: PathBuf,
 }
 
-impl<F> Model<F>
-where
-    F: Float + FloatConst + SampleUniform + Default + Display + Debug + Sync + Send + Sum,
-    StandardNormal: Distribution<F>,
-{
+impl<F> Model<F> {
     /// Perform computations based on the goal
-    pub fn compute(&mut self) -> Result<()> {
+    pub fn compute(&mut self) -> Result<()>
+    where
+        F: Float + Debug + Default + Display + SampleUniform + Sync + Send,
+        StandardNormal: Distribution<F>,
+    {
         match self.goal {
             Goal::Objects => {
                 // Perform per-object computations
@@ -72,7 +67,7 @@ where
     /// from the file, doing conversions where necessary
     fn extend(&mut self, path: &Path) -> Result<()>
     where
-        F: Float + Debug + FromStr + DeserializeOwned,
+        F: Float + Debug + Default + DeserializeOwned + FromStr,
         <F as FromStr>::Err: Error + Send + Sync + 'static,
     {
         // Parse the data from the file
@@ -85,7 +80,7 @@ where
     /// output directory based on the goal
     pub fn write(&self) -> Result<()>
     where
-        F: Serialize,
+        F: Float + Debug + Display + Serialize,
     {
         // Make sure the output directories exist
         let dat_dir = &self.output_dir.join("dat");
@@ -111,19 +106,8 @@ where
 
 impl<F> TryFrom<&Args> for Model<F>
 where
-    F: Float
-        + FloatConst
-        + SampleUniform
-        + Default
-        + Display
-        + Debug
-        + FromStr
-        + DeserializeOwned
-        + Sync
-        + Send
-        + Sum,
+    F: Float + Debug + Default + DeserializeOwned + FromStr,
     <F as FromStr>::Err: Error + Send + Sync + 'static,
-    StandardNormal: Distribution<F>,
 {
     type Error = anyhow::Error;
 

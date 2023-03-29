@@ -1,13 +1,13 @@
 //! Model parameters
 
-use core::fmt::{Debug, Display};
+use core::fmt::Debug;
 
 use num::Float;
 use simulated_annealing::Point;
 
 /// Model parameters
 #[derive(Default, Debug, Clone)]
-pub struct Params<F: Float + Debug> {
+pub struct Params<F> {
     /// The right ascension of the north galactic pole (radians)
     pub alpha_ngp: F,
     /// The declination of the north galactic pole (radians)
@@ -40,14 +40,14 @@ pub struct Params<F: Float + Debug> {
     pub sigma_z: F,
 }
 
-impl<F> Params<F>
-where
-    F: Float + Default + Display + Debug,
-{
+impl<F> Params<F> {
     /// Update the parameters with the point in the parameter space
     ///
     /// Note that not all fields are updated, but only those needed for fitting
-    pub fn update_with(&mut self, p: &Point<F, 9>) {
+    pub fn update_with(&mut self, p: &Point<F, 9>)
+    where
+        F: Float + Debug,
+    {
         self.r_0 = p[0];
         self.omega_0 = p[1];
         self.a = p[2];
@@ -61,7 +61,10 @@ where
     /// Construct a point in the parameter space from the parameters
     ///
     /// Note that not all fields are used, but only those needed for fitting
-    pub fn to_point(&self) -> Point<F, 9> {
+    pub fn to_point(&self) -> Point<F, 9>
+    where
+        F: Float + Debug,
+    {
         [
             self.r_0,
             self.omega_0,

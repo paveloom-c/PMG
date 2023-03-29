@@ -1,13 +1,10 @@
 //! Input related
 
-use core::fmt::Debug;
-
-use num::Float;
 use serde::Deserialize;
 
 /// Input data record
 #[derive(Deserialize)]
-pub(in crate::model) struct Record<F: Float + Debug> {
+pub(in crate::model) struct Record<F> {
     /// Name
     pub(in crate::model) name: String,
     /// Right ascension (string in the HMS form)

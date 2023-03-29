@@ -5,16 +5,13 @@ use crate::model::Params;
 
 use core::fmt::Debug;
 
-use num::{traits::FloatConst, Float};
+use num::Float;
 use numeric_literals::replace_float_literals;
 
 #[allow(clippy::unwrap_in_result)]
 #[allow(clippy::unwrap_used)]
 #[replace_float_literals(F::from(literal).unwrap())]
-impl<F> Object<F>
-where
-    F: Float + FloatConst + Default + Debug,
-{
+impl<F> Object<F> {
     /// Convert the equatorial coordinates to spherical heliocentric Galactic coordinates
     ///
     /// Angles must be in radians, then radians are returned.
@@ -22,6 +19,7 @@ where
     /// Source: [Wikipedia](https://en.wikipedia.org/wiki/Galactic_coordinate_system#Conversion_between_equatorial_and_galactic_coordinates)
     pub fn compute_l_b<F2>(&mut self, params: &Params<F2>)
     where
+        F: Float + Debug,
         F2: Float + Debug + Into<F>,
     {
         // Unpack the data
@@ -44,7 +42,10 @@ where
         ));
     }
     /// Compute the heliocentric distance (nominal value only)
-    pub fn compute_r_h_nominal(&mut self) {
+    pub fn compute_r_h_nominal(&mut self)
+    where
+        F: Float + Debug + Default,
+    {
         let par = self.par.as_ref().unwrap();
         self.r_h = Some(Measurement {
             v: 1. / par.v,
@@ -52,7 +53,10 @@ where
         });
     }
     /// Compute the heliocentric distance
-    pub fn compute_r_h(&mut self) {
+    pub fn compute_r_h(&mut self)
+    where
+        F: Float + Debug,
+    {
         // Unpack the data
         let par = self.par.as_ref().unwrap();
         // Compute the heliocentric distance
@@ -70,6 +74,7 @@ where
     /// Compute the heliocentric velocity in distance
     pub fn compute_v_r<F2>(&mut self, params: &Params<F2>)
     where
+        F: Float + Debug,
         F2: Float + Debug + Into<F>,
     {
         // Unpack the data
@@ -91,6 +96,7 @@ where
     /// latitude with the specific values
     fn compute_v_l_v_b_with<F2>(&self, r_h: F, params: &Params<F2>) -> (F, F)
     where
+        F: Float + Debug,
         F2: Float + Debug + Into<F>,
     {
         // Unpack the data
@@ -109,6 +115,7 @@ where
     #[allow(clippy::similar_names)]
     pub fn compute_v_l_v_b_nominal<F2>(&mut self, params: &Params<F2>)
     where
+        F: Float + Debug + Default,
         F2: Float + Debug + Into<F>,
     {
         // Unpack the data
@@ -128,6 +135,7 @@ where
     #[allow(clippy::similar_names)]
     pub fn compute_v_l_v_b<F2>(&mut self, params: &Params<F2>)
     where
+        F: Float + Debug,
         F2: Float + Debug + Into<F>,
     {
         // Unpack the data
@@ -164,7 +172,7 @@ cfg_if::cfg_if! {
 
         /// Data record
         #[derive(Deserialize)]
-        struct Record<F: Float + Debug> {
+        struct Record<F> {
             /// Name of the object
             #[allow(dead_code)]
             name: String,

@@ -2,18 +2,18 @@
 
 use super::{Measurement, Object};
 
-use core::fmt::{Debug, Display};
+use core::fmt::Debug;
 
-use num::{traits::FloatConst, Float};
+use num::Float;
 
 #[allow(clippy::unwrap_used)]
 #[allow(clippy::many_single_char_names)]
-impl<F> Object<F>
-where
-    F: Float + FloatConst + Default + Display + Debug,
-{
+impl<F> Object<F> {
     /// Compute the coordinates with the specific values
-    fn compute_x_y_z_with(&self, r_h: F) -> (F, F, F) {
+    fn compute_x_y_z_with(&self, r_h: F) -> (F, F, F)
+    where
+        F: Float + Debug,
+    {
         // Unpack the data
         let l = self.l.unwrap();
         let b = self.b.unwrap();
@@ -25,7 +25,10 @@ where
     }
     /// Convert the galactic heliocentric spherical coordinates
     /// to Galactic heliocentric Cartesian coordinates
-    pub fn compute_x_y_z(&mut self) {
+    pub fn compute_x_y_z(&mut self)
+    where
+        F: Float + Debug,
+    {
         // Unpack the data
         let r_h = self.r_h.as_ref().unwrap();
         // Convert to the Galactic heliocentric Cartesian coordinate system
@@ -57,7 +60,10 @@ where
     /// Compute the velocities in the Galactic
     /// heliocentric Cartesian coordinates system
     /// (with the specific values)
-    pub fn compute_u_v_w_with(&self, v_l: F, v_b: F) -> (F, F, F) {
+    pub fn compute_u_v_w_with(&self, v_l: F, v_b: F) -> (F, F, F)
+    where
+        F: Float + Debug,
+    {
         // Unpack the data
         let l = self.l.unwrap();
         let b = self.b.unwrap();
@@ -72,7 +78,10 @@ where
     /// Compute the velocities in the Galactic
     /// heliocentric Cartesian coordinates system
     /// (nominal values only)
-    pub fn compute_u_v_w_nominal(&mut self) {
+    pub fn compute_u_v_w_nominal(&mut self)
+    where
+        F: Float + Debug + Default,
+    {
         // Unpack the data
         let v_l = self.v_l.as_ref().unwrap();
         let v_b = self.v_b.as_ref().unwrap();
@@ -93,7 +102,10 @@ where
     }
     /// Compute the velocities in the Galactic
     /// heliocentric Cartesian coordinates system
-    pub fn compute_u_v_w(&mut self) {
+    pub fn compute_u_v_w(&mut self)
+    where
+        F: Float + Debug,
+    {
         // Unpack the data
         let v_l = self.v_l.as_ref().unwrap();
         let v_b = self.v_b.as_ref().unwrap();
@@ -138,7 +150,7 @@ cfg_if::cfg_if! {
 
         /// Data record
         #[derive(Deserialize)]
-        struct DataRecord<F: Float + Debug> {
+        struct DataRecord<F> {
             /// Name of the object
             #[allow(dead_code)]
             name: String,
@@ -162,7 +174,7 @@ cfg_if::cfg_if! {
 
         /// Coordinates record
         #[derive(Deserialize)]
-        struct CoordsRecord<F: Float + Debug> {
+        struct CoordsRecord<F> {
             /// X coordinate
             x: F,
             /// Y coordinate

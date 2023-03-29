@@ -8,7 +8,10 @@ use numeric_literals::replace_float_literals;
 /// Convert a degrees-minutes-seconds angle to radians
 #[allow(clippy::unwrap_used)]
 #[replace_float_literals(F::from(literal).unwrap())]
-pub fn dms2rad<F: Float + Debug>(degrees: F, minutes: F, seconds: F) -> F {
+pub fn dms2rad<F>(degrees: F, minutes: F, seconds: F) -> F
+where
+    F: Float + Debug,
+{
     (degrees.signum() * (F::abs(degrees) + minutes / 60. + seconds / 3600.)).to_radians()
 }
 

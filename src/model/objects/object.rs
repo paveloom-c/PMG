@@ -12,20 +12,17 @@ use crate::model::io::input;
 use crate::model::Params;
 pub use measurement::Measurement;
 
-use core::fmt::{Debug, Display};
+use core::fmt::Debug;
 use core::str::FromStr;
 use std::error::Error;
 
 use anyhow::Result;
-use num::{traits::FloatConst, Float};
+use num::Float;
 use numeric_literals::replace_float_literals;
 
 /// Data object
 #[derive(Clone, Debug, Default)]
-pub struct Object<F>
-where
-    F: Float + Debug,
-{
+pub struct Object<F> {
     /// Name of the object
     pub name: Option<String>,
     /// Type of the object
@@ -84,9 +81,12 @@ where
     pub w: Option<Measurement<F>>,
 }
 
-impl<F: Float + FloatConst + Default + Display + Debug> Object<F> {
+impl<F> Object<F> {
     /// Perform per-object computations
-    pub(in crate::model) fn compute(&mut self, params: &Params<F>) {
+    pub(in crate::model) fn compute(&mut self, params: &Params<F>)
+    where
+        F: Float + Debug + Default,
+    {
         self.compute_l_b(params);
         self.compute_r_h();
         self.compute_r_g(params);

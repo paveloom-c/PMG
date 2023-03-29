@@ -3,23 +3,21 @@
 use super::{Measurement, Object};
 use crate::model::Params;
 
-use core::fmt::{Debug, Display};
+use core::fmt::Debug;
 
 use autodiff::FT;
-use num::{traits::FloatConst, Float};
+use num::Float;
 use numeric_literals::replace_float_literals;
 
 #[allow(clippy::similar_names)]
 #[allow(clippy::unwrap_in_result)]
 #[allow(clippy::unwrap_used)]
 #[replace_float_literals(F::from(literal).unwrap())]
-impl<F> Object<F>
-where
-    F: Float + FloatConst + Default + Display + Debug,
-{
+impl<F> Object<F> {
     /// Compute the proper motions in Galactic coordinates
     pub fn compute_mu_l_mu_b<F2>(&mut self, params: &Params<F2>)
     where
+        F: Float + Debug + Default,
         F2: Float + Debug + Into<F>,
     {
         // Unpack the data
@@ -56,7 +54,10 @@ where
     /// errors (from the catalog) are unpacked.
     #[allow(clippy::shadow_unrelated)]
     #[allow(clippy::similar_names)]
-    pub fn compute_e_mu_l_mu_b(&self, params: &Params<F>) -> (F, F) {
+    pub fn compute_e_mu_l_mu_b(&self, params: &Params<F>) -> (F, F)
+    where
+        F: Float + Debug + Default,
+    {
         // Unpack the data
         let alpha = self.alpha.unwrap();
         let delta = self.delta.unwrap();

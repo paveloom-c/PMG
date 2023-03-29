@@ -10,7 +10,7 @@ use std::io::{BufWriter, Write};
 use anyhow::{anyhow, Context, Result};
 use indoc::formatdoc;
 use itertools::izip;
-use num::{traits::FloatConst, Float};
+use num::Float;
 use numeric_literals::replace_float_literals;
 use rand::distributions::uniform::SampleUniform;
 use rand::prelude::Distribution;
@@ -21,7 +21,7 @@ use simulated_annealing::{NeighbourMethod, Point, Schedule, Status, APF, SA};
 
 impl<F> Model<F>
 where
-    F: Float + FloatConst + SampleUniform + Default + Display + Debug + Sync + Send,
+    F: Float + Debug + Default + Display + SampleUniform + Sync + Send,
     StandardNormal: Distribution<F>,
 {
     /// Try to fit the model of the Galaxy to the provided data

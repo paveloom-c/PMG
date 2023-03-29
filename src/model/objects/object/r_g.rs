@@ -3,22 +3,20 @@
 use super::{Measurement, Object};
 use crate::model::Params;
 
-use core::fmt::{Debug, Display};
+use core::fmt::Debug;
 
-use num::{traits::FloatConst, Float};
+use num::Float;
 use numeric_literals::replace_float_literals;
 
 #[allow(clippy::similar_names)]
 #[allow(clippy::unwrap_in_result)]
 #[allow(clippy::unwrap_used)]
 #[replace_float_literals(F::from(literal).unwrap())]
-impl<F> Object<F>
-where
-    F: Float + FloatConst + Default + Display + Debug,
-{
+impl<F> Object<F> {
     /// Compute the galactocentric distance with the specific values
     fn compute_r_g_with<F2>(&self, r_h: F, params: &Params<F2>) -> F
     where
+        F: Float + Debug,
         F2: Float + Debug + Into<F>,
     {
         // Unpack the data
@@ -34,6 +32,7 @@ where
     /// Compute the galactocentric distance (nominal value only)
     pub fn compute_r_g_nominal<F2>(&mut self, params: &Params<F2>)
     where
+        F: Float + Debug + Default,
         F2: Float + Debug + Into<F>,
     {
         let r_h = self.r_h.as_ref().unwrap();
@@ -45,6 +44,7 @@ where
     /// Compute the galactocentric distance
     pub fn compute_r_g<F2>(&mut self, params: &Params<F2>)
     where
+        F: Float + Debug,
         F2: Float + Debug + Into<F>,
     {
         // Unpack the data

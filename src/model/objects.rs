@@ -7,7 +7,7 @@ use crate::model::Params;
 
 pub use object::{Measurement, Object};
 
-use core::fmt::{Debug, Display};
+use core::fmt::Debug;
 use core::slice::{Iter, IterMut};
 use core::str::FromStr;
 use std::error::Error;
@@ -15,21 +15,21 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use csv::ReaderBuilder;
-use num::{traits::FloatConst, Float};
+use num::Float;
 use rayon::iter::IntoParallelRefMutIterator;
 use rayon::slice::IterMut as ParIterMut;
 use serde::de::DeserializeOwned;
 
 /// Data objects
 #[derive(Clone, Debug, Default)]
-pub struct Objects<F: Float + Debug>(Vec<Object<F>>);
+pub struct Objects<F>(Vec<Object<F>>);
 
-impl<F> Objects<F>
-where
-    F: Float + FloatConst + Default + Display + Debug + Send + Sync,
-{
+impl<F> Objects<F> {
     /// Perform per-object computations
-    pub(in crate::model) fn compute(&mut self, params: &Params<F>) {
+    pub(in crate::model) fn compute(&mut self, params: &Params<F>)
+    where
+        F: Float + Debug + Default,
+    {
         // Perform computations for each object
         for object in self.iter_mut() {
             object.compute(params);
@@ -43,14 +43,17 @@ where
     pub(in crate::model) fn iter(&self) -> Iter<Object<F>> {
         self.0.iter()
     }
-    /// Return a parallel iterator over the objects
-    pub(in crate::model) fn par_iter_mut(&mut self) -> ParIterMut<Object<F>> {
-        self.0.par_iter_mut()
-    }
     /// Return an iterator over objects
     /// that allows modifying each value
     pub(in crate::model) fn iter_mut(&mut self) -> IterMut<Object<F>> {
         self.0.iter_mut()
+    }
+    /// Return a parallel iterator over the objects
+    pub(in crate::model) fn par_iter_mut(&mut self) -> ParIterMut<Object<F>>
+    where
+        F: Send,
+    {
+        self.0.par_iter_mut()
     }
     /// Get the number of objects
     pub(in crate::model) fn len(&self) -> usize {
@@ -74,7 +77,7 @@ where
 
 impl<F> TryFrom<&Path> for Objects<F>
 where
-    F: Float + Default + Debug + FromStr + DeserializeOwned,
+    F: Float + Default + Debug + DeserializeOwned + FromStr,
     <F as FromStr>::Err: Error + Send + Sync + 'static,
 {
     type Error = anyhow::Error;

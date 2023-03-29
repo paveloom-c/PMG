@@ -11,13 +11,13 @@ use std::error::Error;
 use anyhow::{bail, Context, Result};
 use num::Float;
 
-impl<F> Object<F>
-where
-    F: Float + Debug + FromStr,
-    <F as FromStr>::Err: Error + Send + Sync + 'static,
-{
+impl<F> Object<F> {
     /// Parse the right ascension string and convert the angle to radians
-    pub(in crate::model) fn try_parse_alpha(&mut self, record: &input::Record<F>) -> Result<()> {
+    pub(in crate::model) fn try_parse_alpha(&mut self, record: &input::Record<F>) -> Result<()>
+    where
+        F: Float + Debug + FromStr,
+        <F as FromStr>::Err: Error + Send + Sync + 'static,
+    {
         self.alpha = Some(
             match utils::str2vec(&record.alpha)
                 .with_context(|| format!("Couldn't parse the string {:?}", &record.alpha))?[..]
@@ -29,7 +29,11 @@ where
         Ok(())
     }
     /// Parse the declination string and convert the angle to radians
-    pub(in crate::model) fn try_parse_delta(&mut self, record: &input::Record<F>) -> Result<()> {
+    pub(in crate::model) fn try_parse_delta(&mut self, record: &input::Record<F>) -> Result<()>
+    where
+        F: Float + Debug + FromStr,
+        <F as FromStr>::Err: Error + Send + Sync + 'static,
+    {
         self.delta = Some(
             match utils::str2vec(&record.delta)
                 .with_context(|| format!("Couldn't parse the string {:?}", &record.delta))?[..]

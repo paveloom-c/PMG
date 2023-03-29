@@ -7,9 +7,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use indoc::formatdoc;
-use num::{traits::FloatConst, Float};
-use rand::distributions::uniform::SampleUniform;
-use rand_distr::{Distribution, StandardNormal};
+use num::Float;
 use serde::Serialize;
 
 /// Name of the files
@@ -17,7 +15,7 @@ const NAME: &str = "objects";
 
 /// Output data record
 #[derive(Serialize)]
-struct Record<'a, F: Float + Debug> {
+struct Record<'a, F> {
     /// Name
     name: &'a str,
     /// Type of the object
@@ -141,7 +139,7 @@ struct Record<'a, F: Float + Debug> {
 #[allow(clippy::many_single_char_names)]
 impl<'a, F> TryFrom<&'a Object<F>> for Record<'a, F>
 where
-    F: Float + FloatConst + Default + Display + Debug,
+    F: Float + Debug,
 {
     type Error = anyhow::Error;
 
@@ -220,8 +218,7 @@ type Records<'a, F> = Vec<Record<'a, F>>;
 
 impl<'a, F> TryFrom<&'a Model<F>> for Records<'a, F>
 where
-    F: Float + FloatConst + SampleUniform + Default + Display + Debug + Send + Sync,
-    StandardNormal: Distribution<F>,
+    F: Float + Debug,
 {
     type Error = anyhow::Error;
 
@@ -237,18 +234,17 @@ where
     }
 }
 
-impl<F> Model<F>
-where
-    F: Float + FloatConst + SampleUniform + Default + Debug + Display + Serialize + Send + Sync,
-    StandardNormal: Distribution<F>,
-{
+impl<F> Model<F> {
     /// Serialize the per-object data
     #[allow(clippy::too_many_lines)]
     pub(in crate::model) fn serialize_to_objects(
         &self,
         dat_dir: &Path,
         bin_dir: &Path,
-    ) -> Result<()> {
+    ) -> Result<()>
+    where
+        F: Float + Debug + Display + Serialize,
+    {
         // Prepare a header
         let header = formatdoc!(
             "

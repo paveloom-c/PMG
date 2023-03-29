@@ -3,14 +3,11 @@
 use crate::model::{Model, Params};
 
 use core::fmt::{Debug, Display};
-use core::iter::Sum;
 use std::path::Path;
 
 use anyhow::Result;
 use indoc::formatdoc;
-use num::{traits::FloatConst, Float};
-use rand::distributions::uniform::SampleUniform;
-use rand_distr::{Distribution, StandardNormal};
+use num::Float;
 use serde::Serialize;
 
 /// Name of the files
@@ -18,7 +15,7 @@ const NAME: &str = "fit";
 
 /// Output data record
 #[derive(Serialize)]
-struct Record<F: Float + Debug> {
+struct Record<F> {
     /// Galactocentric distance to the Sun (kpc)
     #[serde(rename = "R_0")]
     pub r_0: F,
@@ -44,7 +41,7 @@ struct Record<F: Float + Debug> {
 #[allow(clippy::many_single_char_names)]
 impl<F> From<&Params<F>> for Record<F>
 where
-    F: Float + Default + Display + Debug,
+    F: Float + Debug,
 {
     fn from(params: &Params<F>) -> Self {
         Self {
@@ -61,25 +58,15 @@ where
     }
 }
 
-impl<F> Model<F>
-where
-    F: Float
-        + FloatConst
-        + SampleUniform
-        + Default
-        + Debug
-        + Display
-        + Serialize
-        + Sync
-        + Send
-        + Sum,
-    StandardNormal: Distribution<F>,
-{
+impl<F> Model<F> {
     /// Serialize the fitted parameters
     #[allow(clippy::non_ascii_literal)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
-    pub(in crate::model) fn serialize_to_fit(&self, dat_dir: &Path, bin_dir: &Path) -> Result<()> {
+    pub(in crate::model) fn serialize_to_fit(&self, dat_dir: &Path, bin_dir: &Path) -> Result<()>
+    where
+        F: Float + Debug + Display + Serialize,
+    {
         // Prepare a header
         let header = formatdoc!(
             "

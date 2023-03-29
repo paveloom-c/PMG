@@ -7,7 +7,7 @@ use num::Float;
 
 /// Bounds of the initial parameters
 #[derive(Debug, Default)]
-pub struct Bounds<F: Float + Debug> {
+pub struct Bounds<F> {
     /// Bounds of the Galactocentric distance to the Sun (kpc)
     pub r_0: Range<F>,
     /// Bounds of the Circular velocity of the Sun at R = R_0 (km/s/kpc)
@@ -28,7 +28,10 @@ pub struct Bounds<F: Float + Debug> {
     pub sigma_z: Range<F>,
 }
 
-impl<F: Float + Debug> Bounds<F> {
+impl<F> Bounds<F>
+where
+    F: Float + Debug,
+{
     /// Convert the bounds struct to an array
     pub(super) fn to_array(&self) -> [Range<F>; 9] {
         [
