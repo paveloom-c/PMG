@@ -13,9 +13,10 @@
     in {
       devShells.default = pkgs.mkShell {
         packages = with pkgs; [
+          cargo
           julia
           lsof
-          rustup
+          rustc
           (texlive.combine {
             inherit (texlive) luatex85 pgf pgfplots scheme-basic standalone;
           })
