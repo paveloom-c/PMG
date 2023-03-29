@@ -16,6 +16,7 @@
           cargo
           julia
           lsof
+          rust-analyzer
           rustc
           (texlive.combine {
             inherit (texlive) luatex85 pgf pgfplots scheme-basic standalone;
