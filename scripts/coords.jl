@@ -99,6 +99,7 @@ I = UInt64
 
 println('\n', pad, "> Loading the packages...")
 
+using Base.Threads
 using ColorSchemes
 using LaTeXStrings
 using PGFPlotsX
@@ -311,8 +312,8 @@ function scatter(
         Plot(
             {
                 scatter,
-                "only marks",
-                "scatter src" = "explicit symbolic",
+                only_marks,
+                scatter_src = "explicit symbolic",
             },
             Table(
                 {
@@ -341,223 +342,286 @@ function scatter(
     return p
 end
 
-# Plot a scatter plot in the (X, Y) plane
-println(pad, "    for XY...")
-p = scatter(
-    X,
-    Y,
-    L"X \; \mathrm{[kpc]}",
-    L"Y \; \mathrm{[kpc]}",
-    axis_equal=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "XY$(POSTFIX).pdf"), p)
+print_lock = ReentrantLock()
+tasks = Task[]
 
-# Plot a scatter plot in the (X, Y) plane with errors
-println(pad, "    for XY (errors)...")
-p = scatter(
-    X,
-    Y,
-    L"X \; \mathrm{[kpc]}",
-    L"Y \; \mathrm{[kpc]}",
-    x_p=X_p,
-    x_m=X_m,
-    y_p=Y_p,
-    y_m=Y_m,
-    axis_equal=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "XY (errors)$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for XY...")
+    end
+    p = scatter(
+        X,
+        Y,
+        L"X \; \mathrm{[kpc]}",
+        L"Y \; \mathrm{[kpc]}",
+        axis_equal=true,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "XY$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot in the (X, Y) plane with crosses
-println(pad, "    for XY (crosses)...")
-p = scatter(
-    X,
-    Y,
-    L"X \; \mathrm{[kpc]}",
-    L"Y \; \mathrm{[kpc]}",
-    axis_equal=true,
-    crosses=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "XY (crosses)$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for XY (errors)...")
+    end
+    p = scatter(
+        X,
+        Y,
+        L"X \; \mathrm{[kpc]}",
+        L"Y \; \mathrm{[kpc]}",
+        x_p=X_p,
+        x_m=X_m,
+        y_p=Y_p,
+        y_m=Y_m,
+        axis_equal=true,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "XY (errors)$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot in the (X, Y) plane with crosses and errors
-println(pad, "    for XY (crosses, errors)...")
-p = scatter(
-    X,
-    Y,
-    L"X \; \mathrm{[kpc]}",
-    L"Y \; \mathrm{[kpc]}",
-    x_p=X_p,
-    x_m=X_m,
-    y_p=Y_p,
-    y_m=Y_m,
-    axis_equal=true,
-    crosses=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "XY (crosses, errors)$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for XY (crosses)...")
+    end
+    p = scatter(
+        X,
+        Y,
+        L"X \; \mathrm{[kpc]}",
+        L"Y \; \mathrm{[kpc]}",
+        axis_equal=true,
+        crosses=true,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "XY (crosses)$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot in the (X, Z) plane
-println(pad, "    for XZ...")
-p = scatter(
-    X,
-    Z,
-    L"X \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-)
-pgfsave(joinpath(PLOTS_DIR, "XZ$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for XY (crosses, errors)...")
+    end
+    p = scatter(
+        X,
+        Y,
+        L"X \; \mathrm{[kpc]}",
+        L"Y \; \mathrm{[kpc]}",
+        x_p=X_p,
+        x_m=X_m,
+        y_p=Y_p,
+        y_m=Y_m,
+        axis_equal=true,
+        crosses=true,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "XY (crosses, errors)$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot in the (X, Z) plane with equal axes
-println(pad, "    for XZ (equal axes)...")
-p = scatter(
-    X,
-    Z,
-    L"X \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    axis_equal=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "XZ (equal axes)$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for XZ...")
+    end
+    p = scatter(
+        X,
+        Z,
+        L"X \; \mathrm{[kpc]}",
+        L"Z \; \mathrm{[kpc]}",
+    )
+    pgfsave(joinpath(PLOTS_DIR, "XZ$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot in the (X, Z) plane with errors
-println(pad, "    for XZ (errors)...")
-p = scatter(
-    X,
-    Z,
-    L"X \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    x_p=X_p,
-    x_m=X_m,
-    y_p=Z_p,
-    y_m=Z_m,
-)
-pgfsave(joinpath(PLOTS_DIR, "XZ (errors)$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for XZ (equal axes)...")
+    end
+    p = scatter(
+        X,
+        Z,
+        L"X \; \mathrm{[kpc]}",
+        L"Z \; \mathrm{[kpc]}",
+        axis_equal=true,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "XZ (equal axes)$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot in the (X, Z) plane with errors and equal axes
-println(pad, "    for XZ (equal axes, errors)...")
-p = scatter(
-    X,
-    Z,
-    L"X \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    x_p=X_p,
-    x_m=X_m,
-    y_p=Z_p,
-    y_m=Z_m,
-    axis_equal=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "XZ (equal axes, errors)$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for XZ (errors)...")
+    end
+    p = scatter(
+        X,
+        Z,
+        L"X \; \mathrm{[kpc]}",
+        L"Z \; \mathrm{[kpc]}",
+        x_p=X_p,
+        x_m=X_m,
+        y_p=Z_p,
+        y_m=Z_m,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "XZ (errors)$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot in the (Y, Z) plane
-println(pad, "    for YZ...")
-p = scatter(
-    Y,
-    Z,
-    L"Y \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-)
-pgfsave(joinpath(PLOTS_DIR, "YZ$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for XZ (equal axes, errors)...")
+    end
+    p = scatter(
+        X,
+        Z,
+        L"X \; \mathrm{[kpc]}",
+        L"Z \; \mathrm{[kpc]}",
+        x_p=X_p,
+        x_m=X_m,
+        y_p=Z_p,
+        y_m=Z_m,
+        axis_equal=true,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "XZ (equal axes, errors)$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot in the (Y, Z) plane with equal axes
-p = scatter(
-    Y,
-    Z,
-    L"Y \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    axis_equal=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "YZ (equal axes)$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for YZ...")
+    end
+    p = scatter(
+        Y,
+        Z,
+        L"Y \; \mathrm{[kpc]}",
+        L"Z \; \mathrm{[kpc]}",
+    )
+    pgfsave(joinpath(PLOTS_DIR, "YZ$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot in the (Y, Z) plane with errors
-println(pad, "    for YZ (errors)...")
-p = scatter(
-    Y,
-    Z,
-    L"Y \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    x_p=Y_p,
-    x_m=Y_m,
-    y_p=Z_p,
-    y_m=Z_m,
-)
-pgfsave(joinpath(PLOTS_DIR, "YZ (errors)$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for YZ (equal axes)...")
+    end
+    p = scatter(
+        Y,
+        Z,
+        L"Y \; \mathrm{[kpc]}",
+        L"Z \; \mathrm{[kpc]}",
+        axis_equal=true,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "YZ (equal axes)$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot in the (Y, Z) plane with errors and equal axes
-println(pad, "    for YZ (equal axes, errors)...")
-p = scatter(
-    Y,
-    Z,
-    L"Y \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    x_p=Y_p,
-    x_m=Y_m,
-    y_p=Z_p,
-    y_m=Z_m,
-    axis_equal=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "YZ (equal axes, errors)$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for YZ (errors)...")
+    end
+    p = scatter(
+        Y,
+        Z,
+        L"Y \; \mathrm{[kpc]}",
+        L"Z \; \mathrm{[kpc]}",
+        x_p=Y_p,
+        x_m=Y_m,
+        y_p=Z_p,
+        y_m=Z_m,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "YZ (errors)$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot in the (R, Z) plane
-println(pad, "    for RZ...")
-p = scatter(
-    R,
-    Z,
-    L"R \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    start_x_from_zero=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "RZ$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for YZ (equal axes, errors)...")
+    end
+    p = scatter(
+        Y,
+        Z,
+        L"Y \; \mathrm{[kpc]}",
+        L"Z \; \mathrm{[kpc]}",
+        x_p=Y_p,
+        x_m=Y_m,
+        y_p=Z_p,
+        y_m=Z_m,
+        axis_equal=true,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "YZ (equal axes, errors)$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot in the (R, Z) plane with equal axes
-println(pad, "    for RZ (equal axes)...")
-p = scatter(
-    R,
-    Z,
-    L"R \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    axis_equal=true,
-    start_x_from_zero=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "RZ (equal axes)$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for RZ...")
+    end
+    p = scatter(
+        R,
+        Z,
+        L"R \; \mathrm{[kpc]}",
+        L"Z \; \mathrm{[kpc]}",
+        start_x_from_zero=true,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "RZ$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot in the (R, Z) plane with errors
-println(pad, "    for RZ (errors)...")
-p = scatter(
-    R,
-    Z,
-    L"R \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    x_p=R_p,
-    x_m=R_m,
-    y_p=Z_p,
-    y_m=Z_m,
-    start_x_from_zero=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "RZ (errors)$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for RZ (equal axes)...")
+    end
+    p = scatter(
+        R,
+        Z,
+        L"R \; \mathrm{[kpc]}",
+        L"Z \; \mathrm{[kpc]}",
+        axis_equal=true,
+        start_x_from_zero=true,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "RZ (equal axes)$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot in the (R, Z) plane with errors and equal axes
-println(pad, "    for RZ (equal axes, errors)...")
-p = scatter(
-    R,
-    Z,
-    L"R \; \mathrm{[kpc]}",
-    L"Z \; \mathrm{[kpc]}",
-    x_p=R_p,
-    x_m=R_m,
-    y_p=Z_p,
-    y_m=Z_m,
-    axis_equal=true,
-    start_x_from_zero=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "RZ (equal axes, errors)$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for RZ (errors)...")
+    end
+    p = scatter(
+        R,
+        Z,
+        L"R \; \mathrm{[kpc]}",
+        L"Z \; \mathrm{[kpc]}",
+        x_p=R_p,
+        x_m=R_m,
+        y_p=Z_p,
+        y_m=Z_m,
+        start_x_from_zero=true,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "RZ (errors)$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot in the (l, b) plane
-println(pad, "    for lb...")
-p = scatter(
-    l,
-    b,
-    L"l \; \mathrm{[deg]}",
-    L"b \; \mathrm{[deg]}",
-    axis_equal=true,
-)
-pgfsave(joinpath(PLOTS_DIR, "lb$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for RZ (equal axes, errors)...")
+    end
+    p = scatter(
+        R,
+        Z,
+        L"R \; \mathrm{[kpc]}",
+        L"Z \; \mathrm{[kpc]}",
+        x_p=R_p,
+        x_m=R_m,
+        y_p=Z_p,
+        y_m=Z_m,
+        axis_equal=true,
+        start_x_from_zero=true,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "RZ (equal axes, errors)$(POSTFIX).pdf"), p)
+end)
+
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for lb...")
+    end
+    p = scatter(
+        l,
+        b,
+        L"l \; \mathrm{[deg]}",
+        L"b \; \mathrm{[deg]}",
+        axis_equal=true,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "lb$(POSTFIX).pdf"), p)
+end)
+
+for task in tasks
+    try
+        wait(task)
+    catch err
+        err
+    end
+end
 
 # Mark data for garbage collection
 data = nothing

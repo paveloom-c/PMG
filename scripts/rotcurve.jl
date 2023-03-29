@@ -105,6 +105,7 @@ I = UInt64
 
 println('\n', pad, "> Loading the packages...")
 
+using Base.Threads
 using ColorSchemes
 using LaTeXStrings
 using PGFPlotsX
@@ -326,8 +327,8 @@ function scatter(
         Plot(
             {
                 scatter,
-                "only marks",
-                "scatter src" = "explicit symbolic",
+                only_marks,
+                scatter_src = "explicit symbolic",
                 "error bars/y dir=both",
                 "error bars/y explicit",
             },
@@ -351,31 +352,40 @@ function scatter(
     return p
 end
 
-# Plot the rotation curve
-println(pad, "    for Rotation curve...")
-p = scatter(
-    R,
-    Θ,
-    L"R \; \mathrm{[kpc]}",
-    L"\theta \; \mathrm{[km \; s^{-1}]}",
-)
-pgfsave(joinpath(PLOTS_DIR, "Rotation curve$(POSTFIX).pdf"), p)
+print_lock = ReentrantLock()
+tasks = Task[]
 
-println(pad, "    for Rotation curve (errors)...")
-p = scatter(
-    R,
-    Θ,
-    L"R \; \mathrm{[kpc]}",
-    L"\theta \; \mathrm{[km \; s^{-1}]}",
-    x_p=R_p,
-    x_m=R_m,
-    y_p=Θ_p,
-    y_m=Θ_m,
-    evel=evel_Θ,
-)
-pgfsave(joinpath(PLOTS_DIR, "Rotation curve (errors)$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for Rotation curve...")
+    end
+    p = scatter(
+        R,
+        Θ,
+        L"R \; \mathrm{[kpc]}",
+        L"\theta \; \mathrm{[km \; s^{-1}]}",
+    )
+    pgfsave(joinpath(PLOTS_DIR, "Rotation curve$(POSTFIX).pdf"), p)
+end)
 
-# Plot the test plot if requested
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for Rotation curve (errors)...")
+    end
+    p = scatter(
+        R,
+        Θ,
+        L"R \; \mathrm{[kpc]}",
+        L"\theta \; \mathrm{[km \; s^{-1}]}",
+        x_p=R_p,
+        x_m=R_m,
+        y_p=Θ_p,
+        y_m=Θ_m,
+        evel=evel_Θ,
+    )
+    pgfsave(joinpath(PLOTS_DIR, "Rotation curve (errors)$(POSTFIX).pdf"), p)
+end)
+
 if PLOT_TEST
     using CSV
     # Read the data
@@ -387,14 +397,26 @@ if PLOT_TEST
     # Remove the legend
     keys = []
     # Plot
-    println(pad, "    for Rotation curve (test)...")
-    p = scatter(
-        R,
-        theta,
-        L"R \; \mathrm{[kpc]}",
-        L"\theta \; \mathrm{[km \; s^{-1}]}",
-    )
-    pgfsave(joinpath(PLOTS_DIR, "Rotation curve (test)$(POSTFIX).pdf"), p)
+    push!(tasks, @spawn begin
+        lock(print_lock) do
+            println(pad, pad, "for Rotation curve (test)...")
+        end
+        p = scatter(
+            R,
+            theta,
+            L"R \; \mathrm{[kpc]}",
+            L"\theta \; \mathrm{[km \; s^{-1}]}",
+        )
+        pgfsave(joinpath(PLOTS_DIR, "Rotation curve (test)$(POSTFIX).pdf"), p)
+    end)
+end
+
+for task in tasks
+    try
+        wait(task)
+    catch err
+        err
+    end
 end
 
 # Mark data for garbage collection

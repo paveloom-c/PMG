@@ -79,6 +79,7 @@ I = UInt64
 
 println('\n', pad, "> Loading the packages...")
 
+using Base.Threads
 using CSV
 using ColorSchemes
 using LaTeXStrings
@@ -154,7 +155,7 @@ function scatter(x, y, xlabel, ylabel)
         Plot(
             {
                 scatter,
-                "only marks",
+                only_marks,
             },
             Coordinates(x, y),
         ),
@@ -162,34 +163,54 @@ function scatter(x, y, xlabel, ylabel)
     return p
 end
 
-# Plot a scatter plot for the Eastward proper motions
-println(pad, "    for mu_x...")
-p = scatter(
-    e_μ_x[1:2:end],
-    e_μ_x[2:2:end],
-    L"\sigma_{\mu_x} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[VERA]}",
-    L"\sigma_{\mu_x} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[Reid]}",
-)
-pgfsave(joinpath(PLOTS_DIR, "mu_x$(POSTFIX).pdf"), p)
+print_lock = ReentrantLock()
+tasks = Task[]
 
-# Plot a scatter plot for the Northward proper motions
-println(pad, "    for mu_y...")
-p = scatter(
-    e_μ_y[1:2:end],
-    e_μ_y[2:2:end],
-    L"\sigma_{\mu_y} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[VERA]}",
-    L"\sigma_{\mu_y} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[Reid]}",
-)
-pgfsave(joinpath(PLOTS_DIR, "mu_y$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for mu_x...")
+    end
+    p = scatter(
+        e_μ_x[1:2:end],
+        e_μ_x[2:2:end],
+        L"\sigma_{\mu_x} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[VERA]}",
+        L"\sigma_{\mu_x} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[Reid]}",
+    )
+    pgfsave(joinpath(PLOTS_DIR, "mu_x$(POSTFIX).pdf"), p)
+end)
 
-# Plot a scatter plot for the Local Standard of Rest velocity
-println(pad, "    for v_lsr...")
-p = scatter(
-    e_v_lsr[1:2:end],
-    e_v_lsr[2:2:end],
-    L"\sigma_{V_{LSR}} \; \mathrm{[km \; s^{-1}]} \; \mathrm{[VERA]}",
-    L"\sigma_{V_{LSR}} \; \mathrm{[km \; s^{-1}]} \; \mathrm{[Reid]}",
-)
-pgfsave(joinpath(PLOTS_DIR, "v_lsr$(POSTFIX).pdf"), p)
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for mu_y...")
+    end
+    p = scatter(
+        e_μ_y[1:2:end],
+        e_μ_y[2:2:end],
+        L"\sigma_{\mu_y} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[VERA]}",
+        L"\sigma_{\mu_y} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[Reid]}",
+    )
+    pgfsave(joinpath(PLOTS_DIR, "mu_y$(POSTFIX).pdf"), p)
+end)
+
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "for v_lsr...")
+    end
+    p = scatter(
+        e_v_lsr[1:2:end],
+        e_v_lsr[2:2:end],
+        L"\sigma_{V_{LSR}} \; \mathrm{[km \; s^{-1}]} \; \mathrm{[VERA]}",
+        L"\sigma_{V_{LSR}} \; \mathrm{[km \; s^{-1}]} \; \mathrm{[Reid]}",
+    )
+    pgfsave(joinpath(PLOTS_DIR, "v_lsr$(POSTFIX).pdf"), p)
+end)
+
+for task in tasks
+    try
+        wait(task)
+    catch err
+        err
+    end
+end
 
 println()

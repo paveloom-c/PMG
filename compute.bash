@@ -14,7 +14,7 @@ julia --project=. -e "using Pkg; Pkg.instantiate()"
 
 echo -e "\n${PAD}Step 2. Perform computations"
 
-echo -e "\n${PAD}> Per-object data..."
+echo -e "\n${PAD}> Compute per-object data..."
 cargo run -r -- -o data/output/all --goal objects -i data/input/all.dat &>/dev/null
 cargo run -r -- -o data/output/hmsfrs --goal objects -i data/input/hmsfrs.dat &>/dev/null
 cargo run -r -- -o data/output/hmsfrs_test --goal objects -i data/input/hmsfrs.dat \
@@ -24,7 +24,7 @@ echo -e "${PAD}> Fit all..."
 cargo run -r -- -o data/output/all --goal fit -i data/input/all.dat &>/dev/null
 echo -e "${PAD}> Fit center..."
 cargo run -r -- -o data/output/center --goal fit -i data/input/center.dat &>/dev/null
-echo -e "${PAD}> HMSFRs..."
+echo -e "${PAD}> Fit HMSFRs..."
 cargo run -r -- -o data/output/hmsfrs --goal fit -i data/input/hmsfrs.dat &>/dev/null
 
 echo -e "
