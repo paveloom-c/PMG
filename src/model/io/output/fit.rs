@@ -77,6 +77,8 @@ where
 {
     /// Serialize the fitted parameters
     #[allow(clippy::non_ascii_literal)]
+    #[allow(clippy::unwrap_in_result)]
+    #[allow(clippy::unwrap_used)]
     pub(in crate::model) fn serialize_to_fit(&self, dat_dir: &Path, bin_dir: &Path) -> Result<()> {
         // Prepare a header
         let header = formatdoc!(
@@ -128,7 +130,7 @@ where
             &header,
             vec![
                 Record::from(&self.params),
-                Record::from(self.fitted_params()?),
+                Record::from(self.fit_params.as_ref().unwrap()),
             ],
         )
     }

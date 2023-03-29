@@ -1,6 +1,7 @@
 //! Model of the Galaxy
 
 mod bounds;
+mod fit;
 mod io;
 mod objects;
 mod params;
@@ -19,7 +20,7 @@ use std::error::Error;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result};
 use num::{traits::FloatConst, Float};
 use rand::distributions::uniform::SampleUniform;
 use rand_distr::Distribution;
@@ -35,12 +36,12 @@ where
 {
     /// Initial model parameters
     params: Params<F>,
+    /// Fitted model parameters
+    fit_params: Option<Params<F>>,
     /// Bounds of the initial parameters
     bounds: Bounds<F>,
     /// Data objects
     objects: Objects<F>,
-    /// Fitted model parameters
-    fitted_params: Option<Params<F>>,
     /// Computation goal
     goal: Goal,
     /// Output directory
@@ -52,12 +53,6 @@ where
     F: Float + FloatConst + SampleUniform + Default + Display + Debug + Sync + Send + Sum,
     StandardNormal: Distribution<F>,
 {
-    /// Unwrap the fit of the model
-    pub(in crate::model) fn fitted_params(&self) -> Result<&Params<F>> {
-        self.fitted_params
-            .as_ref()
-            .ok_or_else(|| anyhow!("Couldn't unwrap the fitted parameters"))
-    }
     /// Perform computations based on the goal
     pub fn compute(&mut self) -> Result<()> {
         match self.goal {
@@ -66,13 +61,9 @@ where
                 self.objects.compute(&self.params);
             }
             Goal::Fit => {
-                // Prepare a trace file
                 // Try to fit the model
-                self.fitted_params = Some(
-                    self.params
-                        .try_fit_from(&self.objects, &self.bounds, &self.output_dir)
-                        .with_context(|| "Couldn't fit the model")?,
-                );
+                self.try_fit_from()
+                    .with_context(|| "Couldn't fit the model")?;
             }
         }
         Ok(())
@@ -156,6 +147,7 @@ where
                 sigma_theta: utils::cast(args.sigma_theta)?,
                 sigma_z: utils::cast(args.sigma_z)?,
             },
+            fit_params: None,
             bounds: Bounds {
                 r_0: utils::cast_range(args.r_0_bounds.clone())?,
                 omega_0: utils::cast_range(args.omega_0_bounds.clone())?,
@@ -168,7 +160,6 @@ where
                 sigma_z: utils::cast_range(args.sigma_z_bounds.clone())?,
             },
             objects: Objects::<F>::default(),
-            fitted_params: None,
             goal: args.goal,
             output_dir: args.output_dir.clone(),
         };
