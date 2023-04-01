@@ -21,14 +21,14 @@
 # Notes:
 #   1. Motion in RA multiplied by cos(Dec)
 #   2. Source is a group label:
-#     New = New objects and new data for old objects (as of June 2022) (13 total)
+#     New = New objects and new data for old objects (as of September 2022) (13 total)
 #     VERA = The first VERA catalogue (2020) (64 selected out of 99 total)
 #     Reid = Reid et al. (2019) (199 total)
 #   3. Masers are divided into the following groups by type:
 #     - HMSFRs (high-mass star-forming regions) (207 total)
 #     - Non-HMSFRs (specific subtypes are specified where
-#       it was possible) (66 selected out of 69 total):
-#       - SFRs (star-forming regions) (36 selected out of 39 total, excluding LMSFRs)
+#       it was possible) (69 selected out of 72 total):
+#       - SFRs (star-forming regions) (36 selected out of 39 total, including LMSFRs)
 #         - LMSFRs (low-mass star-forming regions) (4 total)
 #       - AGB (Asymptotic Giants Branch) (33 total)
 #       - RSG (Red Super Giants) (0 total)
