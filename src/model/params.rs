@@ -1,6 +1,7 @@
 //! Model parameters
 
 use core::fmt::Debug;
+use core::ops::Range;
 
 use num::Float;
 use simulated_annealing::Point;
@@ -75,6 +76,25 @@ impl<F> Params<F> {
             self.sigma_r,
             self.sigma_theta,
             self.sigma_z,
+        ]
+    }
+    /// Return bounds to the parameters
+    ///
+    /// Note that not all fields are used, but only those needed for fitting
+    pub fn bounds() -> [Range<F>; 9]
+    where
+        F: Float + Debug,
+    {
+        [
+            F::zero()..F::infinity(),
+            F::zero()..F::infinity(),
+            F::zero()..F::infinity(),
+            F::zero()..F::infinity(),
+            F::zero()..F::infinity(),
+            F::zero()..F::infinity(),
+            F::zero()..F::infinity(),
+            F::zero()..F::infinity(),
+            F::zero()..F::infinity(),
         ]
     }
 }

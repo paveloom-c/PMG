@@ -1,6 +1,6 @@
 //! Fit the model of the Galaxy to the data
 
-use super::{Measurement, Model, Object};
+use super::{Measurement, Model, Object, Params};
 
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
@@ -24,9 +24,7 @@ where
     F: Float + Debug + Default + Display + SampleUniform + Sync + Send,
     StandardNormal: Distribution<F>,
 {
-    /// Try to fit the model of the Galaxy to the provided data
-    /// objects within the specified bounds, return a new set
-    /// of inferred parameters
+    /// Try to fit the model of the Galaxy to the data
     #[allow(clippy::as_conversions)]
     #[allow(clippy::non_ascii_literal)]
     #[allow(clippy::shadow_unrelated)]
@@ -179,7 +177,7 @@ where
                         p_0: &[par.v],
                         t_0: 100_000.0,
                         t_min: 1.0,
-                        bounds: &[F::max(0., par.v_l - 2. * par.e_m)..(par.v + 2. * par.e_p)],
+                        bounds: &[F::zero()..F::infinity()],
                         apf: &APF::Metropolis,
                         neighbour: &NeighbourMethod::Normal { sd: par.e_p },
                         schedule: &Schedule::Fast,
@@ -212,7 +210,7 @@ where
             p_0: &p_0,
             t_0: 100_000.0,
             t_min: 1.0,
-            bounds: &self.bounds.to_array(),
+            bounds: &Params::bounds(),
             apf: &APF::Metropolis,
             neighbour: &NeighbourMethod::Custom {
                 f: |p, bounds, rng| -> Result<Point<F, 9>> {
@@ -254,17 +252,17 @@ where
                             "
                             k: {k}
                             t: {t}
-                                            {:>10} initial {:>10} current {:>13} best bounds
-                                       L_1: {:>16} — {f:>18} {best_f:>18} —
-                                       r_0: {i_0:>18.15} {p_0:>18.15} {best_p_0:>18.15} {bounds_0:#?}
-                                   omega_0: {i_1:>18.15} {p_1:>18.15} {best_p_1:>18.15} {bounds_1:#?}
-                                         a: {i_2:>18.15} {p_2:>18.15} {best_p_2:>18.15} {bounds_2:#?}
-                            u_sun_standard: {i_3:>18.15} {p_3:>18.15} {best_p_3:>18.15} {bounds_3:#?}
-                            v_sun_standard: {i_4:>18.15} {p_4:>18.15} {best_p_4:>18.15} {bounds_4:#?}
-                            w_sun_standard: {i_5:>18.15} {p_5:>18.15} {best_p_5:>18.15} {bounds_5:#?}
-                                   sigma_r: {i_6:>18.15} {p_6:>18.15} {best_p_6:>18.15} {bounds_6:#?}
-                               sigma_theta: {i_7:>18.15} {p_7:>18.15} {best_p_7:>18.15} {bounds_7:#?}
-                                   sigma_z: {i_8:>18.15} {p_8:>18.15} {best_p_8:>18.15} {bounds_8:#?}
+                                            {:>10} initial {:>10} current {:>13} best
+                                       L_1: {:>16} — {f:>18} {best_f:>18}
+                                       r_0: {i_0:>18.15} {p_0:>18.15} {best_p_0:>18.15}
+                                   omega_0: {i_1:>18.15} {p_1:>18.15} {best_p_1:>18.15}
+                                         a: {i_2:>18.15} {p_2:>18.15} {best_p_2:>18.15}
+                            u_sun_standard: {i_3:>18.15} {p_3:>18.15} {best_p_3:>18.15}
+                            v_sun_standard: {i_4:>18.15} {p_4:>18.15} {best_p_4:>18.15}
+                            w_sun_standard: {i_5:>18.15} {p_5:>18.15} {best_p_5:>18.15}
+                                   sigma_r: {i_6:>18.15} {p_6:>18.15} {best_p_6:>18.15}
+                               sigma_theta: {i_7:>18.15} {p_7:>18.15} {best_p_7:>18.15}
+                                   sigma_z: {i_8:>18.15} {p_8:>18.15} {best_p_8:>18.15}
                             ",
                             "",
                             "",
@@ -297,15 +295,6 @@ where
                             best_p_6 = best_p[6],
                             best_p_7 = best_p[7],
                             best_p_8 = best_p[8],
-                            bounds_0 = self.bounds.r_0,
-                            bounds_1 = self.bounds.omega_0,
-                            bounds_2 = self.bounds.a,
-                            bounds_3 = self.bounds.u_sun_standard,
-                            bounds_4 = self.bounds.v_sun_standard,
-                            bounds_5 = self.bounds.w_sun_standard,
-                            bounds_6 = self.bounds.sigma_r,
-                            bounds_7 = self.bounds.sigma_theta,
-                            bounds_8 = self.bounds.sigma_z,
                         ),
                     )
                     .ok();

@@ -1,6 +1,5 @@
 //! Model of the Galaxy
 
-mod bounds;
 mod fit;
 mod io;
 mod objects;
@@ -9,7 +8,6 @@ mod params;
 use crate::cli::Args;
 use crate::utils;
 use crate::Goal;
-use bounds::Bounds;
 pub use objects::{Measurement, Object, Objects};
 pub use params::Params;
 
@@ -33,8 +31,6 @@ pub struct Model<F> {
     params: Params<F>,
     /// Fitted model parameters
     fit_params: Option<Params<F>>,
-    /// Bounds of the initial parameters
-    bounds: Bounds<F>,
     /// Data objects
     objects: Objects<F>,
     /// Computation goal
@@ -132,17 +128,6 @@ where
                 sigma_z: utils::cast(args.sigma_z)?,
             },
             fit_params: None,
-            bounds: Bounds {
-                r_0: utils::cast_range(args.r_0_bounds.clone())?,
-                omega_0: utils::cast_range(args.omega_0_bounds.clone())?,
-                a: utils::cast_range(args.a_bounds.clone())?,
-                u_sun_standard: utils::cast_range(args.u_sun_standard_bounds.clone())?,
-                v_sun_standard: utils::cast_range(args.v_sun_standard_bounds.clone())?,
-                w_sun_standard: utils::cast_range(args.w_sun_standard_bounds.clone())?,
-                sigma_r: utils::cast_range(args.sigma_r_bounds.clone())?,
-                sigma_theta: utils::cast_range(args.sigma_theta_bounds.clone())?,
-                sigma_z: utils::cast_range(args.sigma_z_bounds.clone())?,
-            },
             objects: Objects::<F>::default(),
             goal: args.goal,
             output_dir: args.output_dir.clone(),

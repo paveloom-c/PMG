@@ -267,33 +267,6 @@ pub struct Args {
     /// Vertical component of the ellipsoid of natural standard deviations (km/s)
     #[arg(long, default_value_t = 3., help_heading = "PARAMETERS")]
     pub sigma_z: f64,
-    /// Galactocentric distance to the Sun (kpc)
-    #[arg(long, value_parser = RangeParser, default_value = "7.0..9.0", help_heading = "BOUNDS")]
-    pub r_0_bounds: Range<f64>,
-    /// Circular velocity of the Sun at R = R_0 (km/s/kpc)
-    #[arg(long, value_parser = RangeParser, default_value = "1.0..35.0", help_heading = "BOUNDS")]
-    pub omega_0_bounds: Range<f64>,
-    /// Oort's A constant (km/s/kpc)
-    #[arg(long, value_parser = RangeParser, default_value = "10.0..20.0", help_heading = "BOUNDS")]
-    pub a_bounds: Range<f64>,
-    /// Standard Solar Motion toward GC (km/s)
-    #[arg(long, value_parser = RangeParser, default_value = "10.2..10.4", help_heading = "BOUNDS")]
-    pub u_sun_standard_bounds: Range<f64>,
-    /// Standard Solar Motion toward l = 90 degrees (km/s)
-    #[arg(long, value_parser = RangeParser, default_value = "15.2..15.4", help_heading = "BOUNDS")]
-    pub v_sun_standard_bounds: Range<f64>,
-    /// Standard Solar Motion toward NGP (km/s)
-    #[arg(long, value_parser = RangeParser, default_value = "7.6..7.8", help_heading = "BOUNDS")]
-    pub w_sun_standard_bounds: Range<f64>,
-    /// Radial component of the ellipsoid of natural standard deviations (km/s)
-    #[arg(long, value_parser = RangeParser, default_value = "1.0..25.0", help_heading = "BOUNDS")]
-    pub sigma_r_bounds: Range<f64>,
-    /// Azimuthal component of the ellipsoid of natural standard deviations (km/s)
-    #[arg(long, value_parser = RangeParser, default_value = "1.0..25.0", help_heading = "BOUNDS")]
-    pub sigma_theta_bounds: Range<f64>,
-    /// Vertical component of the ellipsoid of natural standard deviations (km/s)
-    #[arg(long, value_parser = RangeParser, default_value = "1.0..25.0", help_heading = "BOUNDS")]
-    pub sigma_z_bounds: Range<f64>,
 }
 
 /// Parse the arguments
