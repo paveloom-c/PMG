@@ -51,7 +51,7 @@ where
             object.compute_r_h();
         });
         // Prepare storage for the results of computing the reduced parallax
-        let mut par_pairs: Vec<(F, F)> = vec![(0., 0.); self.objects.len()];
+        let mut par_pairs = vec![(0., 0., 0.); self.objects.len()];
         // A closure to compute the parameterized part of the negative log likelihood function of the model
         let f = |f_p: &Point<F, 9>| -> Result<F> {
             // Update the parameters
@@ -191,7 +191,7 @@ where
                         + F::ln(F::sqrt(d_mu_b))
                         + 0.5 * sum_min;
                     // Save the results
-                    *par_pair = (par.v, par_r[0]);
+                    *par_pair = (par.v, par.e_p, par_r[0]);
                     // Add to the general sum
                     Ok(acc + res)
                 })
@@ -199,8 +199,12 @@ where
                 // different threads. We sum those to get the final results
                 .reduce(|| Ok(F::zero()), |a, b| Ok(a? + b?));
             // Write the result to the buffer
-            for (i, &(par, par_r)) in par_pairs.iter().enumerate() {
-                writeln!(wtr.borrow_mut(), "{i}: par: {par} -> par_r: {par_r}",).ok();
+            for (i, &(par_v, par_e_p, par_r)) in par_pairs.iter().enumerate() {
+                writeln!(
+                    wtr.borrow_mut(),
+                    "{i}: par: {par_v} ± {par_e_p} -> par_r: {par_r}",
+                )
+                .ok();
             }
             l_1
         };
