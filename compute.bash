@@ -38,24 +38,28 @@ ${PAD}        and the catalogue from Reid et al. (2019)"
 echo -e "${PAD}Step 4. Plot projections in each plane"
 
 echo -e "\n${PAD}All by type:"
-./julia.bash scripts/coords.jl -o "'All by type'" data/output/all
+./julia.bash scripts/projections.jl -o "'All by type'" data/output/all
 echo -e "${PAD}All by source:"
-./julia.bash scripts/coords.jl -s -o "'All by source'" data/output/all
+./julia.bash scripts/projections.jl -s -o "'All by source'" data/output/all
 echo -e "${PAD}Near the solar circle:"
-./julia.bash scripts/coords.jl -s -o "'Near the solar circle'" data/output/near_the_solar_circle
+./julia.bash scripts/projections.jl -s -o "'Near the solar circle'" data/output/near_the_solar_circle
 echo -e "${PAD}HMSFRs:"
-./julia.bash scripts/coords.jl -s -o "HMSFRs" data/output/hmsfrs
+./julia.bash scripts/projections.jl -s -o "HMSFRs" data/output/hmsfrs
 
-echo "${PAD}Step 5. Plot the rotation curve"
+echo "${PAD}Step 5. Plot the rotation curves"
 
 echo -e "\n${PAD}All by type:"
 ./julia.bash scripts/rotcurve.jl -o "'All by type'" data/output/all
+./julia.bash scripts/fit_rotcurve.jl -o "'All by type'" data/output/all
 echo -e "${PAD}All by source:"
 ./julia.bash scripts/rotcurve.jl -s -o "'All by source'" data/output/all
+./julia.bash scripts/fit_rotcurve.jl -s -o "'All by source'" data/output/all
 echo -e "${PAD}Near the solar circle:"
 ./julia.bash scripts/rotcurve.jl -s -o "'Near the solar circle'" data/output/near_the_solar_circle
+./julia.bash scripts/fit_rotcurve.jl -s -o "'Near the solar circle'" data/output/near_the_solar_circle
 echo -e "${PAD}HMSFRs:"
 ./julia.bash scripts/rotcurve.jl -s -o "HMSFRs" data/output/hmsfrs/
+./julia.bash scripts/fit_rotcurve.jl -s -o "HMSFRs" data/output/hmsfrs/
 echo -e "${PAD}HMSFRs (test):"
 ./julia.bash scripts/rotcurve.jl -s --with-test -o "'HMSFRs (Test)'" data/output/hmsfrs_test
 

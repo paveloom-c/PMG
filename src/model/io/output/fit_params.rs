@@ -1,4 +1,4 @@
-//! Fit of the model
+//! Fit of the model (parameters)
 
 use crate::model::{Model, Params};
 
@@ -11,7 +11,7 @@ use num::Float;
 use serde::Serialize;
 
 /// Name of the files
-const NAME: &str = "fit";
+const NAME: &str = "fit_params";
 
 /// Output data record
 #[derive(Serialize)]
@@ -60,17 +60,20 @@ where
 
 impl<F> Model<F> {
     /// Serialize the fitted parameters
-    #[allow(clippy::non_ascii_literal)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
-    pub(in crate::model) fn serialize_to_fit(&self, dat_dir: &Path, bin_dir: &Path) -> Result<()>
+    pub(in crate::model) fn serialize_to_fit_params(
+        &self,
+        dat_dir: &Path,
+        bin_dir: &Path,
+    ) -> Result<()>
     where
         F: Float + Debug + Display + Serialize,
     {
         // Prepare a header
         let header = formatdoc!(
             "
-            # Fitted parameters
+            # Fit of the model (parameters)
             #
             # Descriptions:
             #
@@ -84,19 +87,19 @@ impl<F> Model<F> {
             # 8 sigma_theta: Azimuthal component of the ellipsoid of natural standard deviations [km/s]
             # 9 sigma_z: Vertical component of the ellipsoid of natural standard deviations [km/s]
             #
-            # The first row contains the initial parameters, the second one — the fitted ones.
+            # The first row contains the initial parameters, the second one -- the fitted ones.
             #
             # Constant parameters used:
             #
-            # The right ascension of the north galactic pole (HMS angle -> radians)
+            # The right ascension of the north galactic pole [HMS angle -> radians]
             # Source: Reid et al. (2009)
             # ALPHA_NGP: {alpha_ngp} [12:51:26.2817]
             #
-            # The declination of the north galactic pole (DMS angle -> radians)
+            # The declination of the north galactic pole [DMS angle -> radians]
             # Source: Reid et al. (2009)
             # DELTA_NGP: {delta_ngp} [27:07:42.013]
             #
-            # The longitude of the north celestial pole (decimal degrees angle -> radians)
+            # The longitude of the north celestial pole [decimal degrees angle -> radians]
             # Source: Reid et al. (2009)
             # L_NCP: {l_ncp} [122.932]
             #
@@ -110,15 +113,10 @@ impl<F> Model<F> {
             l_ncp = self.params.l_ncp,
             k = self.params.k,
         );
-        super::serialize_to(
-            dat_dir,
-            bin_dir,
-            NAME,
-            &header,
-            vec![
-                Record::from(&self.params),
-                Record::from(self.fit_params.as_ref().unwrap()),
-            ],
-        )
+        let records = vec![
+            Record::from(&self.params),
+            Record::from(self.fit_params.as_ref().unwrap()),
+        ];
+        super::serialize_to(dat_dir, bin_dir, NAME, &header, &records)
     }
 }

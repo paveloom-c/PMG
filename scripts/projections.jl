@@ -31,7 +31,7 @@ function parse_string(i)::String
     return s
 end
 
-# Define default values for optional arguments
+# Define default values for arguments
 LEGEND_SHOW_SOURCES = false
 OUTPUT_DIR = ""
 POSTFIX = ""
@@ -238,16 +238,16 @@ labels = ["a", "b", "c", "d", "e", "g"]
 dictionary = Dict([(k, labels[i]) for (i, k) in enumerate(keys)])
 label = [dictionary[k] for k in group]
 
-println(pad, "> Plotting the scatter plots...")
+println(pad, "> Plotting the projections...")
 
 "Compute the limits from the collection"
 function max_min(c; factor=0.1)
-    max = maximum(c)
-    min = minimum(c)
-    len = max - min
-    max = max + factor * len
-    min = min - factor * len
-    return max, min
+    max_value = maximum(c)
+    min_value = minimum(c)
+    len = max_value - min_value
+    max_value = max_value + factor * len
+    min_value = min_value - factor * len
+    return max_value, min_value
 end
 
 "Create a scatter plot"
@@ -262,13 +262,13 @@ function scatter(
     y_m=F[],
     axis_equal=false,
     crosses=false,
-    start_x_from_zero=false,
+    x_is_positive=false,
 )
     # Compute the limits
     x_max, x_min = max_min(x)
     y_max, y_min = max_min(y)
-    if start_x_from_zero
-        x_min = 0
+    if x_is_positive
+        x_min = max(0, x_min)
     end
     # Define the markers set
     marks = if crosses
@@ -294,6 +294,7 @@ function scatter(
             tick_label_style = {font = "\\small"},
             tick_style = {line_width = 0.4, color = "black"},
             axis_equal = axis_equal,
+            axis_on_top = true,
             axis_line_style = {line_width = 1},
             "axis_lines*" = "left",
             legend_image_post_style = {mark_size = 2, line_width = 0.4},
@@ -544,7 +545,7 @@ push!(tasks, @spawn begin
         Z,
         L"R \; \mathrm{[kpc]}",
         L"Z \; \mathrm{[kpc]}",
-        start_x_from_zero=true,
+        x_is_positive=true,
     )
     pgfsave(joinpath(PLOTS_DIR, "RZ$(POSTFIX).pdf"), p)
 end)
@@ -559,7 +560,7 @@ push!(tasks, @spawn begin
         L"R \; \mathrm{[kpc]}",
         L"Z \; \mathrm{[kpc]}",
         axis_equal=true,
-        start_x_from_zero=true,
+        x_is_positive=true,
     )
     pgfsave(joinpath(PLOTS_DIR, "RZ (equal axes)$(POSTFIX).pdf"), p)
 end)
@@ -577,7 +578,7 @@ push!(tasks, @spawn begin
         x_m=R_m,
         y_p=Z_p,
         y_m=Z_m,
-        start_x_from_zero=true,
+        x_is_positive=true,
     )
     pgfsave(joinpath(PLOTS_DIR, "RZ (errors)$(POSTFIX).pdf"), p)
 end)
@@ -596,7 +597,7 @@ push!(tasks, @spawn begin
         y_p=Z_p,
         y_m=Z_m,
         axis_equal=true,
-        start_x_from_zero=true,
+        x_is_positive=true,
     )
     pgfsave(joinpath(PLOTS_DIR, "RZ (equal axes, errors)$(POSTFIX).pdf"), p)
 end)
@@ -619,7 +620,7 @@ for task in tasks
     try
         wait(task)
     catch err
-        err
+        throw(err.task.exception)
     end
 end
 

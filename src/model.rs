@@ -1,6 +1,7 @@
 //! Model of the Galaxy
 
-mod fit;
+mod fit_params;
+mod fit_rotcurve;
 mod io;
 mod objects;
 mod params;
@@ -8,6 +9,7 @@ mod params;
 use crate::cli::Args;
 use crate::utils;
 use crate::Goal;
+pub use fit_rotcurve::RotationCurve;
 pub use objects::{Measurement, Object, Objects};
 pub use params::Params;
 
@@ -29,10 +31,12 @@ use serde::{de::DeserializeOwned, Serialize};
 pub struct Model<F> {
     /// Initial model parameters
     params: Params<F>,
-    /// Fitted model parameters
-    fit_params: Option<Params<F>>,
     /// Data objects
     objects: Objects<F>,
+    /// Fit of the model (parameters)
+    fit_params: Option<Params<F>>,
+    /// Fit of the model (rotation curve)
+    fit_rotcurve: Option<RotationCurve<F>>,
     /// Computation goal
     goal: Goal,
     /// Output directory
@@ -55,6 +59,8 @@ impl<F> Model<F> {
                 // Try to fit the model
                 self.try_fit_from()
                     .with_context(|| "Couldn't fit the model")?;
+                // Compute the rotation curve based on the fitted parameters
+                self.compute_fit_rotcurve();
             }
         }
         Ok(())
@@ -85,15 +91,17 @@ impl<F> Model<F> {
             .with_context(|| format!("Couldn't create the output directory {dat_dir:?}"))?;
         fs::create_dir_all(bin_dir)
             .with_context(|| format!("Couldn't create the output directory {bin_dir:?}"))?;
-        // Serialize data
+        // Serialize the data
         match self.goal {
             Goal::Objects => {
                 self.serialize_to_objects(dat_dir, bin_dir)
                     .with_context(|| "Couldn't write the objects to a file")?;
             }
             Goal::Fit => {
-                self.serialize_to_fit(dat_dir, bin_dir)
+                self.serialize_to_fit_params(dat_dir, bin_dir)
                     .with_context(|| "Couldn't write the fitted parameters to a file")?;
+                self.serialize_to_fit_rotcurve(dat_dir, bin_dir)
+                    .with_context(|| "Couldn't write the fitted rotation curve to a file")?;
             }
         }
         Ok(())
@@ -127,8 +135,9 @@ where
                 sigma_theta: utils::cast(args.sigma_theta)?,
                 sigma_z: utils::cast(args.sigma_z)?,
             },
-            fit_params: None,
             objects: Objects::<F>::default(),
+            fit_params: None,
+            fit_rotcurve: None,
             goal: args.goal,
             output_dir: args.output_dir.clone(),
         };

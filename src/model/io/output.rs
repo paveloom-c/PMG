@@ -1,6 +1,6 @@
 //! Output related
 
-pub mod fit;
+pub mod fit_params;
 pub mod objects;
 
 use std::fs::File;
@@ -12,12 +12,12 @@ use bincode::Options;
 use serde::Serialize;
 
 /// Serialize records to the files
-fn serialize_to(
+pub fn serialize_to(
     dat_dir: &Path,
     bin_dir: &Path,
     name: &str,
     header: &str,
-    records: Vec<impl Serialize>,
+    records: &[impl Serialize],
 ) -> Result<()> {
     // Define paths to the text and the binary files
     let dat_path = &dat_dir.join(format!("{name}.dat"));
@@ -48,7 +48,7 @@ fn serialize_to(
     for record in records {
         // Write it in the text format
         dat_wtr
-            .serialize(&record)
+            .serialize(record)
             .with_context(|| format!("Couldn't write a record to {dat_path:?}"))?;
     }
     Ok(())

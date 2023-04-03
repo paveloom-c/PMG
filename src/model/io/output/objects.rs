@@ -73,10 +73,8 @@ struct Record<'a, F> {
     #[serde(rename = "em_R")]
     e_m_r_g: F,
     /// Proper motion on longitude (mas/yr)
-    #[serde(rename = "mu_l")]
     mu_l: F,
     /// Proper motion on latitude (mas/yr)
-    #[serde(rename = "mu_b")]
     mu_b: F,
     /// Heliocentric velocity in distance (km/s)
     #[serde(rename = "V_r")]
@@ -129,9 +127,12 @@ struct Record<'a, F> {
     /// Azimuthal velocity (km/s)
     theta: F,
     /// Plus uncertainty in `theta` (km/s)
+    #[serde(rename = "ep_theta")]
     e_p_theta: F,
     /// Plus uncertainty in `theta` (km/s)
+    #[serde(rename = "em_theta")]
     e_m_theta: F,
+    #[serde(rename = "evel_theta")]
     /// Velocity uncertainty in `theta` (km/s)
     e_vel_theta: F,
 }
@@ -300,11 +301,11 @@ impl<F> Model<F> {
             #
             # Parameters used:
             #
-            # The right ascension of the north galactic pole (HMS angle -> radians)
+            # The right ascension of the north galactic pole [HMS angle -> radians]
             # Source: Reid et al. (2009)
             # ALPHA_NGP: {alpha_ngp} [12:51:26.2817]
             #
-            # The declination of the north galactic pole (DMS angle -> radians)
+            # The declination of the north galactic pole [DMS angle -> radians]
             # Source: Reid et al. (2009)
             # DELTA_NGP: {delta_ngp} [27:07:42.013]
             #
@@ -312,30 +313,30 @@ impl<F> Model<F> {
             # Sources: Gromov, Nikiforov (2016)
             # K: {k}
             #
-            # The longitude of the north celestial pole (decimal degrees angle -> radians)
+            # The longitude of the north celestial pole [decimal degrees angle -> radians]
             # Source: Reid et al. (2009)
             # L_NCP: {l_ncp} [122.932]
             #
-            # Galactocentric distance to the Sun (kpc)
+            # Galactocentric distance to the Sun [kpc]
             # R_0: {r_0}
             #
-            # Full circular velocity of the Sun (km/s)
+            # Full circular velocity of the Sun [km/s]
             # Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
             # THETA_SUN: {theta_sun}
             #
-            # Peculiar motion locally toward GC (km/s)
+            # Peculiar motion locally toward GC [km/s]
             # Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
             # U_SUN: {u_sun}
             #
-            # Standard Solar Motion toward GC (km/s)
+            # Standard Solar Motion toward GC [km/s]
             # Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
             # U_SUN_STANDARD: {u_sun_standard}
             #
-            # Standard Solar Motion toward l = 90 degrees (km/s)
+            # Standard Solar Motion toward l = 90 degrees [km/s]
             # Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
             # V_SUN_STANDARD: {v_sun_standard}
             #
-            # Standard Solar Motion toward NGP (km/s)
+            # Standard Solar Motion toward NGP [km/s]
             # Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
             # W_SUN_STANDARD: {w_sun_standard}
             #
@@ -351,12 +352,8 @@ impl<F> Model<F> {
             v_sun_standard = self.params.v_sun_standard,
             w_sun_standard = self.params.w_sun_standard,
         );
-        super::serialize_to(
-            dat_dir,
-            bin_dir,
-            NAME,
-            &header,
-            Records::try_from(self).with_context(|| "Couldn't construct records from the model")?,
-        )
+        let records =
+            Records::try_from(self).with_context(|| "Couldn't construct records from the model")?;
+        super::serialize_to(dat_dir, bin_dir, NAME, &header, &records)
     }
 }

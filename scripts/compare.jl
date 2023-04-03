@@ -23,7 +23,7 @@ function parse_string(i)::String
     end
 end
 
-# Define default values for optional arguments
+# Define default values for arguments
 LEGEND_SHOW_SOURCES = false
 OUTPUT_DIR = ""
 POSTFIX = ""
@@ -109,16 +109,16 @@ e_μ_x = data.e_mu_x
 e_μ_y = data.e_mu_y
 e_v_lsr = data.e_v_lsr
 
-println(pad, "> Plotting the scatter plots...")
+println(pad, "> Plotting the comparison charts...")
 
 "Compute the limits from the collection"
 function max_min(c; factor=0.1)
-    max = maximum(c)
-    min = minimum(c)
-    len = max - min
-    max = max + factor * len
-    min = min - factor * len
-    return max, min
+    max_value = maximum(c)
+    min_value = minimum(c)
+    len = max_value - min_value
+    max_value = max_value + factor * len
+    min_value = min_value - factor * len
+    return max_value, min_value
 end
 
 "Create a scatter plot"
@@ -144,6 +144,7 @@ function scatter(x, y, xlabel, ylabel)
             tick_label_style = { font = "\\small" },
             tick_style = { line_width = 0.4, color = "black" },
             axis_line_style = { line_width = 1 },
+            axis_on_top = true,
             "axis_lines*" = "left",
             mark = "*",
             mark_size = 0.5,
@@ -209,7 +210,7 @@ for task in tasks
     try
         wait(task)
     catch err
-        err
+        throw(err.task.exception)
     end
 end
 

@@ -1,4 +1,5 @@
-# This script plots the rotation curve
+# This script plots the rotation curves with
+# initial parameters and fitted parameters
 
 "Check if the value of the option is the last argument"
 function check_last(i)
@@ -31,9 +32,8 @@ function parse_string(i)::String
     return s
 end
 
-# Define default values for arguments
+# Define default values for optional arguments
 LEGEND_SHOW_SOURCES = false
-PLOT_TEST = false
 OUTPUT_DIR = ""
 POSTFIX = ""
 
@@ -43,11 +43,6 @@ for i in eachindex(ARGS)
     if ARGS[i] == "-s"
         check_last(i)
         global LEGEND_SHOW_SOURCES = true
-    end
-    # Plot the test plot, too
-    if ARGS[i] == "--with-test"
-        check_last(i)
-        global PLOT_TEST = true
     end
     # Output directory
     if ARGS[i] == "-o"
@@ -78,7 +73,7 @@ YELLOW = "\e[33m"
 if length(ARGS) <= 1 || "--help" in ARGS
     println("""
         $(YELLOW)USAGE:$(RESET)
-        { julia --project=. | ./julia.bash } scripts/rotcurve.jl [-s] [-o <OUTPUT_DIR>] [--postfix <POSTFIX>] <INPUT_DIR>
+        { julia --project=. | ./julia.bash } scripts/fit_rotcurve.jl [-s] [-o <OUTPUT_DIR>] [--postfix <POSTFIX>] <INPUT_DIR>
 
         $(YELLOW)ARGS:$(RESET)
         $(GREEN)<INPUT_DIR>$(RESET)    Input directory (relative to the root of the repository)
@@ -111,13 +106,14 @@ using LaTeXStrings
 using PGFPlotsX
 
 # Choose a color scheme
-colors = ColorSchemes.tol_bright[2:end]
+colors = ColorSchemes.tol_bright
 
 # Define the paths
 CURRENT_DIR = @__DIR__
 ROOT_DIR = dirname(CURRENT_DIR)
 PLOTS_DIR = joinpath(ROOT_DIR, "plots", OUTPUT_DIR)
-DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "bin", "objects.bin")
+OBSERVED_DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "bin", "objects.bin")
+FIT_DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "bin", "fit_rotcurve.bin")
 
 # Make sure the needed directories exist
 mkpath(PLOTS_DIR)
@@ -125,7 +121,7 @@ mkpath(PLOTS_DIR)
 # Define the paths to the data files
 println(pad, "> Loading the data...")
 
-struct Data
+struct ObservedData
     name::Vector{String}
     type::Vector{String}
     source::Vector{String}
@@ -170,16 +166,21 @@ struct Data
     evel_Θ::Vector{F}
 end
 
+struct FitData
+    R::Vector{F}
+    Θ::Vector{F}
+end
+
 "Read binary files in the `bincode` format"
-function read_bincode(path::AbstractString)::Data
+function read_bincode(path::AbstractString, type::Type)::type
     open(path, "r") do io
         # Read the number of objects
         n = read(io, I)
         # Get the fields and their types
-        fields = fieldnames(Data)
-        types = eltype.(fieldtypes(Data))
+        fields = fieldnames(type)
+        types = eltype.(fieldtypes(type))
         # Initialize the data struct
-        data = Data(ntuple(_ -> [], length(fields))...)
+        data = type(ntuple(_ -> [], length(fields))...)
         # For each object
         for _ in 1:n
             # For each field
@@ -203,10 +204,11 @@ function read_bincode(path::AbstractString)::Data
 end
 
 # Read the data
-data = read_bincode(DATA_PATH)
+observed_data = read_bincode(OBSERVED_DATA_PATH, ObservedData)
+fit_data = read_bincode(FIT_DATA_PATH, FitData)
 
 # Prepare a group for the data
-group = LEGEND_SHOW_SOURCES ? data.source : data.type
+group = LEGEND_SHOW_SOURCES ? observed_data.source : observed_data.type
 
 # Sort the data by the number of occurrences of different types
 # (rare types will be plotted over common types)
@@ -214,13 +216,13 @@ keys = unique(group)
 counts = Dict([(k, count(==(k), group)) for k in keys])
 I = sortperm(group, by=k -> counts[k], rev=true)
 group = group[I]
-R = data.R[I]
-ep_R = data.ep_R[I]
-em_R = data.em_R[I]
-Θ = data.Θ[I]
-ep_Θ = data.ep_Θ[I]
-em_Θ = data.em_Θ[I]
-evel_Θ = data.evel_Θ[I]
+R = observed_data.R[I]
+ep_R = observed_data.ep_R[I]
+em_R = observed_data.em_R[I]
+Θ = observed_data.Θ[I]
+ep_Θ = observed_data.ep_Θ[I]
+em_Θ = observed_data.em_Θ[I]
+evel_Θ = observed_data.evel_Θ[I]
 
 # Compute the secondary data sets
 R_p = R .+ ep_R
@@ -228,12 +230,16 @@ R_m = R .- em_R
 Θ_p = Θ .+ ep_Θ
 Θ_m = Θ .- em_Θ
 
+# Unpack the fit data
+R_fit = fit_data.R
+Θ_fit = fit_data.Θ
+
 # Prepare labels
 markers = ["a", "b", "c", "d", "e", "g"]
 dictionary = Dict([(k, markers[i]) for (i, k) in enumerate(keys)])
 label = [dictionary[k] for k in group]
 
-println(pad, "> Plotting the rotations curves...")
+println(pad, "> Plotting the fitted rotation curves...")
 
 "Compute the limits from the collection"
 function max_min(c; factor=0.1)
@@ -245,10 +251,11 @@ function max_min(c; factor=0.1)
     return max_value, min_value
 end
 
-"Create a scatter plot"
-function scatter(
+function plot(
     x,
     y,
+    x_fit,
+    y_fit,
     xlabel,
     ylabel;
     x_p=F[],
@@ -260,8 +267,9 @@ function scatter(
     # Compute the limits
     x_max, x_min = max_min(x)
     y_max, y_min = max_min(y)
-    # Prepare a table
-    table =
+    # Prepare a table for the observed
+    # values of the rotation curve
+    observed_table =
         if isempty(evel)
             @pgf Table(
                 {
@@ -284,6 +292,11 @@ function scatter(
                 evel=evel,
             )
         end
+    # Prepare a table for the fit
+    fit_table = @pgf Table(
+        x=x_fit,
+        y=y_fit,
+    )
     # Create a plot
     p = @pgf Axis(
         {
@@ -317,11 +330,11 @@ function scatter(
             mark_size = 0.5,
             line_width = 0.15,
             "scatter/classes" = {
-                a = {mark = "x", color = colors[1]},
-                b = {mark = "+", color = colors[2]},
-                c = {mark = "asterisk", color = colors[3]},
-                d = {mark = "star", color = colors[4]},
-                e = {mark = "10-pointed star", color = colors[5]},
+                a = {mark = "x", color = colors[2]},
+                b = {mark = "+", color = colors[3]},
+                c = {mark = "asterisk", color = colors[4]},
+                d = {mark = "star", color = colors[5]},
+                e = {mark = "10-pointed star", color = colors[6]},
             },
         },
         Plot(
@@ -332,7 +345,14 @@ function scatter(
                 "error bars/y dir=both",
                 "error bars/y explicit",
             },
-            table,
+            observed_table,
+        ),
+        Plot(
+            {
+                color = colors[1],
+                mark = "none"
+            },
+            fit_table,
         ),
         Legend(keys),
     )
@@ -359,22 +379,26 @@ push!(tasks, @spawn begin
     lock(print_lock) do
         println(pad, pad, "without errors...")
     end
-    p = scatter(
+    p = plot(
         R,
         Θ,
+        R_fit,
+        Θ_fit,
         L"R \; \mathrm{[kpc]}",
         L"\theta \; \mathrm{[km \; s^{-1}]}",
     )
-    pgfsave(joinpath(PLOTS_DIR, "Rotation curve$(POSTFIX).pdf"), p)
+    pgfsave(joinpath(PLOTS_DIR, "Fit rotation curve$(POSTFIX).pdf"), p)
 end)
 
 push!(tasks, @spawn begin
     lock(print_lock) do
         println(pad, pad, "with errors...")
     end
-    p = scatter(
+    p = plot(
         R,
         Θ,
+        R_fit,
+        Θ_fit,
         L"R \; \mathrm{[kpc]}",
         L"\theta \; \mathrm{[km \; s^{-1}]}",
         x_p=R_p,
@@ -383,7 +407,7 @@ push!(tasks, @spawn begin
         y_m=Θ_m,
         evel=evel_Θ,
     )
-    pgfsave(joinpath(PLOTS_DIR, "Rotation curve (errors)$(POSTFIX).pdf"), p)
+    pgfsave(joinpath(PLOTS_DIR, "Fit rotation curve (errors)$(POSTFIX).pdf"), p)
 end)
 
 for task in tasks
@@ -395,29 +419,7 @@ for task in tasks
 end
 
 # Mark data for garbage collection
-data = nothing
-
-if PLOT_TEST
-    using CSV
-    # Read the data
-    data_test = CSV.File(joinpath(ROOT_DIR, "tests", "rotcurve.dat"), delim=' ', comment="#")
-    R_test = data_test.R
-    Θ_test = data_test.theta
-    # Update the labels
-    label = repeat(["c"], length(R_test))
-    # Remove the legend
-    keys = []
-    # Plot
-    println(pad, pad, "test...")
-    p = scatter(
-        R_test,
-        Θ_test,
-        L"R \; \mathrm{[kpc]}",
-        L"\theta \; \mathrm{[km \; s^{-1}]}",
-    )
-    pgfsave(joinpath(PLOTS_DIR, "Rotation curve (test)$(POSTFIX).pdf"), p)
-    # Mark data for garbage collection
-    data_test = nothing
-end
+observed_data = nothing
+fit_data = nothing
 
 println()
