@@ -15,9 +15,6 @@ use serde::Serialize;
 /// Rotation curve
 pub type RotationCurve<F> = Vec<RotationCurvePoint<F>>;
 
-/// Name of the output files
-const NAME: &str = "fit_rotcurve";
-
 /// A point on the rotation curve
 #[derive(Debug, Clone, Serialize)]
 pub struct RotationCurvePoint<F> {
@@ -101,6 +98,6 @@ impl<F> Model<F> {
             a = self.params.a,
         );
         let records = self.fit_rotcurve.as_ref().unwrap();
-        output::serialize_to(dat_dir, bin_dir, NAME, &header, records)
+        output::serialize_to(dat_dir, bin_dir, "fit_rotcurve", &header, records)
     }
 }

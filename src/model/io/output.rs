@@ -1,6 +1,5 @@
 //! Output related
 
-pub mod fit_params;
 pub mod objects;
 
 use std::fs::File;
