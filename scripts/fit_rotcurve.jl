@@ -336,7 +336,7 @@ push!(tasks, @spawn begin
         L"R \; \mathrm{[kpc]}",
         L"\theta \; \mathrm{[km \; s^{-1}]}",
     )
-    pgfsave(joinpath(PLOTS_DIR, "Fit rotation curve$(POSTFIX).pdf"), p)
+    pgfsave(joinpath(PLOTS_DIR, "Fitted rotation curve$(POSTFIX).pdf"), p)
 end)
 
 push!(tasks, @spawn begin
@@ -356,7 +356,7 @@ push!(tasks, @spawn begin
         y_m=Θ_m,
         evel=Θ_evel,
     )
-    pgfsave(joinpath(PLOTS_DIR, "Fit rotation curve (errors)$(POSTFIX).pdf"), p)
+    pgfsave(joinpath(PLOTS_DIR, "Fitted rotation curve (errors)$(POSTFIX).pdf"), p)
 end)
 
 for task in tasks

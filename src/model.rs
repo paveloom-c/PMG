@@ -5,6 +5,7 @@ mod fit_rotcurve;
 mod io;
 mod objects;
 mod params;
+mod sample_description;
 
 use crate::cli::Args;
 use crate::utils;
@@ -39,6 +40,8 @@ pub struct Model<F> {
     fit_rotcurve: Option<RotationCurve<F>>,
     /// Computation goal
     goal: Goal,
+    /// Sample description
+    sample_description: Option<String>,
     /// Output directory
     output_dir: PathBuf,
 }
@@ -128,6 +131,7 @@ where
             fit_params: None,
             fit_rotcurve: None,
             goal: args.goal,
+            sample_description: None,
             output_dir: args.output_dir.clone(),
         };
         // Make sure the output directory exists
@@ -137,7 +141,7 @@ where
                 &model.output_dir
             )
         })?;
-        // Load the data from the input file
+        model.try_read_sample_description_from(&args.input)?;
         model
             .try_load_data_from(&args.input)
             .with_context(|| format!("Couldn't load the data from the file {:?}", args.input))?;

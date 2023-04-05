@@ -128,7 +128,7 @@ impl<F> Model<F> {
         let header = formatdoc!(
             "
             # Fit of the model (parameters)
-            #
+            {sample_description}
             # Descriptions:
             #
             # 01 R_0: Galactocentric distance to the Sun [kpc]
@@ -153,6 +153,7 @@ impl<F> Model<F> {
             # parameters, the second one -- the fitted ones.
             #
             ",
+            sample_description = self.format_sample_description(),
         );
         let records = vec![&self.params, self.fit_params.as_ref().unwrap()];
         output::serialize_to(dat_dir, bin_dir, "fit_params", &header, &records)

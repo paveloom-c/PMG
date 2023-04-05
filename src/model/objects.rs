@@ -436,7 +436,7 @@ impl<F> Model<F> {
         F: Float + Default + Debug + DeserializeOwned + FromStr,
         <F as FromStr>::Err: Error + Send + Sync + 'static,
     {
-        // Create a reader
+        // Create a CSV reader
         let mut rdr = ReaderBuilder::default()
             .delimiter(b' ')
             .comment(Some(b'#'))
@@ -464,7 +464,7 @@ impl<F> Model<F> {
         let header = formatdoc!(
             "
             # Per-object data
-            #
+            {sample_description}
             # Descriptions:
             #
             # 01 name: Name of the object
@@ -595,6 +595,7 @@ impl<F> Model<F> {
             # W_SUN_STANDARD: {w_sun_standard}
             #
             ",
+            sample_description = self.format_sample_description(),
             alpha_ngp = self.params.alpha_ngp,
             delta_ngp = self.params.delta_ngp,
             k = self.params.k,

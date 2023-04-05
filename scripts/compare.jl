@@ -105,9 +105,9 @@ println(pad, "> Loading the data...")
 
 # Read the data
 data = CSV.File(INPUT, delim=' ', comment="#")
-e_μ_x = data.e_mu_x
-e_μ_y = data.e_mu_y
-e_v_lsr = data.e_v_lsr
+μ_x_e = data.mu_x_e
+μ_y_e = data.mu_y_e
+v_lsr_e = data.v_lsr_e
 
 println(pad, "> Plotting the comparison charts...")
 
@@ -172,8 +172,8 @@ push!(tasks, @spawn begin
         println(pad, pad, "for mu_x...")
     end
     p = scatter(
-        e_μ_x[1:2:end],
-        e_μ_x[2:2:end],
+        μ_x_e[1:2:end],
+        μ_x_e[2:2:end],
         L"\sigma_{\mu_x} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[VERA]}",
         L"\sigma_{\mu_x} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[Reid]}",
     )
@@ -185,8 +185,8 @@ push!(tasks, @spawn begin
         println(pad, pad, "for mu_y...")
     end
     p = scatter(
-        e_μ_y[1:2:end],
-        e_μ_y[2:2:end],
+        μ_y_e[1:2:end],
+        μ_y_e[2:2:end],
         L"\sigma_{\mu_y} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[VERA]}",
         L"\sigma_{\mu_y} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[Reid]}",
     )
@@ -198,8 +198,8 @@ push!(tasks, @spawn begin
         println(pad, pad, "for v_lsr...")
     end
     p = scatter(
-        e_v_lsr[1:2:end],
-        e_v_lsr[2:2:end],
+        v_lsr_e[1:2:end],
+        v_lsr_e[2:2:end],
         L"\sigma_{V_{LSR}} \; \mathrm{[km \; s^{-1}]} \; \mathrm{[VERA]}",
         L"\sigma_{V_{LSR}} \; \mathrm{[km \; s^{-1}]} \; \mathrm{[Reid]}",
     )

@@ -1,8 +1,9 @@
 # Equatorial spherical coordinates of masers, their parallaxes,
 # proper motions in equatorial coordinates, and LSR velocities
-# near the solar circle (R = R_0 ± 3 kpc)
 #
-# Note that only HMSFRs are included.
+# Sample:
+#
+# Only HMSFRs near the solar circle (R = R_0 ± 3 kpc).
 #
 # Descriptions:
 #

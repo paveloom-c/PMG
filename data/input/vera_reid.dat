@@ -1,19 +1,24 @@
 # Equatorial spherical coordinates of masers, their parallaxes,
 # proper motions in equatorial coordinates, and LSR velocities
 #
+# Sample:
+#
+# The objects from the first VERA catalogue (2020) that
+# are identified with the objects from Reid et al (2019).
+#
 # Descriptions:
 #
 #  1 name: Name of the object
 #  2 alpha: Right ascension [HMS angle]
 #  3 delta: Declination [DMS angle]
 #  4 par: Trigonometric parallax [mas]
-#  5 e_par: Uncertainty in `par` [mas]
+#  5 par_e: Uncertainty in `par` [mas]
 #  6 v_lsr: Local Standard of Rest velocity [km/s]
-#  7 e_v_lsr: Uncertainty in `v_lsr` [km/s]
+#  7 v_lsr_e: Uncertainty in `v_lsr` [km/s]
 #  8 mu_x: Eastward proper motion (1) [mas/yr]
-#  9 e_mu_x: Uncertainty in `mu_x` [mas/yr]
+#  9 mu_x_e: Uncertainty in `mu_x` [mas/yr]
 # 10 mu_y: Northward proper motion [mas/yr]
-# 11 e_mu_y: Uncertainty in `mu_y` [mas/yr]
+# 11 mu_y_e: Uncertainty in `mu_y` [mas/yr]
 # 12 type: Type of the object
 # 13 source: Source of the data (2)
 # 14 reference: Reference(s)
@@ -25,12 +30,9 @@
 #     Reid = Reid et al. (2019)
 #     VERA = The first VERA catalogue (2020)
 #
-name alpha delta par e_par mu_x e_mu_x mu_y e_mu_y v_lsr e_v_lsr type source reference
+name alpha delta par par_e mu_x mu_x_e mu_y mu_y_e v_lsr v_lsr_e type source reference
 #
-# Objects from the first VERA catalogue (2020) that
-# are identified with objects from Reid et al (2019):
-#
-# - under the same name:
+# Same name:
 #
 G005.88-00.39 18:00:30.3100 -24:04:04.500 0.78 0.05 -0.17 0.60 -0.95 0.48 9.0 3.0 SFR "VERA" "Motogi et al. (2011)"
 G005.88-00.39 18:00:30.2801 -24:04:04.576 0.334 0.020 0.18 0.34 -2.26 0.34 9 5 HMSFR "Reid" "Sato et al. (2014)"
@@ -45,7 +47,7 @@ G097.53+03.18 21:32:12.4343 +55:53:49.689 0.133 0.017 -2.94 0.29 -2.48 0.29 -73 
 G192.16-03.81 05:58:13.5300 16:31:58.900 0.66 0.04 0.69 0.15 -1.57 0.15 5.7 5.0 SFR "VERA" "Shiozaki et al. (2011)"
 G192.16-03.81 05:58:13.5300 +16:31:58.900 0.660 0.040 0.70 0.78 -1.80 0.86 5 5 HMSFR "Reid" "Shiozaki et al. (2011)"
 #
-# - with the same coordinates (names changed to VERA's):
+# Same coordinates (names are changed to VERA's):
 #
 # Name in Reid et al. (2019): G174.20-00.07
 "AFGL 5142" 05:30:48.0173 33:47:54.568 0.467 0.010 0.32 0.27 -0.22 0.47 -2.0 5.0 SFR "VERA" "Burns et al. (2017)"
@@ -72,7 +74,7 @@ G192.16-03.81 05:58:13.5300 +16:31:58.900 0.660 0.040 0.70 0.78 -1.80 0.86 5 5 H
 G048.99-00.30 19:22:26.1348 14:06:39.133 0.178 0.017 -2.16 0.09 -5.87 0.17 66.3 0.3 SFR "VERA" "Nagayama et al. (2015a)"
 G048.99-00.30 19:22:26.1348 14:06:39.133 0.178 0.017 -2.20 0.48 -5.84 0.63 67 10 HMSFR "Reid" "Nagayama et al. (2014)"
 #
-# - with nearly the same coordinates (names changed to VERA's):
+# Nearly the same coordinates (names are changed to VERA's):
 #
 # Name in Reid et al. (2019): G094.60-01.79
 "AFGL 2789" 21:39:58.2717 50:14:21.014 0.326 0.031 -2.20 0.08 -3.77 0.15 -44.0 5.0 SFR "VERA" "Oh et al. (2010)"

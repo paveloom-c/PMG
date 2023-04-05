@@ -75,7 +75,7 @@ impl<F> Model<F> {
         let header = formatdoc!(
             "
             # Fit of the model (rotation curve)
-            #
+            {sample_description}
             # Descriptions:
             #
             # 01 R: Galactocentric distance to the Sun [kpc]
@@ -93,6 +93,7 @@ impl<F> Model<F> {
             # A: {a}
             #
             ",
+            sample_description = self.format_sample_description(),
             r_0 = self.params.r_0,
             omega_0 = self.params.omega_0,
             a = self.params.a,

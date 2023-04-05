@@ -1,6 +1,10 @@
 # Equatorial spherical coordinates of masers, their parallaxes,
 # proper motions in equatorial coordinates, and LSR velocities
 #
+# Sample:
+#
+# All objects.
+#
 # Descriptions:
 #
 #  1 name: Name of the object
