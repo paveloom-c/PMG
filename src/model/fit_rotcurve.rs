@@ -78,8 +78,8 @@ impl<F> Model<F> {
             #
             # Descriptions:
             #
-            # 1 R: Galactocentric distance to the Sun [kpc]
-            # 2 theta: Azimuthal velocity [km/s]
+            # 01 R: Galactocentric distance to the Sun [kpc]
+            # 02 theta: Azimuthal velocity [km/s]
             #
             # Parameters used:
             #

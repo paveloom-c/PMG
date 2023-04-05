@@ -1,7 +1,6 @@
 //! Proper motions in Galactic coordinates
 
-use super::{Measurement, Object};
-use crate::model::Params;
+use super::{Object, Params};
 
 use core::fmt::Debug;
 
@@ -25,12 +24,12 @@ impl<F> Object<F> {
         let delta = self.delta.unwrap();
         let l = self.l.unwrap();
         let b = self.b.unwrap();
-        let mu_x = self.mu_x.as_ref().unwrap();
-        let mu_y = self.mu_y.as_ref().unwrap();
+        let mu_x = self.mu_x.unwrap();
+        let mu_y = self.mu_y.unwrap();
         // Convert the proper motions in equatorial
         // coordinates from mas/yr to rad/yr
-        let mu_alpha = (mu_x.v / delta.cos() / 3600. / 1000.).to_radians();
-        let mu_delta = (mu_y.v / 3600. / 1000.).to_radians();
+        let mu_alpha = (mu_x / delta.cos() / 3600. / 1000.).to_radians();
+        let mu_delta = (mu_y / 3600. / 1000.).to_radians();
         // Compute the proper motions in Galactic coordinates
         // (the difference in the coordinates in 1-year period)
         let mut object = Object {
@@ -61,25 +60,21 @@ impl<F> Object<F> {
         // Unpack the data
         let alpha = self.alpha.unwrap();
         let delta = self.delta.unwrap();
-        let mu_x = self.mu_x.as_ref().unwrap();
-        let mu_y = self.mu_y.as_ref().unwrap();
+        let mu_x = self.mu_x.unwrap();
+        let mu_y = self.mu_y.unwrap();
+        let mu_x_e = self.mu_x_e.unwrap();
+        let mu_y_e = self.mu_y_e.unwrap();
         // Compute the observed dispersions
-        let d_mu_x = mu_x.e_p.powi(2);
-        let d_mu_y = mu_y.e_p.powi(2);
+        let d_mu_x = mu_x_e.powi(2);
+        let d_mu_y = mu_y_e.powi(2);
         // Compute the partial derivatives of
         // `mu_l * cos(b)` by `mu_alpha * cos(delta)`
         // and `mu_b` by `mu_alpha * cos(delta)`
         let mut object = Object {
             alpha: Some(FT::cst(alpha)),
             delta: Some(FT::cst(delta)),
-            mu_x: Some(Measurement {
-                v: FT::var(mu_x.v),
-                ..Default::default()
-            }),
-            mu_y: Some(Measurement {
-                v: FT::cst(mu_y.v),
-                ..Default::default()
-            }),
+            mu_x: Some(FT::var(mu_x)),
+            mu_y: Some(FT::cst(mu_y)),
             ..Default::default()
         };
         object.compute_l_b(params);
@@ -89,14 +84,8 @@ impl<F> Object<F> {
         // Compute the partial derivatives of
         // `mu_l * cos(b)` by `mu_delta`
         // and `mu_b` by `mu_delta`
-        object.mu_x = Some(Measurement {
-            v: FT::cst(mu_x.v),
-            ..Default::default()
-        });
-        object.mu_y = Some(Measurement {
-            v: FT::var(mu_y.v),
-            ..Default::default()
-        });
+        object.mu_x = Some(FT::cst(mu_x));
+        object.mu_y = Some(FT::var(mu_y));
         object.compute_l_b(params);
         object.compute_mu_l_mu_b(params);
         let deriv_mu_l_cos_b_mu_y_sq = object.mu_l.unwrap().deriv().powi(2);

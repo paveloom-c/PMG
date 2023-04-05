@@ -1,6 +1,6 @@
 //! Fit the model of the Galaxy to the data
 
-use super::{Measurement, Model, Object, Params};
+use super::{Model, Object, Params};
 
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
@@ -73,14 +73,16 @@ where
                     object.compute_r_g(&params);
                     object.compute_mu_l_mu_b(&params);
                     // Unpack the data
-                    let v_lsr = object.v_lsr.as_ref().unwrap();
-                    let par = object.par.as_ref().unwrap();
-                    let r_h = object.r_h.as_ref().unwrap();
+                    let v_lsr = object.v_lsr.unwrap();
+                    let v_lsr_e = object.v_lsr_e.unwrap();
+                    let par = object.par.unwrap();
+                    let par_e = object.par_e.unwrap();
+                    let r_h = object.r_h.unwrap();
                     let l = object.l.unwrap();
                     let b = object.b.unwrap();
                     let mu_l = object.mu_l.unwrap();
                     let mu_b = object.mu_b.unwrap();
-                    let r_g = object.r_g.as_ref().unwrap();
+                    let r_g = object.r_g.unwrap();
                     // Compute the sines and cosines of the longitude and latitude
                     let sin_l = l.sin();
                     let sin_b = b.sin();
@@ -96,8 +98,8 @@ where
                     let sigma_theta_sq = params.sigma_theta.powi(2);
                     let sigma_z_sq = params.sigma_z.powi(2);
                     // Compute the squares of the sines and cosines of the Galactocentric longitude
-                    let sin_lambda_sq = ((r_h.v * cos_b * sin_l) / r_g.v).powi(2);
-                    let cos_lambda_sq = ((params.r_0 - r_h.v * cos_b * cos_l) / r_g.v).powi(2);
+                    let sin_lambda_sq = ((r_h * cos_b * sin_l) / r_g).powi(2);
+                    let cos_lambda_sq = ((params.r_0 - r_h * cos_b * cos_l) / r_g).powi(2);
                     // Compute auxiliary sums of the squares of the sines and cosines
                     let sum_1 = cos_lambda_sq * cos_l_sq + sin_lambda_sq * sin_l_sq;
                     let sum_2 = sin_lambda_sq * cos_l_sq + cos_lambda_sq * sin_l_sq;
@@ -112,11 +114,11 @@ where
                     // Compute the dispersions of the observed proper motions
                     let (sigma_mu_l_cos_b_sq, sigma_mu_b_sq) = object.compute_e_mu_l_mu_b(&params);
                     // Compute the full dispersions
-                    let delim = params.k.powi(2) * r_h.v.powi(2);
-                    let d_v_r = v_lsr.e_p.powi(2) + sigma_v_r_star_sq;
+                    let delim = params.k.powi(2) * r_h.powi(2);
+                    let d_v_r = v_lsr_e.powi(2) + sigma_v_r_star_sq;
                     let d_mu_l_cos_b = sigma_mu_l_cos_b_sq + sigma_v_l_star_sq / delim;
                     let d_mu_b = sigma_mu_b_sq + sigma_v_b_star_sq / delim;
-                    let d_par = par.e_p.powi(2);
+                    let d_par = par_e.powi(2);
                     // Compute the constant part of the model velocity
                     let v_r_sun = -params.u_sun_standard * cos_l * cos_b
                         - params.v_sun_standard * sin_l * cos_b
@@ -127,19 +129,16 @@ where
                         let mut object_r = Object {
                             l: Some(l),
                             b: Some(b),
-                            par: Some(Measurement {
-                                v: g_p[0],
-                                ..Default::default()
-                            }),
+                            par: Some(g_p[0]),
                             ..Default::default()
                         };
                         // Compute the values
                         object_r.compute_r_h_nominal();
                         object_r.compute_r_g_nominal(&params);
                         // Unpack the data
-                        let par_r = object_r.par.unwrap().v;
-                        let r_h_r = object_r.r_h.unwrap().v;
-                        let r_g_r = object_r.r_g.unwrap().v;
+                        let par_r = object_r.par.unwrap();
+                        let r_h_r = object_r.r_h.unwrap();
+                        let r_g_r = object_r.r_g.unwrap();
                         // Compute the difference between the Galactocentric distances
                         let delta_r = r_g_r - params.r_0;
                         // Compute the sum of the terms in the series of the rotation curve
@@ -164,22 +163,22 @@ where
                                     / r_h_r)
                                 / params.k;
                         // Compute the weighted sum of squared differences
-                        let sum = (v_lsr.v - v_r_mod).powi(2) / d_v_r
+                        let sum = (v_lsr - v_r_mod).powi(2) / d_v_r
                             + (mu_l * cos_b - mu_l_cos_b_mod).powi(2) / d_mu_l_cos_b
                             + (mu_b - mu_b_mod).powi(2) / d_mu_b
-                            + (par.v - par_r).powi(2) / d_par;
+                            + (par - par_r).powi(2) / d_par;
                         // Return it as the result
                         Ok(sum)
                     };
                     // Find the global minimum
                     let (sum_min, par_r) = SA {
                         f: g,
-                        p_0: &[par.v],
+                        p_0: &[par],
                         t_0: 100_000.0,
                         t_min: 1.0,
                         bounds: &[F::zero()..F::infinity()],
                         apf: &APF::Metropolis,
-                        neighbour: &NeighbourMethod::Normal { sd: par.e_p },
+                        neighbour: &NeighbourMethod::Normal { sd: par_e },
                         schedule: &Schedule::Fast,
                         status: &mut Status::None,
                         rng: &mut rng,
@@ -191,7 +190,7 @@ where
                         + F::ln(F::sqrt(d_mu_b))
                         + 0.5 * sum_min;
                     // Save the results
-                    *par_pair = (par.v, par.e_p, par_r[0]);
+                    *par_pair = (par, par_e, par_r[0]);
                     // Add to the general sum
                     Ok(acc + res)
                 })
@@ -199,10 +198,10 @@ where
                 // different threads. We sum those to get the final results
                 .reduce(|| Ok(F::zero()), |a, b| Ok(a? + b?));
             // Write the result to the buffer
-            for (i, &(par_v, par_e_p, par_r)) in par_pairs.iter().enumerate() {
+            for (i, &(par, par_e, par_r)) in par_pairs.iter().enumerate() {
                 writeln!(
                     wtr.borrow_mut(),
-                    "{i}: par: {par_v} ± {par_e_p} -> par_r: {par_r}",
+                    "{i}: par: {par} ± {par_e} -> par_r: {par_r}",
                 )
                 .ok();
             }

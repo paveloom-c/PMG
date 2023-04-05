@@ -1,6 +1,6 @@
 //! Galactic heliocentric Cartesian coordinates
 
-use super::{Measurement, Object};
+use super::Object;
 
 use core::fmt::Debug;
 
@@ -30,32 +30,28 @@ impl<F> Object<F> {
         F: Float + Debug,
     {
         // Unpack the data
-        let r_h = self.r_h.as_ref().unwrap();
+        let r_h = self.r_h.unwrap();
+        let r_h_p = self.r_h_p.unwrap();
+        let r_h_m = self.r_h_m.unwrap();
         // Convert to the Galactic heliocentric Cartesian coordinate system
-        let (x, y, z) = self.compute_x_y_z_with(r_h.v);
-        let (x_u, y_u, z_u) = self.compute_x_y_z_with(r_h.v_u);
-        let (x_l, y_l, z_l) = self.compute_x_y_z_with(r_h.v_l);
-        self.x = Some(Measurement {
-            v: x,
-            v_u: x_u,
-            v_l: x_l,
-            e_p: x_u - x,
-            e_m: x - x_l,
-        });
-        self.y = Some(Measurement {
-            v: y,
-            v_u: y_u,
-            v_l: y_l,
-            e_p: y_u - y,
-            e_m: y - y_l,
-        });
-        self.z = Some(Measurement {
-            v: z,
-            v_u: z_u,
-            v_l: z_l,
-            e_p: z_u - z,
-            e_m: z - z_l,
-        });
+        let (x, y, z) = self.compute_x_y_z_with(r_h);
+        let (x_p, y_p, z_p) = self.compute_x_y_z_with(r_h_p);
+        let (x_m, y_m, z_m) = self.compute_x_y_z_with(r_h_m);
+        self.x = Some(x);
+        self.x_ep = Some(x_p - x);
+        self.x_em = Some(x - x_m);
+        self.x_p = Some(x_p);
+        self.x_m = Some(x_m);
+        self.y = Some(y);
+        self.y_ep = Some(y_p - y);
+        self.y_em = Some(y - y_m);
+        self.y_p = Some(y_p);
+        self.y_m = Some(y_m);
+        self.z = Some(z);
+        self.z_ep = Some(z_p - z);
+        self.z_em = Some(z - z_m);
+        self.z_p = Some(z_p);
+        self.z_m = Some(z_m);
     }
     /// Compute the velocities in the Galactic
     /// heliocentric Cartesian coordinates system
@@ -83,57 +79,47 @@ impl<F> Object<F> {
         F: Float + Debug + Default,
     {
         // Unpack the data
-        let v_l = self.v_l.as_ref().unwrap();
-        let v_b = self.v_b.as_ref().unwrap();
+        let v_l = self.v_l.unwrap();
+        let v_b = self.v_b.unwrap();
         // Convert to the Galactic heliocentric Cartesian coordinate system
-        let (u, v, w) = self.compute_u_v_w_with(v_l.v, v_b.v);
-        self.u = Some(Measurement {
-            v: u,
-            ..Default::default()
-        });
-        self.v = Some(Measurement {
-            v,
-            ..Default::default()
-        });
-        self.w = Some(Measurement {
-            v: w,
-            ..Default::default()
-        });
+        let (u, v, w) = self.compute_u_v_w_with(v_l, v_b);
+        self.u = Some(u);
+        self.v = Some(v);
+        self.w = Some(w);
     }
     /// Compute the velocities in the Galactic
     /// heliocentric Cartesian coordinates system
+    #[allow(clippy::similar_names)]
     pub fn compute_u_v_w(&mut self)
     where
         F: Float + Debug,
     {
         // Unpack the data
-        let v_l = self.v_l.as_ref().unwrap();
-        let v_b = self.v_b.as_ref().unwrap();
+        let v_l = self.v_l.unwrap();
+        let v_l_p = self.v_l_p.unwrap();
+        let v_l_m = self.v_l_m.unwrap();
+        let v_b = self.v_b.unwrap();
+        let v_b_p = self.v_b_p.unwrap();
+        let v_b_m = self.v_b_m.unwrap();
         // Convert to the Galactic heliocentric Cartesian coordinate system
-        let (u, v, w) = self.compute_u_v_w_with(v_l.v, v_b.v);
-        let (u_u, v_u, w_u) = self.compute_u_v_w_with(v_l.v_u, v_b.v_u);
-        let (u_l, v_l_, w_l) = self.compute_u_v_w_with(v_l.v_l, v_b.v_l);
-        self.u = Some(Measurement {
-            v: u,
-            v_u: u_u,
-            v_l: u_l,
-            e_p: u_u - u,
-            e_m: u - u_l,
-        });
-        self.v = Some(Measurement {
-            v,
-            v_u,
-            v_l: v_l_,
-            e_p: v_u - v,
-            e_m: v - v_l_,
-        });
-        self.w = Some(Measurement {
-            v: w,
-            v_u: w_u,
-            v_l: w_l,
-            e_p: w_u - w,
-            e_m: w - w_l,
-        });
+        let (u, v, w) = self.compute_u_v_w_with(v_l, v_b);
+        let (u_p, v_p, w_p) = self.compute_u_v_w_with(v_l_p, v_b_p);
+        let (u_m, v_m, w_m) = self.compute_u_v_w_with(v_l_m, v_b_m);
+        self.u = Some(u);
+        self.u_ep = Some(u_p - u);
+        self.u_em = Some(u - u_m);
+        self.u_p = Some(u_p);
+        self.u_m = Some(u_m);
+        self.v = Some(v);
+        self.v_ep = Some(v_p - v);
+        self.v_em = Some(v - v_m);
+        self.v_p = Some(v_p);
+        self.v_m = Some(v_m);
+        self.w = Some(w);
+        self.w_ep = Some(w_p - w);
+        self.w_em = Some(w - w_m);
+        self.w_p = Some(w_p);
+        self.w_m = Some(w_m);
     }
 }
 
@@ -247,16 +233,13 @@ fn test() -> Result<()> {
             delta: Some(data.delta.to_radians()),
             ..Default::default()
         };
-        object.par = Some(Measurement {
-            v: data.par,
-            ..Default::default()
-        });
+        object.par = Some(data.par);
         object.compute_l_b(&params);
         object.compute_r_h();
         object.compute_x_y_z();
-        let x = object.x.unwrap().v;
-        let y = object.y.unwrap().v;
-        let z = object.z.unwrap().v;
+        let x = object.x.unwrap();
+        let y = object.y.unwrap();
+        let z = object.z.unwrap();
         // Compare the data
         let a = (coords.x, coords.y, coords.z);
         let b = (x, y, z);

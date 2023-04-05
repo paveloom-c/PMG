@@ -119,50 +119,9 @@ mkpath(PLOTS_DIR)
 # Define the paths to the data files
 println(pad, "> Loading the data...")
 
-struct Data
-    name::Vector{String}
-    type::Vector{String}
-    source::Vector{String}
-    l::Vector{F}
-    b::Vector{F}
-    X::Vector{F}
-    ep_X::Vector{F}
-    em_X::Vector{F}
-    Y::Vector{F}
-    ep_Y::Vector{F}
-    em_Y::Vector{F}
-    Z::Vector{F}
-    ep_Z::Vector{F}
-    em_Z::Vector{F}
-    r::Vector{F}
-    ep_r::Vector{F}
-    em_r::Vector{F}
-    R::Vector{F}
-    ep_R::Vector{F}
-    em_R::Vector{F}
-    mu_l::Vector{F}
-    mu_b::Vector{F}
-    V_r::Vector{F}
-    V_l::Vector{F}
-    ep_V_l::Vector{F}
-    em_V_l::Vector{F}
-    V_b::Vector{F}
-    ep_V_b::Vector{F}
-    em_V_b::Vector{F}
-    U::Vector{F}
-    ep_U::Vector{F}
-    em_U::Vector{F}
-    V::Vector{F}
-    ep_V::Vector{F}
-    em_V::Vector{F}
-    W::Vector{F}
-    ep_W::Vector{F}
-    em_W::Vector{F}
-    Θ::Vector{F}
-    ep_Θ::Vector{F}
-    em_Θ::Vector{F}
-    evel_Θ::Vector{F}
-end
+include(joinpath(CURRENT_DIR, "data_types.jl"))
+
+Data = Types.ObjectsData{F}
 
 "Read binary files in the `bincode` format"
 function read_bincode(path::AbstractString)::Data
@@ -211,27 +170,17 @@ group = group[I]
 l = data.l[I]
 b = data.b[I]
 X = data.X[I]
+X_p = data.X_p[I]
+X_m = data.X_m[I]
 Y = data.Y[I]
+Y_p = data.Y_p[I]
+Y_m = data.Y_m[I]
 Z = data.Z[I]
+Z_p = data.Z_p[I]
+Z_m = data.Z_m[I]
 R = data.R[I]
-ep_X = data.ep_X[I]
-ep_Y = data.ep_Y[I]
-ep_Z = data.ep_Z[I]
-ep_R = data.ep_R[I]
-em_X = data.em_X[I]
-em_Y = data.em_Y[I]
-em_Z = data.em_Z[I]
-em_R = data.em_R[I]
-
-# Compute the secondary data sets
-X_p = X .+ ep_X
-Y_p = Y .+ ep_Y
-Z_p = Z .+ ep_Z
-R_p = R .+ ep_R
-X_m = X .- em_X
-Y_m = Y .- em_Y
-Z_m = Z .- em_Z
-R_m = R .- em_R
+R_p = data.R_p[I]
+R_m = data.R_m[I]
 
 # Prepare labels
 labels = ["a", "b", "c", "d", "e", "g"]

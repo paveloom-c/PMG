@@ -121,55 +121,10 @@ mkpath(PLOTS_DIR)
 # Define the paths to the data files
 println(pad, "> Loading the data...")
 
-struct ObservedData
-    name::Vector{String}
-    type::Vector{String}
-    source::Vector{String}
-    l::Vector{F}
-    b::Vector{F}
-    X::Vector{F}
-    ep_X::Vector{F}
-    em_X::Vector{F}
-    Y::Vector{F}
-    ep_Y::Vector{F}
-    em_Y::Vector{F}
-    Z::Vector{F}
-    ep_Z::Vector{F}
-    em_Z::Vector{F}
-    r::Vector{F}
-    ep_r::Vector{F}
-    em_r::Vector{F}
-    R::Vector{F}
-    ep_R::Vector{F}
-    em_R::Vector{F}
-    mu_l::Vector{F}
-    mu_b::Vector{F}
-    V_r::Vector{F}
-    V_l::Vector{F}
-    ep_V_l::Vector{F}
-    em_V_l::Vector{F}
-    V_b::Vector{F}
-    ep_V_b::Vector{F}
-    em_V_b::Vector{F}
-    U::Vector{F}
-    ep_U::Vector{F}
-    em_U::Vector{F}
-    V::Vector{F}
-    ep_V::Vector{F}
-    em_V::Vector{F}
-    W::Vector{F}
-    ep_W::Vector{F}
-    em_W::Vector{F}
-    Θ::Vector{F}
-    ep_Θ::Vector{F}
-    em_Θ::Vector{F}
-    evel_Θ::Vector{F}
-end
+include(joinpath(CURRENT_DIR, "data_types.jl"))
 
-struct FitData
-    R::Vector{F}
-    Θ::Vector{F}
-end
+ObservedData = Types.ObjectsData{F}
+FitData = Types.FitData{F}
 
 "Read binary files in the `bincode` format"
 function read_bincode(path::AbstractString, type::Type)::type
@@ -217,18 +172,12 @@ counts = Dict([(k, count(==(k), group)) for k in keys])
 I = sortperm(group, by=k -> counts[k], rev=true)
 group = group[I]
 R = observed_data.R[I]
-ep_R = observed_data.ep_R[I]
-em_R = observed_data.em_R[I]
+R_p = observed_data.R_p[I]
+R_m = observed_data.R_m[I]
 Θ = observed_data.Θ[I]
-ep_Θ = observed_data.ep_Θ[I]
-em_Θ = observed_data.em_Θ[I]
-evel_Θ = observed_data.evel_Θ[I]
-
-# Compute the secondary data sets
-R_p = R .+ ep_R
-R_m = R .- em_R
-Θ_p = Θ .+ ep_Θ
-Θ_m = Θ .- em_Θ
+Θ_p = observed_data.Θ_p[I]
+Θ_m = observed_data.Θ_m[I]
+Θ_evel = observed_data.Θ_evel[I]
 
 # Unpack the fit data
 R_fit = fit_data.R
@@ -405,7 +354,7 @@ push!(tasks, @spawn begin
         x_m=R_m,
         y_p=Θ_p,
         y_m=Θ_m,
-        evel=evel_Θ,
+        evel=Θ_evel,
     )
     pgfsave(joinpath(PLOTS_DIR, "Fit rotation curve (errors)$(POSTFIX).pdf"), p)
 end)

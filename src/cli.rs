@@ -199,9 +199,9 @@ pub struct Args {
     /// Computation goal
     #[arg(long, required = true)]
     pub goal: Goal,
-    /// Input files
+    /// Input file
     #[arg(short, required = true, value_parser = PathBufParser)]
-    pub inputs: Vec<PathBuf>,
+    pub input: PathBuf,
     /// The right ascension of the north galactic pole (HMS angle -> radians)
     ///
     /// Source: Reid et al. (2009)

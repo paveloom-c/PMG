@@ -10,14 +10,14 @@ use crate::cli::Args;
 use crate::utils;
 use crate::Goal;
 pub use fit_rotcurve::RotationCurve;
-pub use objects::{Measurement, Object, Objects};
+pub use objects::{Object, Objects};
 pub use params::Params;
 
 use core::fmt::{Debug, Display};
 use core::str::FromStr;
 use std::error::Error;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 use num::Float;
@@ -53,7 +53,9 @@ impl<F> Model<F> {
         match self.goal {
             Goal::Objects => {
                 // Perform per-object computations
-                self.objects.compute(&self.params);
+                for object in &mut self.objects {
+                    object.compute(&self.params);
+                }
             }
             Goal::Fit => {
                 // Try to fit the model
@@ -63,19 +65,6 @@ impl<F> Model<F> {
                 self.compute_fit_rotcurve();
             }
         }
-        Ok(())
-    }
-    /// Extend the model by parsing and appending the data
-    /// from the file, doing conversions where necessary
-    fn extend(&mut self, path: &Path) -> Result<()>
-    where
-        F: Float + Debug + Default + DeserializeOwned + FromStr,
-        <F as FromStr>::Err: Error + Send + Sync + 'static,
-    {
-        // Parse the data from the file
-        let objects = Objects::try_from(path).with_context(|| "Couldn't parse the data")?;
-        // Extend the model
-        self.objects.extend(objects);
         Ok(())
     }
     /// Write the model data to files in the
@@ -148,12 +137,10 @@ where
                 &model.output_dir
             )
         })?;
-        // Extend it using the data from the files
-        for path in &args.inputs {
-            model
-                .extend(path)
-                .with_context(|| format!("Couldn't load the data from the file {path:?}"))?;
-        }
+        // Load the data from the input file
+        model
+            .try_load_data_from(&args.input)
+            .with_context(|| format!("Couldn't load the data from the file {:?}", args.input))?;
         // Return the result
         Ok(model)
     }

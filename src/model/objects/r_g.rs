@@ -1,7 +1,6 @@
 //! Galactocentric distance
 
-use super::{Measurement, Object};
-use crate::model::Params;
+use super::{Object, Params};
 
 use core::fmt::Debug;
 
@@ -35,11 +34,8 @@ impl<F> Object<F> {
         F: Float + Debug + Default,
         F2: Float + Debug + Into<F>,
     {
-        let r_h = self.r_h.as_ref().unwrap();
-        self.r_g = Some(Measurement {
-            v: self.compute_r_g_with(r_h.v, params),
-            ..Default::default()
-        });
+        let r_h = self.r_h.unwrap();
+        self.r_g = Some(self.compute_r_g_with(r_h, params));
     }
     /// Compute the galactocentric distance
     pub fn compute_r_g<F2>(&mut self, params: &Params<F2>)
@@ -48,17 +44,17 @@ impl<F> Object<F> {
         F2: Float + Debug + Into<F>,
     {
         // Unpack the data
-        let r_h = self.r_h.as_ref().unwrap();
+        let r_h = self.r_h.unwrap();
+        let r_h_p = self.r_h_p.unwrap();
+        let r_h_m = self.r_h_m.unwrap();
         // Compute the Galactocentric distance
-        let r_g = self.compute_r_g_with(r_h.v, params);
-        let r_g_u = self.compute_r_g_with(r_h.v_u, params);
-        let r_g_l = self.compute_r_g_with(r_h.v_l, params);
-        self.r_g = Some(Measurement {
-            v: r_g,
-            v_u: r_g_u,
-            v_l: r_g_l,
-            e_p: r_g_u - r_g,
-            e_m: r_g - r_g_l,
-        });
+        let r_g = self.compute_r_g_with(r_h, params);
+        let r_g_p = self.compute_r_g_with(r_h_p, params);
+        let r_g_m = self.compute_r_g_with(r_h_m, params);
+        self.r_g = Some(r_g);
+        self.r_g_p = Some(r_g_p);
+        self.r_g_m = Some(r_g_m);
+        self.r_g_ep = Some(r_g_p - r_g);
+        self.r_g_em = Some(r_g - r_g_m);
     }
 }
