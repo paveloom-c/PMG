@@ -7,13 +7,13 @@
 #  2 alpha: Right ascension [HMS angle]
 #  3 delta: Declination [DMS angle]
 #  4 par: Trigonometric parallax [mas]
-#  5 e_par: Uncertainty in `par` [mas]
+#  5 par_e: Uncertainty in `par` [mas]
 #  6 v_lsr: Local Standard of Rest velocity [km/s]
-#  7 e_v_lsr: Uncertainty in `v_lsr` [km/s]
+#  7 v_lsr_e: Uncertainty in `v_lsr` [km/s]
 #  8 mu_x: Eastward proper motion (1) [mas/yr]
-#  9 e_mu_x: Uncertainty in `mu_x` [mas/yr]
+#  9 mu_x_e: Uncertainty in `mu_x` [mas/yr]
 # 10 mu_y: Northward proper motion [mas/yr]
-# 11 e_mu_y: Uncertainty in `mu_y` [mas/yr]
+# 11 mu_y_e: Uncertainty in `mu_y` [mas/yr]
 # 12 type: Type of the object (3)
 # 13 source: Source of the data (2)
 # 14 reference: Reference(s)
@@ -44,7 +44,7 @@
 #       Sgr B2: SFR -> HMSFR (described as a massive star-forming region)
 #   4. VERA catalogue: the data in each line is from the last mentioned reference
 #
-name alpha delta par e_par mu_x e_mu_x mu_y e_mu_y v_lsr e_v_lsr type source reference
+name alpha delta par par_e mu_x mu_x_e mu_y mu_y_e v_lsr v_lsr_e type source reference
 #
 # New objects and new data for old objects (as of June 2022)
 #

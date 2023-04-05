@@ -384,15 +384,15 @@ where
         object.obj_type = Some(record.obj_type);
         object.source = Some(record.source);
         object.par = Some(record.par);
-        object.par_e = Some(record.e_par);
-        object.par_p = Some(record.par + record.e_par);
+        object.par_e = Some(record.par_e);
+        object.par_p = Some(record.par + record.par_e);
         // In some cases the uncertainty of the value can be greater than
         // the nominal value, hence leading to non-positive results in this
         // subtraction. We avoid this here since there is no such thing
         // as a non-positive parallax. Instead, we assume the distance to be
         // a finite, but sufficiently big value.
         object.par_m = Some({
-            let v_l = record.par - record.e_par;
+            let v_l = record.par - record.par_e;
             if v_l > 0.0 {
                 v_l
             } else {
@@ -400,17 +400,17 @@ where
             }
         });
         object.v_lsr = Some(record.v_lsr);
-        object.v_lsr_e = Some(record.e_v_lsr);
-        object.v_lsr_p = Some(record.v_lsr + record.e_v_lsr);
-        object.v_lsr_m = Some(record.v_lsr - record.e_v_lsr);
+        object.v_lsr_e = Some(record.v_lsr_e);
+        object.v_lsr_p = Some(record.v_lsr + record.v_lsr_e);
+        object.v_lsr_m = Some(record.v_lsr - record.v_lsr_e);
         object.mu_x = Some(record.mu_x);
-        object.mu_x_e = Some(record.e_mu_x);
-        object.mu_x_p = Some(record.mu_x + record.e_mu_x);
-        object.mu_x_m = Some(record.mu_x - record.e_mu_x);
+        object.mu_x_e = Some(record.mu_x_e);
+        object.mu_x_p = Some(record.mu_x + record.mu_x_e);
+        object.mu_x_m = Some(record.mu_x - record.mu_x_e);
         object.mu_y = Some(record.mu_y);
-        object.mu_y_e = Some(record.e_mu_y);
-        object.mu_y_p = Some(record.mu_y + record.e_mu_y);
-        object.mu_y_m = Some(record.mu_y - record.e_mu_y);
+        object.mu_y_e = Some(record.mu_y_e);
+        object.mu_y_p = Some(record.mu_y + record.mu_y_e);
+        object.mu_y_m = Some(record.mu_y - record.mu_y_e);
         Ok(object)
     }
 }

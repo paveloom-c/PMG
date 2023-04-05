@@ -10,13 +10,13 @@
 #  2 alpha: Right ascension [HMS angle]
 #  3 delta: Declination [DMS angle]
 #  4 par: Trigonometric parallax [mas]
-#  5 e_par: Uncertainty in `par` [mas]
+#  5 par_e: Uncertainty in `par` [mas]
 #  6 v_lsr: Local Standard of Rest velocity [km/s]
-#  7 e_v_lsr: Uncertainty in `v_lsr` [km/s]
+#  7 v_lsr_e: Uncertainty in `v_lsr` [km/s]
 #  8 mu_x: Eastward proper motion (1) [mas/yr]
-#  9 e_mu_x: Uncertainty in `mu_x` [mas/yr]
+#  9 mu_x_e: Uncertainty in `mu_x` [mas/yr]
 # 10 mu_y: Northward proper motion [mas/yr]
-# 11 e_mu_y: Uncertainty in `mu_y` [mas/yr]
+# 11 mu_y_e: Uncertainty in `mu_y` [mas/yr]
 # 12 type: Type of the object (3)
 # 13 source: Source of the data (2)
 # 14 reference: Reference(s)
@@ -28,7 +28,7 @@
 #     Reid = Reid et al. (2019)
 #     VERA = The first VERA catalogue (2020)
 #
-name alpha delta par e_par mu_x e_mu_x mu_y e_mu_y v_lsr e_v_lsr type source reference
+name alpha delta par par_e mu_x mu_x_e mu_y mu_y_e v_lsr v_lsr_e type source reference
 G019.60-0.23 18:27:38.0737 -11:56:37.558 0.076 0.011 -3.11 0.16 -6.36 0.17 41 3 HMSFR New "Xu et al. (2021)"
 G020.08-0.13 18:28:10.2867 -11:28:47.892 0.066 0.010 -3.14 0.14 -6.44 0.16 41 3 HMSFR New "Xu et al. (2021)"
 "IRAS 21379+5106" 21:39:40.5500 51:20:34.000 0.262 0.031 -2.74 0.08 -2.87 0.18 -42.3 0.2 HMSFR "VERA" "Nakanishi et al. (2015)"

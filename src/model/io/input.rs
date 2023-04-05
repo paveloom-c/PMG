@@ -14,19 +14,19 @@ pub(in crate::model) struct Record<F> {
     /// Parallax
     pub(in crate::model) par: F,
     /// Uncertainty in `par`
-    pub(in crate::model) e_par: F,
+    pub(in crate::model) par_e: F,
     /// Local Standard of Rest velocity
     pub(in crate::model) v_lsr: F,
     /// Uncertainty in `v_lsr`
-    pub(in crate::model) e_v_lsr: F,
+    pub(in crate::model) v_lsr_e: F,
     /// Eastward proper motion
     pub(in crate::model) mu_x: F,
     /// Uncertainty in `mu_x`
-    pub(in crate::model) e_mu_x: F,
+    pub(in crate::model) mu_x_e: F,
     /// Northward proper motion
     pub(in crate::model) mu_y: F,
     /// Uncertainty in `mu_y`
-    pub(in crate::model) e_mu_y: F,
+    pub(in crate::model) mu_y_e: F,
     /// Type of the object
     #[serde(rename = "type")]
     pub(in crate::model) obj_type: String,
