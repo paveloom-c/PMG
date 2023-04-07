@@ -26,6 +26,7 @@ where
 {
     /// Try to fit the model of the Galaxy to the data
     #[allow(clippy::as_conversions)]
+    #[allow(clippy::many_single_char_names)]
     #[allow(clippy::non_ascii_literal)]
     #[allow(clippy::shadow_unrelated)]
     #[allow(clippy::similar_names)]
@@ -44,11 +45,12 @@ where
         let mut params = self.params.clone();
         // Get the initial point in the parameter space
         let p_0 = params.to_point();
-        // Prepare the spherical coordinates
-        // (we don't optimize the angle parameters here)
+        // Compute some of the values that don't
+        // depend on the parameters being optimized
         self.objects.iter_mut().for_each(|object| {
             object.compute_l_b(&params);
             object.compute_r_h();
+            object.compute_mu_l_mu_b(&params);
         });
         // Prepare storage for the results of computing the reduced parallax
         let mut par_pairs = vec![(0., 0., 0.); self.objects.len()];
@@ -71,7 +73,6 @@ where
                     rng.set_stream(i as u64 + 1);
                     // Compute some values
                     object.compute_r_g(&params);
-                    object.compute_mu_l_mu_b(&params);
                     // Unpack the data
                     let v_lsr = object.v_lsr.unwrap();
                     let v_lsr_e = object.v_lsr_e.unwrap();
@@ -83,6 +84,17 @@ where
                     let mu_l = object.mu_l.unwrap();
                     let mu_b = object.mu_b.unwrap();
                     let r_g = object.r_g.unwrap();
+                    // Unpack the parameters
+                    let r_0 = params.r_0;
+                    let omega_0 = params.omega_0;
+                    let a = params.a;
+                    let u_sun = params.u_sun;
+                    let theta_sun = params.theta_sun;
+                    let w_sun = params.w_sun;
+                    let sigma_r = params.sigma_r;
+                    let sigma_theta = params.sigma_theta;
+                    let sigma_z = params.sigma_z;
+                    let k = params.k;
                     // Compute the sines and cosines of the longitude and latitude
                     let sin_l = l.sin();
                     let sin_b = b.sin();
@@ -94,12 +106,12 @@ where
                     let cos_l_sq = cos_l.powi(2);
                     let cos_b_sq = cos_b.powi(2);
                     // Compute the normal dispersions
-                    let sigma_r_sq = params.sigma_r.powi(2);
-                    let sigma_theta_sq = params.sigma_theta.powi(2);
-                    let sigma_z_sq = params.sigma_z.powi(2);
+                    let sigma_r_sq = sigma_r.powi(2);
+                    let sigma_theta_sq = sigma_theta.powi(2);
+                    let sigma_z_sq = sigma_z.powi(2);
                     // Compute the squares of the sines and cosines of the Galactocentric longitude
                     let sin_lambda_sq = ((r_h * cos_b * sin_l) / r_g).powi(2);
-                    let cos_lambda_sq = ((params.r_0 - r_h * cos_b * cos_l) / r_g).powi(2);
+                    let cos_lambda_sq = ((r_0 - r_h * cos_b * cos_l) / r_g).powi(2);
                     // Compute auxiliary sums of the squares of the sines and cosines
                     let sum_1 = cos_lambda_sq * cos_l_sq + sin_lambda_sq * sin_l_sq;
                     let sum_2 = sin_lambda_sq * cos_l_sq + cos_lambda_sq * sin_l_sq;
@@ -114,15 +126,15 @@ where
                     // Compute the dispersions of the observed proper motions
                     let (sigma_mu_l_cos_b_sq, sigma_mu_b_sq) = object.compute_e_mu_l_mu_b(&params);
                     // Compute the full dispersions
-                    let delim = params.k.powi(2) * r_h.powi(2);
+                    let delim = k.powi(2) * r_h.powi(2);
                     let d_v_r = v_lsr_e.powi(2) + sigma_v_r_star_sq;
                     let d_mu_l_cos_b = sigma_mu_l_cos_b_sq + sigma_v_l_star_sq / delim;
                     let d_mu_b = sigma_mu_b_sq + sigma_v_b_star_sq / delim;
                     let d_par = par_e.powi(2);
+                    // Compute the peculiar motion of the Sun toward l = 90 degrees (km/s)
+                    let v_sun = theta_sun - r_0 * omega_0;
                     // Compute the constant part of the model velocity
-                    let v_r_sun = -params.u_sun_standard * cos_l * cos_b
-                        - params.v_sun_standard * sin_l * cos_b
-                        - params.w_sun_standard * sin_b;
+                    let v_r_sun = -u_sun * cos_l * cos_b - v_sun * sin_l * cos_b - w_sun * sin_b;
                     // Prepare a closure for finding the reduced parallax
                     let g = |g_p: &Point<F, 1>| -> Result<F> {
                         // Create an object for reduced values
@@ -140,28 +152,23 @@ where
                         let r_h_r = object_r.r_h.unwrap();
                         let r_g_r = object_r.r_g.unwrap();
                         // Compute the difference between the Galactocentric distances
-                        let delta_r = r_g_r - params.r_0;
+                        let delta_r = r_g_r - r_0;
                         // Compute the sum of the terms in the series of the rotation curve
-                        let rot_curve_series = 2. * params.a * delta_r;
+                        let rot_curve_series = 2. * a * delta_r;
                         // Compute the full model velocity
-                        let v_r_mod =
-                            -rot_curve_series * params.r_0 * sin_l * cos_b / r_g_r + v_r_sun;
+                        let v_r_mod = -rot_curve_series * r_0 * sin_l * cos_b / r_g_r + v_r_sun;
                         // Compute the model proper motion in longitude
-                        let mu_l_cos_b_mod =
-                            (-rot_curve_series * (params.r_0 * cos_l / r_h_r - cos_b) / r_g_r
-                                - params.omega_0 * cos_b
-                                + (params.u_sun_standard * sin_l - params.v_sun_standard * cos_l)
-                                    / r_h_r)
-                                / params.k
-                                * cos_b;
+                        let mu_l_cos_b_mod = (-rot_curve_series * (r_0 * cos_l / r_h_r - cos_b)
+                            / r_g_r
+                            - omega_0 * cos_b
+                            + (u_sun * sin_l - v_sun * cos_l) / r_h_r)
+                            / k
+                            * cos_b;
                         // Compute the model proper motion in latitude
-                        let mu_b_mod =
-                            (rot_curve_series * params.r_0 * sin_l * sin_b / r_h_r / r_g_r
-                                + (params.u_sun_standard * cos_l * sin_b
-                                    + params.v_sun_standard * sin_l * sin_b
-                                    - params.w_sun_standard * cos_b)
-                                    / r_h_r)
-                                / params.k;
+                        let mu_b_mod = (rot_curve_series * r_0 * sin_l * sin_b / r_h_r / r_g_r
+                            + (u_sun * cos_l * sin_b + v_sun * sin_l * sin_b - w_sun * cos_b)
+                                / r_h_r)
+                            / k;
                         // Compute the weighted sum of squared differences
                         let sum = (v_lsr - v_r_mod).powi(2) / d_v_r
                             + (mu_l * cos_b - mu_l_cos_b_mod).powi(2) / d_mu_l_cos_b
@@ -255,17 +262,17 @@ where
                             "
                             k: {k}
                             t: {t}
-                                            {:>10} initial {:>10} current {:>13} best
-                                       L_1: {:>16} — {f:>18} {best_f:>18}
-                                       r_0: {i_0:>18.15} {p_0:>18.15} {best_p_0:>18.15}
-                                   omega_0: {i_1:>18.15} {p_1:>18.15} {best_p_1:>18.15}
-                                         a: {i_2:>18.15} {p_2:>18.15} {best_p_2:>18.15}
-                            u_sun_standard: {i_3:>18.15} {p_3:>18.15} {best_p_3:>18.15}
-                            v_sun_standard: {i_4:>18.15} {p_4:>18.15} {best_p_4:>18.15}
-                            w_sun_standard: {i_5:>18.15} {p_5:>18.15} {best_p_5:>18.15}
-                                   sigma_r: {i_6:>18.15} {p_6:>18.15} {best_p_6:>18.15}
-                               sigma_theta: {i_7:>18.15} {p_7:>18.15} {best_p_7:>18.15}
-                                   sigma_z: {i_8:>18.15} {p_8:>18.15} {best_p_8:>18.15}
+                                            {:>11} initial {:>11} current {:>14} best
+                                       L_1: {:>17} — {f:>19} {best_f:>19}
+                                       r_0: {i_0:>19.15} {p_0:>19.15} {best_p_0:>19.15}
+                                   omega_0: {i_1:>19.15} {p_1:>19.15} {best_p_1:>19.15}
+                                         a: {i_2:>19.15} {p_2:>19.15} {best_p_2:>19.15}
+                                     u_sun: {i_3:>19.15} {p_3:>19.15} {best_p_3:>19.15}
+                                 theta_sun: {i_4:>19.15} {p_4:>19.15} {best_p_4:>19.15}
+                                     w_sun: {i_5:>19.15} {p_5:>19.15} {best_p_5:>19.15}
+                                   sigma_r: {i_6:>19.15} {p_6:>19.15} {best_p_6:>19.15}
+                               sigma_theta: {i_7:>19.15} {p_7:>19.15} {best_p_7:>19.15}
+                                   sigma_z: {i_8:>19.15} {p_8:>19.15} {best_p_8:>19.15}
                             ",
                             "",
                             "",
@@ -274,9 +281,9 @@ where
                             i_0 = self.params.r_0,
                             i_1 = self.params.omega_0,
                             i_2 = self.params.a,
-                            i_3 = self.params.u_sun_standard,
-                            i_4 = self.params.v_sun_standard,
-                            i_5 = self.params.w_sun_standard,
+                            i_3 = self.params.u_sun,
+                            i_4 = self.params.theta_sun,
+                            i_5 = self.params.w_sun,
                             i_6 = self.params.sigma_r,
                             i_7 = self.params.sigma_theta,
                             i_8 = self.params.sigma_z,

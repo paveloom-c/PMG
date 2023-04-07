@@ -24,15 +24,14 @@ pub struct Params<F> {
     /// Oort's A constant (km/s/kpc)
     #[serde(rename = "A")]
     pub a: F,
-    /// Standard Solar Motion toward GC (km/s)
-    #[serde(rename = "U_sun_standard")]
-    pub u_sun_standard: F,
-    /// Standard Solar Motion toward l = 90 degrees (km/s)
-    #[serde(rename = "V_sun_standard")]
-    pub v_sun_standard: F,
-    /// Standard Solar Motion toward NGP (km/s)
-    #[serde(rename = "W_sun_standard")]
-    pub w_sun_standard: F,
+    /// Peculiar motion of the Sun toward GC (km/s)
+    #[serde(rename = "U_sun")]
+    pub u_sun: F,
+    /// Linear rotation velocity of the Sun (km/s)
+    pub theta_sun: F,
+    /// Peculiar motion of the Sun toward NGP (km/s)
+    #[serde(rename = "W_sun")]
+    pub w_sun: F,
     /// Radial component of the ellipsoid of natural standard deviations (km/s)
     pub sigma_r: F,
     /// Azimuthal component of the ellipsoid of natural standard deviations (km/s)
@@ -47,11 +46,15 @@ pub struct Params<F> {
     pub l_ncp: F,
     /// Linear velocities units conversion coefficient
     pub k: F,
-    /// Full circular velocity of the Sun (km/s)
-    pub theta_sun: F,
-    /// Peculiar motion locally toward GC (km/s)
-    #[serde(rename = "U_sun")]
-    pub u_sun: F,
+    /// Standard Solar Motion toward GC (km/s)
+    #[serde(rename = "U_sun_standard")]
+    pub u_sun_standard: F,
+    /// Standard Solar Motion toward l = 90 degrees (km/s)
+    #[serde(rename = "V_sun_standard")]
+    pub v_sun_standard: F,
+    /// Standard Solar Motion toward NGP (km/s)
+    #[serde(rename = "W_sun_standard")]
+    pub w_sun_standard: F,
 }
 
 impl<F> Params<F> {
@@ -65,9 +68,9 @@ impl<F> Params<F> {
         self.r_0 = p[0];
         self.omega_0 = p[1];
         self.a = p[2];
-        self.u_sun_standard = p[3];
-        self.v_sun_standard = p[4];
-        self.w_sun_standard = p[5];
+        self.u_sun = p[3];
+        self.theta_sun = p[4];
+        self.w_sun = p[5];
         self.sigma_r = p[6];
         self.sigma_theta = p[7];
         self.sigma_z = p[8];
@@ -83,9 +86,9 @@ impl<F> Params<F> {
             self.r_0,
             self.omega_0,
             self.a,
-            self.u_sun_standard,
-            self.v_sun_standard,
-            self.w_sun_standard,
+            self.u_sun,
+            self.theta_sun,
+            self.w_sun,
             self.sigma_r,
             self.sigma_theta,
             self.sigma_z,
@@ -134,9 +137,9 @@ impl<F> Model<F> {
             # 01 R_0: Galactocentric distance to the Sun [kpc]
             # 02 omega_0: Circular velocity of the Sun at R = R_0 [km/s/kpc]
             # 03 A: Oort's A constant [km/s/kpc]
-            # 04 U_sun_standard: Standard Solar Motion toward GC [km/s]
-            # 05 V_sun_standard: Standard Solar Motion toward l = 90 degrees [km/s]
-            # 06 W_sun_standard: Standard Solar Motion toward NGP [km/s]
+            # 04 U_sun: Peculiar motion of the Sun toward GC [km/s]
+            # 05 theta_sun: Full circular velocity of the Sun [km/s]
+            # 06 W_sun: Peculiar motion of the Sun toward NGP [km/s]
             # 07 sigma_r: Radial component of the ellipsoid of natural standard deviations [km/s]
             # 08 sigma_theta: Azimuthal component of the ellipsoid of natural standard deviations [km/s]
             # 09 sigma_z: Vertical component of the ellipsoid of natural standard deviations [km/s]
@@ -144,8 +147,9 @@ impl<F> Model<F> {
             # 11 delta_ngp: The declination of the north galactic pole [DMS angle -> radians]
             # 12 l_ncp: The longitude of the north celestial pole [decimal degrees angle -> radians]
             # 13 k: Linear velocities units conversion coefficient
-            # 14 theta_sun: Full circular velocity of the Sun [km/s]
-            # 15 u_sun: Peculiar motion locally toward GC [km/s]
+            # 14 U_sun_standard: Standard Solar Motion toward GC [km/s]
+            # 15 V_sun_standard: Standard Solar Motion toward l = 90 degrees [km/s]
+            # 16 W_sun_standard: Standard Solar Motion toward NGP [km/s]
             #
             # Note that only first 9 parameters were optimized.
             #

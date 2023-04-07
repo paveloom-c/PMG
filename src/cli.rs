@@ -202,6 +202,41 @@ pub struct Args {
     /// Input file
     #[arg(short, required = true, value_parser = PathBufParser)]
     pub input: PathBuf,
+    /// Galactocentric distance to the Sun (kpc)
+    ///
+    /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
+    #[arg(long, default_value_t = 8.15, help_heading = "PARAMETERS")]
+    pub r_0: f64,
+    /// Circular velocity of the Sun at R = R_0 (km/s/kpc)
+    #[arg(long, default_value_t = 28., help_heading = "PARAMETERS")]
+    pub omega_0: f64,
+    /// Oort's A constant (km/s/kpc)
+    #[arg(long, default_value_t = 17., help_heading = "PARAMETERS")]
+    pub a: f64,
+    /// Peculiar motion of the Sun toward GC (km/s)
+    ///
+    /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
+    #[arg(long, default_value_t = 10.7, help_heading = "PARAMETERS")]
+    pub u_sun: f64,
+    /// Linear rotation velocity of the Sun (km/s)
+    ///
+    /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
+    #[arg(long, default_value_t = 247., help_heading = "PARAMETERS")]
+    pub theta_sun: f64,
+    /// Peculiar motion of the Sun toward NGP (km/s)
+    ///
+    /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
+    #[arg(long, default_value_t = 7.7, help_heading = "PARAMETERS")]
+    pub w_sun: f64,
+    /// Radial component of the ellipsoid of natural standard deviations (km/s)
+    #[arg(long, default_value_t = 12., help_heading = "PARAMETERS")]
+    pub sigma_r: f64,
+    /// Azimuthal component of the ellipsoid of natural standard deviations (km/s)
+    #[arg(long, default_value_t = 6., help_heading = "PARAMETERS")]
+    pub sigma_theta: f64,
+    /// Vertical component of the ellipsoid of natural standard deviations (km/s)
+    #[arg(long, default_value_t = 3., help_heading = "PARAMETERS")]
+    pub sigma_z: f64,
     /// The right ascension of the north galactic pole (HMS angle -> radians)
     ///
     /// Source: Reid et al. (2009)
@@ -222,27 +257,6 @@ pub struct Args {
     /// Source: Reid et al. (2009)
     #[arg(long, value_parser = DecParser {}, default_value_t = 122.932, help_heading = "PARAMETERS")]
     pub l_ncp: f64,
-    /// Galactocentric distance to the Sun (kpc)
-    ///
-    /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-    #[arg(long, default_value_t = 8.15, help_heading = "PARAMETERS")]
-    pub r_0: f64,
-    /// Full circular velocity of the Sun (km/s)
-    ///
-    /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-    #[arg(long, default_value_t = 247., help_heading = "PARAMETERS")]
-    pub theta_sun: f64,
-    /// Peculiar motion locally toward GC (km/s)
-    ///
-    /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-    #[arg(long, default_value_t = 10.7, help_heading = "PARAMETERS")]
-    pub u_sun: f64,
-    /// Circular velocity of the Sun at R = R_0 (km/s/kpc)
-    #[arg(long, default_value_t = 28., help_heading = "PARAMETERS")]
-    pub omega_0: f64,
-    /// Oort's A constant (km/s/kpc)
-    #[arg(long, default_value_t = 17., help_heading = "PARAMETERS")]
-    pub a: f64,
     /// Standard Solar Motion toward GC (km/s)
     ///
     /// Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
@@ -258,15 +272,6 @@ pub struct Args {
     /// Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
     #[arg(long, default_value_t = 7.7, help_heading = "PARAMETERS")]
     pub w_sun_standard: f64,
-    /// Radial component of the ellipsoid of natural standard deviations (km/s)
-    #[arg(long, default_value_t = 12., help_heading = "PARAMETERS")]
-    pub sigma_r: f64,
-    /// Azimuthal component of the ellipsoid of natural standard deviations (km/s)
-    #[arg(long, default_value_t = 6., help_heading = "PARAMETERS")]
-    pub sigma_theta: f64,
-    /// Vertical component of the ellipsoid of natural standard deviations (km/s)
-    #[arg(long, default_value_t = 3., help_heading = "PARAMETERS")]
-    pub sigma_z: f64,
 }
 
 /// Parse the arguments

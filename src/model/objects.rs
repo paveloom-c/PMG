@@ -555,6 +555,17 @@ impl<F> Model<F> {
             #
             # Parameters used:
             #
+            # Galactocentric distance to the Sun [kpc]
+            # R_0: {r_0}
+            #
+            # Peculiar motion of the Sun toward GC [km/s]
+            # Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
+            # U_SUN: {u_sun}
+            #
+            # Linear rotation velocity of the Sun (km/s)
+            # Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
+            # THETA_SUN: {theta_sun}
+            #
             # The right ascension of the north galactic pole [HMS angle -> radians]
             # Source: Reid et al. (2009)
             # ALPHA_NGP: {alpha_ngp} [12:51:26.2817]
@@ -563,24 +574,13 @@ impl<F> Model<F> {
             # Source: Reid et al. (2009)
             # DELTA_NGP: {delta_ngp} [27:07:42.013]
             #
-            # Linear velocities units conversion coefficient
-            # Sources: Gromov, Nikiforov (2016)
-            # K: {k}
-            #
             # The longitude of the north celestial pole [decimal degrees angle -> radians]
             # Source: Reid et al. (2009)
             # L_NCP: {l_ncp} [122.932]
             #
-            # Galactocentric distance to the Sun [kpc]
-            # R_0: {r_0}
-            #
-            # Full circular velocity of the Sun [km/s]
-            # Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-            # THETA_SUN: {theta_sun}
-            #
-            # Peculiar motion locally toward GC [km/s]
-            # Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-            # U_SUN: {u_sun}
+            # Linear velocities units conversion coefficient
+            # Sources: Gromov, Nikiforov (2016)
+            # K: {k}
             #
             # Standard Solar Motion toward GC [km/s]
             # Sources: Reid et al. (2009); Gromov, Nikiforov (2021)
@@ -596,13 +596,13 @@ impl<F> Model<F> {
             #
             ",
             sample_description = self.format_sample_description(),
+            r_0 = self.params.r_0,
+            u_sun = self.params.u_sun,
+            theta_sun = self.params.theta_sun,
             alpha_ngp = self.params.alpha_ngp,
             delta_ngp = self.params.delta_ngp,
-            k = self.params.k,
             l_ncp = self.params.l_ncp,
-            r_0 = self.params.r_0,
-            theta_sun = self.params.theta_sun,
-            u_sun = self.params.u_sun,
+            k = self.params.k,
             u_sun_standard = self.params.u_sun_standard,
             v_sun_standard = self.params.v_sun_standard,
             w_sun_standard = self.params.w_sun_standard,
