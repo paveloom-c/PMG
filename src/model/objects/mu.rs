@@ -14,7 +14,7 @@ use numeric_literals::replace_float_literals;
 #[replace_float_literals(F::from(literal).unwrap())]
 impl<F> Object<F> {
     /// Compute the proper motions in Galactic coordinates
-    pub fn compute_mu_l_mu_b<F2>(&mut self, params: &Params<F2>)
+    pub fn compute_mu_l_cos_b_mu_b<F2>(&mut self, params: &Params<F2>)
     where
         F: Float + Debug + Default,
         F2: Float + Debug + Into<F>,
@@ -44,7 +44,7 @@ impl<F> Object<F> {
         let mu_b_rad = b_ahead - b;
         // Convert the proper motions in Galactic
         // coordinates from rad/yr to mas/yr
-        self.mu_l = Some(mu_l_rad.to_degrees() * 3600. * 1000.);
+        self.mu_l_cos_b = Some(mu_l_rad.to_degrees() * 3600. * 1000. * b.cos());
         self.mu_b = Some(mu_b_rad.to_degrees() * 3600. * 1000.);
     }
     /// Compute the dispersions of `mu_l * cos(b)` and `mu_b`
@@ -53,7 +53,7 @@ impl<F> Object<F> {
     /// errors (from the catalog) are unpacked.
     #[allow(clippy::shadow_unrelated)]
     #[allow(clippy::similar_names)]
-    pub fn compute_e_mu_l_mu_b(&self, params: &Params<F>) -> (F, F)
+    pub fn compute_d_mu_l_cos_b_mu_b(&self, params: &Params<F>) -> (F, F)
     where
         F: Float + Debug + Default,
     {
@@ -64,9 +64,6 @@ impl<F> Object<F> {
         let mu_y = self.mu_y.unwrap();
         let mu_x_e = self.mu_x_e.unwrap();
         let mu_y_e = self.mu_y_e.unwrap();
-        // Compute the observed dispersions
-        let d_mu_x = mu_x_e.powi(2);
-        let d_mu_y = mu_y_e.powi(2);
         // Compute the partial derivatives of
         // `mu_l * cos(b)` by `mu_alpha * cos(delta)`
         // and `mu_b` by `mu_alpha * cos(delta)`
@@ -78,8 +75,8 @@ impl<F> Object<F> {
             ..Default::default()
         };
         object.compute_l_b(params);
-        object.compute_mu_l_mu_b(params);
-        let deriv_mu_l_cos_b_mu_x_sq = object.mu_l.unwrap().deriv().powi(2);
+        object.compute_mu_l_cos_b_mu_b(params);
+        let deriv_mu_l_cos_b_mu_x_sq = object.mu_l_cos_b.unwrap().deriv().powi(2);
         let deriv_mu_b_mu_x_sq = object.mu_b.unwrap().deriv().powi(2);
         // Compute the partial derivatives of
         // `mu_l * cos(b)` by `mu_delta`
@@ -87,15 +84,17 @@ impl<F> Object<F> {
         object.mu_x = Some(FT::cst(mu_x));
         object.mu_y = Some(FT::var(mu_y));
         object.compute_l_b(params);
-        object.compute_mu_l_mu_b(params);
-        let deriv_mu_l_cos_b_mu_y_sq = object.mu_l.unwrap().deriv().powi(2);
+        object.compute_mu_l_cos_b_mu_b(params);
+        let deriv_mu_l_cos_b_mu_y_sq = object.mu_l_cos_b.unwrap().deriv().powi(2);
         let deriv_mu_b_mu_y_sq = object.mu_b.unwrap().deriv().powi(2);
+        // Compute the observed dispersions
+        let d_mu_x = mu_x_e.powi(2);
+        let d_mu_y = mu_y_e.powi(2);
         // Compute the dispersion of `mu_l * cos(b)`
-        let sigma_mu_l_cos_b_sq =
-            deriv_mu_l_cos_b_mu_x_sq * d_mu_x + deriv_mu_l_cos_b_mu_y_sq * d_mu_y;
+        let d_mu_l_cos_b = deriv_mu_l_cos_b_mu_x_sq * d_mu_x + deriv_mu_l_cos_b_mu_y_sq * d_mu_y;
         // Compute the dispersion of `mu_b`
-        let sigma_mu_b_sq = deriv_mu_b_mu_x_sq * d_mu_x + deriv_mu_b_mu_y_sq * d_mu_y;
+        let d_mu_b = deriv_mu_b_mu_x_sq * d_mu_x + deriv_mu_b_mu_y_sq * d_mu_y;
         // Return the results
-        (sigma_mu_l_cos_b_sq, sigma_mu_b_sq)
+        (d_mu_l_cos_b, d_mu_b)
     }
 }

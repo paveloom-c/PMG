@@ -1,6 +1,6 @@
 //! Fit the model of the Galaxy to the data
 
-use super::{Model, Object, Params};
+use super::{Model, Object, Objects, Params};
 
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
@@ -19,6 +19,169 @@ use rand_distr::{Normal, StandardNormal};
 use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
 use simulated_annealing::{NeighbourMethod, Point, Schedule, Status, APF, SA};
 
+/// Random number generator seed
+const RNG_SEED: u64 = 1;
+
+/// Compute the parameterized part of the negative log likelihood function of the model
+#[allow(clippy::as_conversions)]
+#[allow(clippy::many_single_char_names)]
+#[allow(clippy::similar_names)]
+#[allow(clippy::too_many_lines)]
+#[allow(clippy::unwrap_in_result)]
+#[allow(clippy::unwrap_used)]
+#[replace_float_literals(F::from(literal).unwrap())]
+fn compute_l_1<F>(
+    objects: &mut Objects<F>,
+    fit_params: &Params<F>,
+    par_pairs: &mut Vec<(F, F, F)>,
+) -> Result<F>
+where
+    F: Float + Debug + Default + Display + SampleUniform + Sync + Send,
+    StandardNormal: Distribution<F>,
+{
+    // Compute the new value of the function
+    objects
+        .par_iter_mut()
+        .zip(par_pairs.par_iter_mut())
+        .enumerate()
+        .try_fold_with(F::zero(), |acc, (i, (object, par_pair))| -> Result<F> {
+            // Prepare a random number generator with a specific stream
+            let mut rng = ChaCha8Rng::seed_from_u64(RNG_SEED);
+            rng.set_stream(i as u64 + 1);
+            // Compute some values
+            object.compute_r_g(fit_params);
+            // Unpack the data
+            let v_r = object.v_r.unwrap();
+            let v_r_e = object.v_r_e.unwrap();
+            let par = object.par.unwrap();
+            let par_e = object.par_e.unwrap();
+            let r_h = object.r_h.unwrap();
+            let l = object.l.unwrap();
+            let b = object.b.unwrap();
+            let mu_l_cos_b = object.mu_l_cos_b.unwrap();
+            let mu_b = object.mu_b.unwrap();
+            let r_g = object.r_g.unwrap();
+            // Unpack the parameters
+            let r_0 = fit_params.r_0;
+            let omega_0 = fit_params.omega_0;
+            let a = fit_params.a;
+            let u_sun = fit_params.u_sun;
+            let theta_sun = fit_params.theta_sun;
+            let w_sun = fit_params.w_sun;
+            let sigma_r = fit_params.sigma_r;
+            let sigma_theta = fit_params.sigma_theta;
+            let sigma_z = fit_params.sigma_z;
+            let k = fit_params.k;
+            // Compute the sines and cosines of the longitude and latitude
+            let sin_l = l.sin();
+            let sin_b = b.sin();
+            let cos_l = l.cos();
+            let cos_b = b.cos();
+            // Compute their squares
+            let sin_b_sq = sin_b.powi(2);
+            let cos_l_sq = cos_l.powi(2);
+            let cos_b_sq = cos_b.powi(2);
+            // Compute the observed dispersions
+            let d_r = sigma_r.powi(2);
+            let d_theta = sigma_theta.powi(2);
+            let d_z = sigma_z.powi(2);
+            // Compute the sines and cosines of the Galactocentric longitude
+            let sin_lambda = (r_h * cos_b) / r_g * sin_l;
+            let cos_lambda = (r_0 - r_h * cos_b * cos_l) / r_g;
+            // Compute the squares of the sines and cosines of the `phi` angle
+            let sin_phi_sq = (sin_lambda * cos_l + cos_lambda * sin_l).powi(2);
+            let cos_phi_sq = (cos_lambda * cos_l - sin_lambda * sin_l).powi(2);
+            // Compute the natural dispersions
+            let d_v_r_natural =
+                d_r * cos_phi_sq * cos_b_sq + d_theta * sin_phi_sq * cos_l_sq + d_z * sin_b_sq;
+            let d_v_l_natural = d_r * sin_phi_sq + d_theta * cos_phi_sq;
+            let d_v_b_natural =
+                d_r * cos_phi_sq * sin_b_sq + d_theta * sin_phi_sq * sin_b_sq + d_z * cos_b_sq;
+            let delim = k.powi(2) * r_h.powi(2);
+            let d_mu_l_cos_b_natural = d_v_l_natural / delim;
+            let d_mu_b_natural = d_v_b_natural / delim;
+            // Compute the dispersions of the observed proper motions
+            let (d_mu_l_cos_b_observed, d_mu_b_observed) =
+                object.compute_d_mu_l_cos_b_mu_b(fit_params);
+            // Compute the full dispersions
+            let d_v_r = v_r_e.powi(2) + d_v_r_natural;
+            let d_mu_l_cos_b = d_mu_l_cos_b_observed + d_mu_l_cos_b_natural;
+            let d_mu_b = d_mu_b_observed + d_mu_b_natural;
+            let d_par = par_e.powi(2);
+            // Compute the peculiar motion of the Sun toward l = 90 degrees (km/s)
+            let v_sun = theta_sun - r_0 * omega_0;
+            // Compute the constant part of the model velocity
+            let v_r_sun = -u_sun * cos_l * cos_b - v_sun * sin_l * cos_b - w_sun * sin_b;
+            // Prepare a closure for finding the reduced parallax
+            let g = |g_p: &Point<F, 1>| -> Result<F> {
+                let par_r = g_p[0];
+                // Create an object for the reduced values
+                let mut object_r = Object {
+                    l: Some(l),
+                    b: Some(b),
+                    par: Some(par_r),
+                    ..Default::default()
+                };
+                // Compute the values
+                object_r.compute_r_h_nominal();
+                object_r.compute_r_g_nominal(fit_params);
+                // Unpack the data
+                let r_h_r = object_r.r_h.unwrap();
+                let r_g_r = object_r.r_g.unwrap();
+                // Compute the difference between the Galactocentric distances
+                let delta_r = r_g_r - r_0;
+                // Compute the sum of the terms in the series of the rotation curve
+                let rot_curve_series = -2. * a * delta_r;
+                // Compute the full model velocity
+                let v_r_rot = rot_curve_series * r_0 / r_g_r * sin_l * cos_b;
+                let v_r_mod = v_r_rot + v_r_sun;
+                // Compute the model proper motion in longitude
+                let mu_l_cos_b_rot =
+                    rot_curve_series * (r_0 * cos_l / r_h_r - cos_b) / r_g_r - omega_0 * cos_b;
+                let mu_l_cos_b_sun = (u_sun * sin_l - v_sun * cos_l) / r_h_r;
+                let mu_l_cos_b_mod = (mu_l_cos_b_rot + mu_l_cos_b_sun) / k;
+                // Compute the model proper motion in latitude
+                let mu_b_rot = -rot_curve_series * r_0 / r_g_r / r_h_r * sin_l * sin_b;
+                let mu_b_sun =
+                    (u_sun * cos_l * sin_b + v_sun * sin_l * sin_b - w_sun * cos_b) / r_h_r;
+                let mu_b_mod = (mu_b_rot + mu_b_sun) / k;
+                // Compute the weighted sum of squared differences
+                let sum = (v_r - v_r_mod).powi(2) / d_v_r
+                    + (mu_l_cos_b - mu_l_cos_b_mod).powi(2) / d_mu_l_cos_b
+                    + (mu_b - mu_b_mod).powi(2) / d_mu_b
+                    + (par - par_r).powi(2) / d_par;
+                // Return it as the result
+                Ok(sum)
+            };
+            // Find the global minimum
+            let (sum_min, par_r) = SA {
+                f: g,
+                p_0: &[par],
+                t_0: 100_000.0,
+                t_min: 1.0,
+                bounds: &[F::zero()..F::infinity()],
+                apf: &APF::Metropolis,
+                neighbour: &NeighbourMethod::Normal { sd: par_e },
+                schedule: &Schedule::Fast,
+                status: &mut Status::None,
+                rng: &mut rng,
+            }
+            .findmin()?;
+            // Compute the final sum for this object
+            let res = F::ln(F::sqrt(d_v_r))
+                + F::ln(F::sqrt(d_mu_l_cos_b))
+                + F::ln(F::sqrt(d_mu_b))
+                + 0.5 * sum_min;
+            // Save the results
+            *par_pair = (par, par_e, par_r[0]);
+            // Add to the general sum
+            Ok(acc + res)
+        })
+        // Parallel fold returns an iterator over folds from
+        // different threads. We sum those to get the final results
+        .reduce(|| Ok(F::zero()), |a, b| Ok(a? + b?))
+}
+
 impl<F> Model<F>
 where
     F: Float + Debug + Default + Display + SampleUniform + Sync + Send,
@@ -33,7 +196,6 @@ where
     #[allow(clippy::too_many_lines)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
-    #[allow(clippy::use_debug)]
     #[replace_float_literals(F::from(literal).unwrap())]
     pub(super) fn try_fit_from(&mut self) -> Result<()> {
         // Prepare a log file
@@ -42,169 +204,27 @@ where
         // Prepare a buffered writer
         let wtr = RefCell::new(BufWriter::new(log_file));
         // Prepare storage for new parameters
-        let mut params = self.params.clone();
+        let mut fit_params = self.params.clone();
         // Get the initial point in the parameter space
-        let p_0 = params.to_point();
+        let p_0 = fit_params.to_point();
         // Compute some of the values that don't
         // depend on the parameters being optimized
         self.objects.iter_mut().for_each(|object| {
-            object.compute_l_b(&params);
+            object.compute_l_b(&fit_params);
+            object.compute_v_r(&fit_params);
             object.compute_r_h();
-            object.compute_mu_l_mu_b(&params);
+            object.compute_mu_l_cos_b_mu_b(&fit_params);
         });
         // Prepare storage for the results of computing the reduced parallax
         let mut par_pairs = vec![(0., 0., 0.); self.objects.len()];
-        // A closure to compute the parameterized part of the negative log likelihood function of the model
+        // A closure to compute the parameterized part of
+        // the negative log likelihood function of the model
         let f = |f_p: &Point<F, 9>| -> Result<F> {
             // Update the parameters
-            params.update_with(f_p);
-            // Compute the new value of the function
-            //
-            // We compute many values manually here since
-            // we don't need the numeric error propagation
-            let l_1 = self
-                .objects
-                .par_iter_mut()
-                .zip(par_pairs.par_iter_mut())
-                .enumerate()
-                .try_fold_with(F::zero(), |acc, (i, (object, par_pair))| -> Result<F> {
-                    // Prepare a random number generator with a specific stream
-                    let mut rng = ChaCha8Rng::seed_from_u64(1);
-                    rng.set_stream(i as u64 + 1);
-                    // Compute some values
-                    object.compute_r_g(&params);
-                    // Unpack the data
-                    let v_lsr = object.v_lsr.unwrap();
-                    let v_lsr_e = object.v_lsr_e.unwrap();
-                    let par = object.par.unwrap();
-                    let par_e = object.par_e.unwrap();
-                    let r_h = object.r_h.unwrap();
-                    let l = object.l.unwrap();
-                    let b = object.b.unwrap();
-                    let mu_l = object.mu_l.unwrap();
-                    let mu_b = object.mu_b.unwrap();
-                    let r_g = object.r_g.unwrap();
-                    // Unpack the parameters
-                    let r_0 = params.r_0;
-                    let omega_0 = params.omega_0;
-                    let a = params.a;
-                    let u_sun = params.u_sun;
-                    let theta_sun = params.theta_sun;
-                    let w_sun = params.w_sun;
-                    let sigma_r = params.sigma_r;
-                    let sigma_theta = params.sigma_theta;
-                    let sigma_z = params.sigma_z;
-                    let k = params.k;
-                    // Compute the sines and cosines of the longitude and latitude
-                    let sin_l = l.sin();
-                    let sin_b = b.sin();
-                    let cos_l = l.cos();
-                    let cos_b = b.cos();
-                    // Compute their squares
-                    let sin_l_sq = sin_l.powi(2);
-                    let sin_b_sq = sin_b.powi(2);
-                    let cos_l_sq = cos_l.powi(2);
-                    let cos_b_sq = cos_b.powi(2);
-                    // Compute the normal dispersions
-                    let sigma_r_sq = sigma_r.powi(2);
-                    let sigma_theta_sq = sigma_theta.powi(2);
-                    let sigma_z_sq = sigma_z.powi(2);
-                    // Compute the squares of the sines and cosines of the Galactocentric longitude
-                    let sin_lambda_sq = ((r_h * cos_b * sin_l) / r_g).powi(2);
-                    let cos_lambda_sq = ((r_0 - r_h * cos_b * cos_l) / r_g).powi(2);
-                    // Compute auxiliary sums of the squares of the sines and cosines
-                    let sum_1 = cos_lambda_sq * cos_l_sq + sin_lambda_sq * sin_l_sq;
-                    let sum_2 = sin_lambda_sq * cos_l_sq + cos_lambda_sq * sin_l_sq;
-                    // Compute the model-dependent dispersions
-                    let sigma_v_r_star_sq = sigma_r_sq * sum_1 * cos_b_sq
-                        + sigma_theta_sq * sum_2 * cos_b_sq
-                        + sigma_z_sq * sin_b_sq;
-                    let sigma_v_l_star_sq = sigma_r_sq * sum_2 + sigma_theta_sq * sum_1;
-                    let sigma_v_b_star_sq = sigma_r_sq * sum_1 * sin_b_sq
-                        + sigma_theta_sq * sum_2 * sin_b_sq
-                        + sigma_z_sq * cos_b_sq;
-                    // Compute the dispersions of the observed proper motions
-                    let (sigma_mu_l_cos_b_sq, sigma_mu_b_sq) = object.compute_e_mu_l_mu_b(&params);
-                    // Compute the full dispersions
-                    let delim = k.powi(2) * r_h.powi(2);
-                    let d_v_r = v_lsr_e.powi(2) + sigma_v_r_star_sq;
-                    let d_mu_l_cos_b = sigma_mu_l_cos_b_sq + sigma_v_l_star_sq / delim;
-                    let d_mu_b = sigma_mu_b_sq + sigma_v_b_star_sq / delim;
-                    let d_par = par_e.powi(2);
-                    // Compute the peculiar motion of the Sun toward l = 90 degrees (km/s)
-                    let v_sun = theta_sun - r_0 * omega_0;
-                    // Compute the constant part of the model velocity
-                    let v_r_sun = -u_sun * cos_l * cos_b - v_sun * sin_l * cos_b - w_sun * sin_b;
-                    // Prepare a closure for finding the reduced parallax
-                    let g = |g_p: &Point<F, 1>| -> Result<F> {
-                        // Create an object for reduced values
-                        let mut object_r = Object {
-                            l: Some(l),
-                            b: Some(b),
-                            par: Some(g_p[0]),
-                            ..Default::default()
-                        };
-                        // Compute the values
-                        object_r.compute_r_h_nominal();
-                        object_r.compute_r_g_nominal(&params);
-                        // Unpack the data
-                        let par_r = object_r.par.unwrap();
-                        let r_h_r = object_r.r_h.unwrap();
-                        let r_g_r = object_r.r_g.unwrap();
-                        // Compute the difference between the Galactocentric distances
-                        let delta_r = r_g_r - r_0;
-                        // Compute the sum of the terms in the series of the rotation curve
-                        let rot_curve_series = 2. * a * delta_r;
-                        // Compute the full model velocity
-                        let v_r_mod = -rot_curve_series * r_0 * sin_l * cos_b / r_g_r + v_r_sun;
-                        // Compute the model proper motion in longitude
-                        let mu_l_cos_b_mod = (-rot_curve_series * (r_0 * cos_l / r_h_r - cos_b)
-                            / r_g_r
-                            - omega_0 * cos_b
-                            + (u_sun * sin_l - v_sun * cos_l) / r_h_r)
-                            / k
-                            * cos_b;
-                        // Compute the model proper motion in latitude
-                        let mu_b_mod = (rot_curve_series * r_0 * sin_l * sin_b / r_h_r / r_g_r
-                            + (u_sun * cos_l * sin_b + v_sun * sin_l * sin_b - w_sun * cos_b)
-                                / r_h_r)
-                            / k;
-                        // Compute the weighted sum of squared differences
-                        let sum = (v_lsr - v_r_mod).powi(2) / d_v_r
-                            + (mu_l * cos_b - mu_l_cos_b_mod).powi(2) / d_mu_l_cos_b
-                            + (mu_b - mu_b_mod).powi(2) / d_mu_b
-                            + (par - par_r).powi(2) / d_par;
-                        // Return it as the result
-                        Ok(sum)
-                    };
-                    // Find the global minimum
-                    let (sum_min, par_r) = SA {
-                        f: g,
-                        p_0: &[par],
-                        t_0: 100_000.0,
-                        t_min: 1.0,
-                        bounds: &[F::zero()..F::infinity()],
-                        apf: &APF::Metropolis,
-                        neighbour: &NeighbourMethod::Normal { sd: par_e },
-                        schedule: &Schedule::Fast,
-                        status: &mut Status::None,
-                        rng: &mut rng,
-                    }
-                    .findmin()?;
-                    // Compute the final sum for this object
-                    let res = F::ln(F::sqrt(d_v_r))
-                        + F::ln(F::sqrt(d_mu_l_cos_b))
-                        + F::ln(F::sqrt(d_mu_b))
-                        + 0.5 * sum_min;
-                    // Save the results
-                    *par_pair = (par, par_e, par_r[0]);
-                    // Add to the general sum
-                    Ok(acc + res)
-                })
-                // Parallel fold returns an iterator over folds from
-                // different threads. We sum those to get the final results
-                .reduce(|| Ok(F::zero()), |a, b| Ok(a? + b?));
-            // Write the result to the buffer
+            fit_params.update_with(f_p);
+            // Compute the value
+            let l_1 = compute_l_1(&mut self.objects, &fit_params, &mut par_pairs);
+            // Write the results of finding the reduced parallax to the buffer
             for (i, &(par, par_e, par_r)) in par_pairs.iter().enumerate() {
                 writeln!(
                     wtr.borrow_mut(),
@@ -212,6 +232,7 @@ where
                 )
                 .ok();
             }
+            // Return the value
             l_1
         };
         // Find the global minimum
@@ -311,14 +332,14 @@ where
                 }),
             },
             // Same seed as above, but the stream is 0
-            rng: &mut ChaCha8Rng::seed_from_u64(1),
+            rng: &mut ChaCha8Rng::seed_from_u64(RNG_SEED),
         }
         .findmin()
         .with_context(|| "Couldn't find the global minimum")?;
         // Update the parameters one more time
-        params.update_with(&p);
+        fit_params.update_with(&p);
         // Save the new parameters
-        self.fit_params = Some(params);
+        self.fit_params = Some(fit_params);
         Ok(())
     }
 }

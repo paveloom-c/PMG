@@ -14,16 +14,10 @@ module Types
         par_m::Vector{F}
         V_lsr::Vector{F}
         V_lsr_e::Vector{F}
-        V_lsr_p::Vector{F}
-        V_lsr_m::Vector{F}
         mu_x::Vector{F}
         mu_x_e::Vector{F}
-        mu_x_p::Vector{F}
-        mu_x_m::Vector{F}
         mu_y::Vector{F}
         mu_y_e::Vector{F}
-        mu_y_p::Vector{F}
-        mu_y_m::Vector{F}
         r::Vector{F}
         r_ep::Vector{F}
         r_em::Vector{F}
@@ -31,7 +25,7 @@ module Types
         r_m::Vector{F}
         l::Vector{F}
         b::Vector{F}
-        mu_l::Vector{F}
+        mu_l_cos_b::Vector{F}
         mu_b::Vector{F}
         R::Vector{F}
         R_ep::Vector{F}
@@ -60,6 +54,7 @@ module Types
         Θ_m::Vector{F}
         Θ_evel::Vector{F}
         V_r::Vector{F}
+        V_r_e::Vector{F}
         V_l::Vector{F}
         V_l_ep::Vector{F}
         V_l_em::Vector{F}

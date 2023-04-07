@@ -35,7 +35,7 @@ impl<F> Object<F> {
         // Compute the azimuthal velocity
         let sin_lambda = d / r_g * l.sin();
         let cos_lambda = (r_0 - d * l.cos()) / r_g;
-        v_g * cos_lambda + u_g * sin_lambda
+        u_g * sin_lambda + v_g * cos_lambda
     }
     /// Compute the azimuthal velocity (nominal value only)
     pub fn compute_theta_nominal<F2>(&mut self, params: &Params<F2>)
@@ -85,7 +85,7 @@ impl<F> Object<F> {
     ///
     /// Sources: Gromov, Nikiforov, Ossipkov (2016)
     #[allow(clippy::similar_names)]
-    pub(super) fn compute_e_vel_theta(&mut self, params: &Params<F>)
+    pub(super) fn compute_theta_evel(&mut self, params: &Params<F>)
     where
         F: Float + Debug + Default,
     {
@@ -113,12 +113,12 @@ impl<F> Object<F> {
         object.compute_l_b(params);
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
-        object.compute_mu_l_mu_b(params);
+        object.compute_mu_l_cos_b_mu_b(params);
         object.compute_v_r(params);
         object.compute_v_l_v_b_nominal(params);
         object.compute_u_v_w_nominal();
         object.compute_theta_nominal(params);
-        let d_theta_v_lsr = object.theta.unwrap().deriv();
+        let deriv_theta_v_lsr = object.theta.unwrap().deriv();
         // Compute the partial derivative of the azimuthal
         // velocity by the Eastward proper motion
         object.v_lsr = Some(FT::cst(v_lsr));
@@ -126,12 +126,12 @@ impl<F> Object<F> {
         object.compute_l_b(params);
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
-        object.compute_mu_l_mu_b(params);
+        object.compute_mu_l_cos_b_mu_b(params);
         object.compute_v_r(params);
         object.compute_v_l_v_b_nominal(params);
         object.compute_u_v_w_nominal();
         object.compute_theta_nominal(params);
-        let d_theta_mu_x = object.theta.as_ref().unwrap().deriv();
+        let deriv_theta_mu_x = object.theta.as_ref().unwrap().deriv();
         // Compute the partial derivative of the azimuthal
         // velocity by the Northward proper motion
         object.mu_x = Some(FT::cst(mu_x));
@@ -139,17 +139,17 @@ impl<F> Object<F> {
         object.compute_l_b(params);
         object.compute_r_h_nominal();
         object.compute_r_g_nominal(params);
-        object.compute_mu_l_mu_b(params);
+        object.compute_mu_l_cos_b_mu_b(params);
         object.compute_v_r(params);
         object.compute_v_l_v_b_nominal(params);
         object.compute_u_v_w_nominal();
         object.compute_theta_nominal(params);
-        let d_theta_mu_y = object.theta.as_ref().unwrap().deriv();
+        let deriv_theta_mu_y = object.theta.as_ref().unwrap().deriv();
         // Compute the uncertainty
         self.theta_evel = Some(F::sqrt(
-            d_theta_v_lsr.powi(2) * v_lsr_e.powi(2)
-                + d_theta_mu_x.powi(2) * mu_x_e.powi(2)
-                + d_theta_mu_y.powi(2) * mu_y_e.powi(2),
+            deriv_theta_v_lsr.powi(2) * v_lsr_e.powi(2)
+                + deriv_theta_mu_x.powi(2) * mu_x_e.powi(2)
+                + deriv_theta_mu_y.powi(2) * mu_y_e.powi(2),
         ));
     }
 }

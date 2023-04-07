@@ -18,10 +18,26 @@ impl<F> Object<F> {
         let l = self.l.unwrap();
         let b = self.b.unwrap();
         // Convert to the Galactic heliocentric Cartesian coordinate system
-        let x = r_h * F::cos(b) * F::cos(l);
-        let y = r_h * F::cos(b) * F::sin(l);
-        let z = r_h * F::sin(b);
+        let x = r_h * b.cos() * l.cos();
+        let y = r_h * b.cos() * l.sin();
+        let z = r_h * b.sin();
         (x, y, z)
+    }
+    /// Convert the galactic heliocentric spherical coordinates
+    /// to Galactic heliocentric Cartesian coordinates (nominal
+    /// values only)
+    #[cfg(test)]
+    pub fn compute_x_y_z_nominal(&mut self)
+    where
+        F: Float + Debug,
+    {
+        // Unpack the data
+        let r_h = self.r_h.unwrap();
+        // Convert to the Galactic heliocentric Cartesian coordinate system
+        let (x, y, z) = self.compute_x_y_z_with(r_h);
+        self.x = Some(x);
+        self.y = Some(y);
+        self.z = Some(z);
     }
     /// Convert the galactic heliocentric spherical coordinates
     /// to Galactic heliocentric Cartesian coordinates
@@ -202,8 +218,6 @@ fn test() -> Result<()> {
         .unwrap()
         .parent()
         .unwrap()
-        .parent()
-        .unwrap()
         .join("tests");
     let data_path = tests_path.join("data.dat");
     let coords_path = tests_path.join("coords.dat");
@@ -235,8 +249,8 @@ fn test() -> Result<()> {
         };
         object.par = Some(data.par);
         object.compute_l_b(&params);
-        object.compute_r_h();
-        object.compute_x_y_z();
+        object.compute_r_h_nominal();
+        object.compute_x_y_z_nominal();
         let x = object.x.unwrap();
         let y = object.y.unwrap();
         let z = object.z.unwrap();

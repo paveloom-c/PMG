@@ -96,13 +96,12 @@ impl<F> Object<F> {
         F2: Float + Debug + Into<F>,
     {
         // Unpack the data
-        let b = self.b.unwrap();
-        let mu_l = self.mu_l.unwrap();
+        let mu_l_cos_b = self.mu_l_cos_b.unwrap();
         let mu_b = self.mu_b.unwrap();
         // Get the parameters
         let k: F = params.k.into();
         // Compute the heliocentric velocity
-        let v_l = k * r_h * mu_l * b.cos();
+        let v_l = k * r_h * mu_l_cos_b;
         let v_b = k * r_h * mu_b;
         (v_l, v_b)
     }
@@ -195,8 +194,6 @@ fn test() -> Result<()> {
     // Define the path to the data files
     let current_file = Path::new(file!());
     let tests_path = current_file
-        .parent()
-        .unwrap()
         .parent()
         .unwrap()
         .parent()
