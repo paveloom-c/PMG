@@ -48,6 +48,8 @@ pub struct Model<F> {
 
 impl<F> Model<F> {
     /// Perform computations based on the goal
+    #[allow(clippy::unwrap_in_result)]
+    #[allow(clippy::unwrap_used)]
     pub fn compute(&mut self) -> Result<()>
     where
         F: Float + Debug + Default + Display + SampleUniform + Sync + Send,
@@ -64,6 +66,11 @@ impl<F> Model<F> {
                 // Try to fit the model
                 self.try_fit_from()
                     .with_context(|| "Couldn't fit the model")?;
+                // Perform per-object computations
+                // with the optimized parameters
+                for object in &mut self.objects {
+                    object.compute(self.fit_params.as_ref().unwrap());
+                }
                 // Compute the rotation curve based on the fitted parameters
                 self.compute_fit_rotcurve();
             }
@@ -72,6 +79,8 @@ impl<F> Model<F> {
     }
     /// Write the model data to files in the
     /// output directory based on the goal
+    #[allow(clippy::unwrap_in_result)]
+    #[allow(clippy::unwrap_used)]
     pub fn write(&self) -> Result<()>
     where
         F: Float + Debug + Display + Serialize,
@@ -86,10 +95,14 @@ impl<F> Model<F> {
         // Serialize the data
         match self.goal {
             Goal::Objects => {
-                self.serialize_to_objects(dat_dir, bin_dir)
+                let params = &self.params;
+                self.serialize_to_objects(dat_dir, bin_dir, "objects", params)
                     .with_context(|| "Couldn't write the objects to a file")?;
             }
             Goal::Fit => {
+                let params = self.fit_params.as_ref().unwrap();
+                self.serialize_to_objects(dat_dir, bin_dir, "fit_objects", params)
+                    .with_context(|| "Couldn't write the objects to a file")?;
                 self.serialize_to_fit_params(dat_dir, bin_dir)
                     .with_context(|| "Couldn't write the fitted parameters to a file")?;
                 self.serialize_to_fit_rotcurve(dat_dir, bin_dir)

@@ -112,7 +112,7 @@ colors = ColorSchemes.tol_bright
 CURRENT_DIR = @__DIR__
 ROOT_DIR = dirname(CURRENT_DIR)
 PLOTS_DIR = joinpath(ROOT_DIR, "plots", OUTPUT_DIR)
-OBSERVED_DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "bin", "objects.bin")
+OBJECTS_DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "bin", "fit_objects.bin")
 FIT_DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "bin", "fit_rotcurve.bin")
 
 # Make sure the needed directories exist
@@ -123,7 +123,7 @@ println(pad, "> Loading the data...")
 
 include(joinpath(CURRENT_DIR, "data_types.jl"))
 
-ObservedData = Types.ObjectsData{F}
+ObjectsData = Types.ObjectsData{F}
 FitData = Types.FitData{F}
 
 "Read binary files in the `bincode` format"
@@ -159,11 +159,11 @@ function read_bincode(path::AbstractString, type::Type)::type
 end
 
 # Read the data
-observed_data = read_bincode(OBSERVED_DATA_PATH, ObservedData)
+objects_data = read_bincode(OBJECTS_DATA_PATH, ObjectsData)
 fit_data = read_bincode(FIT_DATA_PATH, FitData)
 
 # Prepare a group for the data
-group = LEGEND_SHOW_SOURCES ? observed_data.source : observed_data.type
+group = LEGEND_SHOW_SOURCES ? objects_data.source : objects_data.type
 
 # Sort the data by the number of occurrences of different types
 # (rare types will be plotted over common types)
@@ -171,13 +171,13 @@ keys = unique(group)
 counts = Dict([(k, count(==(k), group)) for k in keys])
 I = sortperm(group, by=k -> counts[k], rev=true)
 group = group[I]
-R = observed_data.R[I]
-R_p = observed_data.R_p[I]
-R_m = observed_data.R_m[I]
-Θ = observed_data.Θ[I]
-Θ_p = observed_data.Θ_p[I]
-Θ_m = observed_data.Θ_m[I]
-Θ_evel = observed_data.Θ_evel[I]
+R = objects_data.R[I]
+R_p = objects_data.R_p[I]
+R_m = objects_data.R_m[I]
+Θ = objects_data.Θ[I]
+Θ_p = objects_data.Θ_p[I]
+Θ_m = objects_data.Θ_m[I]
+Θ_evel = objects_data.Θ_evel[I]
 
 # Unpack the fit data
 R_fit = fit_data.R
@@ -216,9 +216,8 @@ function plot(
     # Compute the limits
     x_max, x_min = max_min(x)
     y_max, y_min = max_min(y)
-    # Prepare a table for the observed
-    # values of the rotation curve
-    observed_table =
+    # Prepare tables
+    objects_table =
         if isempty(evel)
             @pgf Table(
                 {
@@ -241,7 +240,6 @@ function plot(
                 evel=evel,
             )
         end
-    # Prepare a table for the fit
     fit_table = @pgf Table(
         x=x_fit,
         y=y_fit,
@@ -294,7 +292,7 @@ function plot(
                 "error bars/y dir=both",
                 "error bars/y explicit",
             },
-            observed_table,
+            objects_table,
         ),
         Plot(
             {
@@ -368,7 +366,7 @@ for task in tasks
 end
 
 # Mark data for garbage collection
-observed_data = nothing
+objects_data = nothing
 fit_data = nothing
 
 println()

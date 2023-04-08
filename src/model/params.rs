@@ -151,7 +151,7 @@ impl<F> Model<F> {
             # 15 V_sun_standard: Standard Solar Motion toward l = 90 degrees [km/s]
             # 16 W_sun_standard: Standard Solar Motion toward NGP [km/s]
             #
-            # Note that only first 9 parameters were optimized.
+            # Note that only the first 9 parameters were optimized.
             #
             # The first row in the output contains the initial
             # parameters, the second one -- the fitted ones.
