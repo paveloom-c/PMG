@@ -10,6 +10,7 @@ use std::path::Path;
 use anyhow::Result;
 use indoc::formatdoc;
 use num::Float;
+use numeric_literals::replace_float_literals;
 use serde::Serialize;
 use simulated_annealing::Point;
 
@@ -112,6 +113,17 @@ impl<F> Params<F> {
             F::zero()..F::infinity(),
             F::zero()..F::infinity(),
         ]
+    }
+    /// Return standard errors of the parameters (for simulated annealing)
+    ///
+    /// Note that not all fields are used, but only those needed for fitting
+    #[allow(clippy::unwrap_used)]
+    #[replace_float_literals(F::from(literal).unwrap())]
+    pub fn stds() -> [F; 9]
+    where
+        F: Float + Debug,
+    {
+        [0.25, 0.25, 0.5, 0.25, 0.25, 0.25, 1., 1., 1.]
     }
 }
 

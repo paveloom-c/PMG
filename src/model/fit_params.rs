@@ -7,7 +7,7 @@ use core::fmt::{Debug, Display};
 use std::fs::File;
 use std::io::{BufWriter, Write};
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result};
 use indoc::formatdoc;
 use itertools::izip;
 use num::Float;
@@ -157,10 +157,15 @@ where
             let (sum_min, par_r) = SA {
                 f: g,
                 p_0: &[par],
-                t_0: 100_000.0,
+                t_0: 100.0,
                 t_min: 1.0,
                 bounds: &[F::zero()..F::infinity()],
-                apf: &APF::Metropolis,
+                apf: &APF::Custom {
+                    f: |diff, _, _, _| {
+                        // Always go downhill
+                        diff <= F::zero()
+                    },
+                },
                 neighbour: &NeighbourMethod::Normal { sd: par_e },
                 schedule: &Schedule::Fast,
                 status: &mut Status::None,
@@ -189,6 +194,7 @@ where
 {
     /// Try to fit the model of the Galaxy to the data
     #[allow(clippy::as_conversions)]
+    #[allow(clippy::indexing_slicing)]
     #[allow(clippy::many_single_char_names)]
     #[allow(clippy::non_ascii_literal)]
     #[allow(clippy::shadow_unrelated)]
@@ -245,18 +251,16 @@ where
             apf: &APF::Metropolis,
             neighbour: &NeighbourMethod::Custom {
                 f: |p, bounds, rng| -> Result<Point<F, 9>> {
-                    // Prepare a vector of standard deviations
-                    let stds = [0.25, 0.25, 0.5, 0.05, 0.05, 0.05, 1., 1., 1.];
+                    // Get a vector of standard deviations
+                    let stds = Params::stds();
                     // Prepare a new point
                     let mut new_p = [F::zero(); 9];
                     // Generate a new point
                     izip!(&mut new_p, p, bounds)
                         .enumerate()
-                        .try_for_each(|(i, (new_c, &c, r))| -> Result<()> {
+                        .for_each(|(i, (new_c, &c, r))| {
                             // Create a normal distribution around the current coordinate
-                            #[allow(clippy::indexing_slicing)]
-                            let d = Normal::new(c, stds[i])
-                                .with_context(|| "Couldn't create a normal distribution")?;
+                            let d = Normal::new(c, stds[i]).unwrap();
                             // Sample from this distribution
                             let mut s = d.sample(rng);
                             // If the result is not in the range, repeat until it is
@@ -264,16 +268,12 @@ where
                                 s = d.sample(rng);
                             }
                             // Save the new coordinate
-                            *new_c = F::from(s).ok_or_else(|| {
-                                anyhow!("Couldn't cast a value to a floating-point number")
-                            })?;
-                            Ok(())
-                        })
-                        .with_context(|| "Couldn't generate a new point")?;
+                            *new_c = F::from(s).unwrap();
+                        });
                     Ok(new_p)
                 },
             },
-            schedule: &Schedule::Exponential { gamma: 0.95 },
+            schedule: &Schedule::Fast,
             status: &mut Status::Custom {
                 f: Box::new(|k, t, f, p, best_f, best_p| {
                     writeln!(
