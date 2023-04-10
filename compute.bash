@@ -65,4 +65,4 @@ echo -e "${PAD}HMSFRs (test):"
 
 echo -e "${PAD}Step 6. Zip the results\n"
 
-zip -rq results.zip data plots
+zip -rq results.zip data plots -x 'data/**/fit.log'
