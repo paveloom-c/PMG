@@ -13,6 +13,7 @@
     in {
       devShells.default = pkgs.mkShell {
         packages = with pkgs; [
+          bashInteractive
           cargo
           julia
           lsof
