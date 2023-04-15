@@ -52,7 +52,14 @@ impl<F> Model<F> {
     #[allow(clippy::unwrap_used)]
     pub fn compute(&mut self) -> Result<()>
     where
-        F: Float + Debug + Default + Display + SampleUniform + Sync + Send,
+        F: Float
+            + Debug
+            + Default
+            + Display
+            + SampleUniform
+            + Sync
+            + Send
+            + argmin::core::ArgminFloat,
         StandardNormal: Distribution<F>,
     {
         match self.goal {

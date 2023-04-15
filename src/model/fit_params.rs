@@ -8,12 +8,15 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 
 use anyhow::{Context, Result};
+use argmin::core::{CostFunction, Executor, State};
+use argmin::solver::brent::BrentRoot;
 use indoc::formatdoc;
 use itertools::izip;
 use num::Float;
 use numeric_literals::replace_float_literals;
 use rand::distributions::uniform::SampleUniform;
 use rand::prelude::Distribution;
+use rand::Rng;
 use rand_chacha::{rand_core::SeedableRng, ChaCha8Rng};
 use rand_distr::{Normal, StandardNormal};
 use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
@@ -33,7 +36,7 @@ const RNG_SEED: u64 = 1;
 fn compute_l_1<F>(
     objects: &mut Objects<F>,
     fit_params: &Params<F>,
-    par_pairs: &mut Vec<(F, F, F)>,
+    par_pairs: &mut [(F, F, F)],
 ) -> Result<F>
 where
     F: Float + Debug + Default + Display + SampleUniform + Sync + Send,
@@ -161,10 +164,10 @@ where
                 t_min: 1.0,
                 bounds: &[F::zero()..F::infinity()],
                 apf: &APF::Custom {
-                    f: |diff, _, _, _| {
+                    f: Box::new(|diff, _, _, _| {
                         // Always go downhill
                         diff <= F::zero()
-                    },
+                    }),
                 },
                 neighbour: &NeighbourMethod::Normal { sd: par_e },
                 schedule: &Schedule::Fast,
@@ -189,7 +192,7 @@ where
 
 impl<F> Model<F>
 where
-    F: Float + Debug + Default + Display + SampleUniform + Sync + Send,
+    F: Float + Debug + Default + Display + SampleUniform + Sync + Send + argmin::core::ArgminFloat,
     StandardNormal: Distribution<F>,
 {
     /// Try to fit the model of the Galaxy to the data
@@ -241,16 +244,18 @@ where
             // Return the value
             l_1
         };
+        // Same seed as above, but the stream is 0
+        let mut rng = ChaCha8Rng::seed_from_u64(RNG_SEED);
         // Find the global minimum
-        let (_, p) = SA {
+        let (best_l_1, best_p) = SA {
             f,
             p_0: &p_0,
-            t_0: 100_000.0,
+            t_0: 100.0,
             t_min: 1.0,
             bounds: &Params::bounds(),
             apf: &APF::Metropolis,
             neighbour: &NeighbourMethod::Custom {
-                f: |p, bounds, rng| -> Result<Point<F, 9>> {
+                f: Box::new(|p, bounds, rng| -> Result<Point<F, 9>> {
                     // Get a vector of standard deviations
                     let stds = Params::stds();
                     // Prepare a new point
@@ -271,7 +276,7 @@ where
                             *new_c = F::from(s).unwrap();
                         });
                     Ok(new_p)
-                },
+                }),
             },
             schedule: &Schedule::Fast,
             status: &mut Status::Custom {
@@ -331,15 +336,200 @@ where
                     .ok();
                 }),
             },
-            // Same seed as above, but the stream is 0
-            rng: &mut ChaCha8Rng::seed_from_u64(RNG_SEED),
+            rng: &mut rng,
         }
         .findmin()
         .with_context(|| "Couldn't find the global minimum")?;
         // Update the parameters one more time
-        fit_params.update_with(&p);
+        fit_params.update_with(&best_p);
+        // Create a copy of the new parameters for the next step
+        let fit_params_clone = fit_params.clone();
         // Save the new parameters
         self.fit_params = Some(fit_params);
+        // Prepare arrays for the confidence intervals
+        let mut fit_params_ep = vec![0.; self.objects.len()];
+        let mut fit_params_em = vec![0.; self.objects.len()];
+        // Define the confidence intervals
+        izip!(&mut fit_params_ep, &mut fit_params_em)
+            .enumerate()
+            .try_for_each(|(i, (fit_param_ep, fit_param_em))| -> Result<()> {
+                let param = best_p[i];
+
+                let tolerance = 1e-11;
+                let max_iters = 100;
+
+                // Find a root to the right
+                {
+                    let problem = RootsProblem {
+                        i,
+                        best_l_1,
+                        p_0: &p_0,
+                        objects: &self.objects,
+                        fit_params: &fit_params_clone,
+                        rng: &rng,
+                    };
+
+                    let min = param;
+                    let max = param + 1.;
+                    let solver = BrentRoot::new(min, max, tolerance);
+
+                    let res = Executor::new(problem, solver)
+                        .configure(|state| state.param(param).max_iters(max_iters))
+                        .run()
+                        .with_context(|| "Couldn't find a root to the right")?;
+
+                    let param_p = *res.state().get_best_param().unwrap();
+                    *fit_param_ep = param_p - param;
+                };
+
+                // Find a root to the left
+                {
+                    let problem = RootsProblem {
+                        i,
+                        best_l_1,
+                        p_0: &p_0,
+                        objects: &self.objects,
+                        fit_params: &fit_params_clone,
+                        rng: &rng,
+                    };
+
+                    let min = param - 1.;
+                    let max = param;
+                    let solver = BrentRoot::new(min, max, tolerance);
+
+                    let res = Executor::new(problem, solver)
+                        .configure(|state| state.param(param).max_iters(max_iters))
+                        .run()
+                        .with_context(|| "Couldn't find a root to the left")?;
+
+                    let param_l = *res.state().get_best_param().unwrap();
+                    *fit_param_em = param - param_l;
+                };
+
+                Ok(())
+            })
+            .with_context(|| "Couldn't define the confidence intervals")?;
         Ok(())
+    }
+}
+
+#[allow(clippy::missing_docs_in_private_items)]
+struct RootsProblem<'a, F, R> {
+    i: usize,
+    best_l_1: F,
+    p_0: &'a [F; 9],
+    objects: &'a Objects<F>,
+    fit_params: &'a Params<F>,
+    rng: &'a R,
+}
+
+impl<'a, F, R> CostFunction for RootsProblem<'a, F, R>
+where
+    F: Float + Debug + Default + Display + SampleUniform + Sync + Send,
+    StandardNormal: Distribution<F>,
+    R: Rng + SeedableRng + Clone,
+{
+    type Param = F;
+    type Output = F;
+
+    #[allow(clippy::indexing_slicing)]
+    #[allow(clippy::unwrap_in_result)]
+    #[allow(clippy::unwrap_used)]
+    #[replace_float_literals(F::from(literal).unwrap())]
+    fn cost(&self, param: &Self::Param) -> Result<Self::Output> {
+        let i = self.i;
+        let mut par_pairs = vec![(0., 0., 0.); self.objects.len()];
+        let mut objects = self.objects.clone();
+        let mut fit_params = self.fit_params.clone();
+        let mut rng = (*self.rng).clone();
+        // Prepare a new point
+        let mut new_p = [F::zero(); 9];
+        new_p[i] = *param;
+        // Redefine the target function
+        let f = |subset_p: &Point<F, 8>| -> Result<F> {
+            // Update the new point
+            let mut shift = 0;
+            for j in 0..subset_p.len() {
+                if j == i {
+                    shift = 1;
+                }
+                new_p[j + shift] = subset_p[j];
+            }
+            // Update the parameters
+            fit_params.update_with(&new_p);
+            // Compute the value
+            compute_l_1(&mut objects, &fit_params, &mut par_pairs)
+        };
+        // Remove the initial value of the frozen parameter
+        let mut new_p_0 = [F::zero(); 8];
+        {
+            let mut shift = 0;
+            for j in 0..self.p_0.len() {
+                if j == i {
+                    shift = 1;
+                    continue;
+                }
+                new_p_0[j - shift] = self.p_0[j];
+            }
+        }
+        // Find the global minimum
+        let (subset_best_l_1, _) = SA {
+            f,
+            p_0: &new_p_0,
+            t_0: 100.0,
+            t_min: 1.0,
+            bounds: &[
+                F::zero()..F::infinity(),
+                F::zero()..F::infinity(),
+                F::zero()..F::infinity(),
+                F::zero()..F::infinity(),
+                F::zero()..F::infinity(),
+                F::zero()..F::infinity(),
+                F::zero()..F::infinity(),
+                F::zero()..F::infinity(),
+            ],
+            apf: &APF::Metropolis,
+            neighbour: &NeighbourMethod::Custom {
+                f: Box::new(|p, bounds, inner_rng| -> Result<Point<F, 8>> {
+                    // Get a vector of standard deviations
+                    let stds = Params::stds();
+                    let mut new_stds = [F::zero(); 8];
+                    {
+                        let mut shift = 0;
+                        for j in 0..stds.len() {
+                            if j == i {
+                                shift = 1;
+                                continue;
+                            }
+                            new_stds[j - shift] = stds[j];
+                        }
+                    }
+                    // Prepare a new point
+                    let mut inner_new_p = [F::zero(); 8];
+                    // Generate a new point
+                    izip!(&mut inner_new_p, p, bounds).enumerate().for_each(
+                        |(j, (new_c, &c, r))| {
+                            // Create a normal distribution around the current coordinate
+                            let d = Normal::new(c, stds[j]).unwrap();
+                            // Sample from this distribution
+                            let mut s = d.sample(inner_rng);
+                            // If the result is not in the range, repeat until it is
+                            while !r.contains(&s) {
+                                s = d.sample(inner_rng);
+                            }
+                            // Save the new coordinate
+                            *new_c = F::from(s).unwrap();
+                        },
+                    );
+                    Ok(inner_new_p)
+                }),
+            },
+            schedule: &Schedule::Fast,
+            status: &mut Status::None,
+            rng: &mut rng,
+        }
+        .findmin()
+        .with_context(|| "Couldn't find the global minimum")?;
+        Ok(subset_best_l_1 - self.best_l_1 - 0.5)
     }
 }

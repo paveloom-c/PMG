@@ -15,6 +15,7 @@
         packages = with pkgs; [
           bashInteractive
           cargo
+          clippy
           julia
           lsof
           rust-analyzer
@@ -24,14 +25,6 @@
           })
           zip
         ];
-      };
-      packages.default = pkgs.rustPlatform.buildRustPackage {
-        pname = "pmg";
-        version = "0.1.0";
-
-        src = ./.;
-
-        cargoSha256 = "sha256-p8WCTOPf/UuMn6/YPBkCmzyX493qEgH1GKvMXi0TstU=";
       };
     });
 }

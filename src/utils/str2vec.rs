@@ -31,7 +31,7 @@ use anyhow::ensure;
 #[test]
 fn test() -> Result<()> {
     let a = vec![-5., 35., 5.108];
-    let b = str2vec("-05:35:05.108").with_context(|| "Couldn't parse the string")?;
+    let b: Vec<f64> = str2vec("-05:35:05.108").with_context(|| "Couldn't parse the string")?;
     ensure!(a == b, "The result should be the same: {a:?} vs. {b:?}");
     Ok(())
 }
