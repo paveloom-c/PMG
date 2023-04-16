@@ -1,7 +1,6 @@
 //! Model of the Galaxy
 
-mod fit_params;
-mod fit_rotcurve;
+mod fit;
 mod io;
 mod objects;
 mod params;
@@ -10,7 +9,7 @@ mod sample_description;
 use crate::cli::Args;
 use crate::utils;
 use crate::Goal;
-pub use fit_rotcurve::RotationCurve;
+pub use fit::rotcurve::RotationCurve;
 pub use objects::{Object, Objects};
 pub use params::Params;
 
@@ -21,10 +20,13 @@ use std::fs;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
+use argmin::core::ArgminFloat;
+use argmin_math::{
+    ArgminAdd, ArgminDot, ArgminL1Norm, ArgminL2Norm, ArgminMinMax, ArgminMul, ArgminSignum,
+    ArgminSub, ArgminZeroLike,
+};
+use finitediff::FiniteDiff;
 use num::Float;
-use rand::distributions::uniform::SampleUniform;
-use rand_distr::Distribution;
-use rand_distr::StandardNormal;
 use serde::{de::DeserializeOwned, Serialize};
 
 /// Model of the Galaxy
@@ -56,11 +58,28 @@ impl<F> Model<F> {
             + Debug
             + Default
             + Display
-            + SampleUniform
             + Sync
             + Send
-            + argmin::core::ArgminFloat,
-        StandardNormal: Distribution<F>,
+            + ArgminFloat
+            + ArgminL2Norm<F>
+            + ArgminSub<F, F>
+            + ArgminAdd<F, F>
+            + ArgminDot<F, F>
+            + ArgminMul<F, F>
+            + ArgminZeroLike
+            + ArgminMul<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminSub<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminSub<F, Vec<F>>,
+        Vec<F>: ArgminAdd<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminAdd<F, Vec<F>>,
+        Vec<F>: ArgminMul<F, Vec<F>>,
+        Vec<F>: ArgminMul<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminL1Norm<F>,
+        Vec<F>: ArgminSignum,
+        Vec<F>: ArgminMinMax,
+        Vec<F>: ArgminDot<Vec<F>, F>,
+        Vec<F>: ArgminL2Norm<F>,
+        Vec<F>: FiniteDiff,
     {
         match self.goal {
             Goal::Objects => {

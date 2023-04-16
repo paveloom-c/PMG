@@ -4,15 +4,12 @@ use super::io::output;
 use super::Model;
 
 use core::fmt::{Debug, Display};
-use core::ops::Range;
 use std::path::Path;
 
 use anyhow::Result;
 use indoc::formatdoc;
 use num::Float;
-use numeric_literals::replace_float_literals;
 use serde::Serialize;
-use simulated_annealing::Point;
 
 /// Model parameters
 #[derive(Default, Debug, Clone, Serialize)]
@@ -62,7 +59,8 @@ impl<F> Params<F> {
     /// Update the parameters with the point in the parameter space
     ///
     /// Note that not all fields are updated, but only those needed for fitting
-    pub fn update_with(&mut self, p: &Point<F, 9>)
+    #[allow(clippy::indexing_slicing)]
+    pub fn update_with(&mut self, p: &[F])
     where
         F: Float + Debug,
     {
@@ -79,7 +77,7 @@ impl<F> Params<F> {
     /// Construct a point in the parameter space from the parameters
     ///
     /// Note that not all fields are used, but only those needed for fitting
-    pub fn to_point(&self) -> Point<F, 9>
+    pub fn to_point(&self) -> Vec<F>
     where
         F: Float + Debug,
     {
@@ -94,36 +92,7 @@ impl<F> Params<F> {
             self.sigma_theta,
             self.sigma_z,
         ]
-    }
-    /// Return bounds to the parameters
-    ///
-    /// Note that not all fields are used, but only those needed for fitting
-    pub fn bounds() -> [Range<F>; 9]
-    where
-        F: Float + Debug,
-    {
-        [
-            F::zero()..F::infinity(),
-            F::zero()..F::infinity(),
-            F::zero()..F::infinity(),
-            F::zero()..F::infinity(),
-            F::zero()..F::infinity(),
-            F::zero()..F::infinity(),
-            F::zero()..F::infinity(),
-            F::zero()..F::infinity(),
-            F::zero()..F::infinity(),
-        ]
-    }
-    /// Return standard errors of the parameters (for simulated annealing)
-    ///
-    /// Note that not all fields are used, but only those needed for fitting
-    #[allow(clippy::unwrap_used)]
-    #[replace_float_literals(F::from(literal).unwrap())]
-    pub fn stds() -> [F; 9]
-    where
-        F: Float + Debug,
-    {
-        [0.25, 0.25, 0.5, 0.25, 0.25, 0.25, 1., 1., 1.]
+        .to_vec()
     }
 }
 
