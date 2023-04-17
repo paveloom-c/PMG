@@ -14,6 +14,7 @@ pub use objects::{Object, Objects};
 pub use params::Params;
 
 use core::fmt::{Debug, Display};
+use core::iter::Sum;
 use core::str::FromStr;
 use std::error::Error;
 use std::fs;
@@ -60,6 +61,7 @@ impl<F> Model<F> {
             + Display
             + Sync
             + Send
+            + Sum
             + ArgminFloat
             + ArgminL2Norm<F>
             + ArgminSub<F, F>

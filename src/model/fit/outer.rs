@@ -8,6 +8,7 @@ use super::{Objects, Params};
 use alloc::rc::Rc;
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
+use core::iter::Sum;
 
 use anyhow::Result;
 use argmin::core::{ArgminFloat, CostFunction, Executor, Gradient, State};
@@ -51,6 +52,7 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
             + Debug
             + Default
             + Display
+            + Sum
             + Sync
             + Send
             + ArgminFloat
@@ -79,11 +81,14 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
         let mut fit_params = self.params.clone();
         // Update the parameters
         fit_params.update_with(p);
+        // Prepare storage for the costs
+        let mut costs = vec![F::zero(); self.objects.len()];
         // Compute the new value of the function
-        let cost = fit_objects
+        fit_objects
             .par_iter_mut()
+            .zip(costs.par_iter_mut())
             .zip(self.par_pairs.borrow_mut().par_iter_mut())
-            .try_fold_with(F::zero(), |acc, (object, par_pair)| -> Result<F> {
+            .try_for_each(|((object, sum), par_pair)| -> Result<()> {
                 // Compute some values
                 object.compute_r_g(&fit_params);
                 // Unpack the data
@@ -169,12 +174,11 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 // Find the local minimum in the inner optimization
                 let res = Executor::new(problem, solver)
                     .configure(|state| state.param(init_param).max_iters(1000))
-                    // .add_observer(SlogLogger::term(), ObserverMode::Always)
                     .run()?;
                 let &best_point = res.state().get_best_param().unwrap();
                 let best_cost = res.state().get_best_cost();
                 // Compute the final sum for this object
-                let cost = F::ln(F::sqrt(d_v_r))
+                *sum = F::ln(F::sqrt(d_v_r))
                     + F::ln(F::sqrt(d_mu_l_cos_b))
                     + F::ln(F::sqrt(d_mu_b))
                     + 0.5 * best_cost;
@@ -182,12 +186,11 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 if update_par_pairs {
                     *par_pair = (par, par_e, best_point);
                 }
-                // Add to the general sum
-                Ok(acc + cost)
-            })
-            // Parallel fold returns an iterator over folds from
-            // different threads. We sum those to get the final results
-            .reduce(|| Ok(F::zero()), |a, b| Ok(a? + b?))?;
+                Ok(())
+            })?;
+        // We do the summing sequentially because
+        // floating-point arithmetic is not associative
+        let cost = costs.iter().copied().sum();
         // Return the value
         Ok(cost)
     }
@@ -201,6 +204,7 @@ where
         + Display
         + Sync
         + Send
+        + Sum
         + ArgminFloat
         + ArgminL2Norm<F>
         + ArgminSub<F, F>
@@ -246,6 +250,7 @@ where
         + Display
         + Sync
         + Send
+        + Sum
         + ArgminFloat
         + ArgminL2Norm<F>
         + ArgminSub<F, F>

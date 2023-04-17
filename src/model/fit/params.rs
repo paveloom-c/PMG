@@ -8,6 +8,7 @@ use super::{Logger, OuterOptimizationProblem};
 use alloc::rc::Rc;
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
+use core::iter::Sum;
 use std::fs::File;
 
 use anyhow::{Context, Result};
@@ -31,6 +32,7 @@ where
         + Display
         + Sync
         + Send
+        + Sum
         + ArgminFloat
         + ArgminL2Norm<F>
         + ArgminSub<F, F>
