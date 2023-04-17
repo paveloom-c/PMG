@@ -90,7 +90,6 @@ where
         // Find the local minimum in the outer optimization
         let res = Executor::new(problem, solver)
             .configure(|state| state.param(init_param))
-            // .add_observer(SlogLogger::term(), ObserverMode::Always)
             .add_observer(
                 Logger {
                     params: self.params.clone(),
@@ -107,8 +106,10 @@ where
         fit_params.update_with(best_point);
         // Compute the derived values
         self.params.theta_0 = self.params.r_0 * self.params.omega_0;
+        self.params.theta_1 = self.params.omega_0 - 2. * self.params.a;
         self.params.theta_sun = self.params.theta_0 + self.params.v_sun;
         fit_params.theta_0 = fit_params.r_0 * fit_params.omega_0;
+        fit_params.theta_1 = fit_params.omega_0 - 2. * fit_params.a;
         fit_params.theta_sun = fit_params.theta_0 + fit_params.v_sun;
         // Save the new parameters
         self.fit_params = Some(fit_params);

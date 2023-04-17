@@ -76,7 +76,7 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
         Vec<F>: ArgminL2Norm<F>,
         Vec<F>: FiniteDiff,
     {
-        // Create copies of the fields
+        // Prepare storage
         let mut fit_objects = self.objects.clone();
         let mut fit_params = self.params.clone();
         // Update the parameters

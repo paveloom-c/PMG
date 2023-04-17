@@ -37,8 +37,10 @@ pub struct Params<F> {
     pub sigma_theta: F,
     /// Vertical component of the ellipsoid of natural standard deviations (km/s)
     pub sigma_z: F,
-    /// Linear rotation velocity of the Sun without peculiar motion (km/s)
+    /// The constant term of the rotation curve (km/s)
     pub theta_0: F,
+    /// The first derivative of the rotation curve (km/s/kpc)
+    pub theta_1: F,
     /// Linear rotation velocity of the Sun (km/s)
     pub theta_sun: F,
     /// The right ascension of the north galactic pole (radians)
@@ -118,6 +120,8 @@ impl<F> Model<F> {
         F: Float + Debug + Display + Serialize,
     {
         // Prepare a header
+        let params = &self.params;
+        let fit_params = self.fit_params.as_ref().unwrap();
         let header = formatdoc!(
             "
             # Fit of the model (parameters)
@@ -133,8 +137,9 @@ impl<F> Model<F> {
             # 07 sigma_r: Radial component of the ellipsoid of natural standard deviations [km/s]
             # 08 sigma_theta: Azimuthal component of the ellipsoid of natural standard deviations [km/s]
             # 09 sigma_z: Vertical component of the ellipsoid of natural standard deviations [km/s]
-            # 10 theta_0: Linear rotation velocity of the Sun without peculiar motion [km/s]
-            # 11 theta_sun: Linear rotation velocity of the Sun [km/s]
+            # 10 theta_0: The constant term of the rotation curve [km/s]
+            # 11 theta_1: The first derivative of the rotation curve [km/s/kpc]
+            # 12 theta_sun: Linear rotation velocity of the Sun [km/s]
             #
             # Note that only the first 9 parameters were optimized.
             # The rest are derived from the results.
@@ -167,15 +172,15 @@ impl<F> Model<F> {
             #
             ",
             sample_description = self.format_sample_description(),
-            alpha_ngp = self.params.alpha_ngp,
-            delta_ngp = self.params.delta_ngp,
-            l_ncp = self.params.l_ncp,
-            k = self.params.k,
-            u_sun_standard = self.params.u_sun_standard,
-            v_sun_standard = self.params.v_sun_standard,
-            w_sun_standard = self.params.w_sun_standard,
+            alpha_ngp = fit_params.alpha_ngp,
+            delta_ngp = fit_params.delta_ngp,
+            l_ncp = fit_params.l_ncp,
+            k = fit_params.k,
+            u_sun_standard = fit_params.u_sun_standard,
+            v_sun_standard = fit_params.v_sun_standard,
+            w_sun_standard = fit_params.w_sun_standard,
         );
-        let records = vec![&self.params, self.fit_params.as_ref().unwrap()];
+        let records = vec![params, fit_params];
         output::serialize_to(dat_dir, bin_dir, "fit_params", &header, &records)
     }
 }

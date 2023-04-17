@@ -34,12 +34,10 @@ impl<F> Model<F> {
         F: Float,
     {
         // Unpack some of the parameters
-        let r_0 = self.params.r_0;
-        let omega_0 = self.params.omega_0;
-        let a = self.params.a;
-        // Compute auxiliary values
-        let theta_0 = omega_0 * r_0;
-        let theta_1 = omega_0 - 2. * a;
+        let fit_params = self.fit_params.as_ref().unwrap();
+        let r_0 = fit_params.r_0;
+        let theta_0 = fit_params.theta_0;
+        let theta_1 = fit_params.theta_1;
         // Compute the rotation curve (linear model for now)
         let n_int = 1000;
         let n_float = F::from(n_int).unwrap();
@@ -72,6 +70,7 @@ impl<F> Model<F> {
         F: Float + Debug + Display + Serialize,
     {
         // Prepare a header
+        let fit_params = self.fit_params.as_ref().unwrap();
         let header = formatdoc!(
             "
             # Fit of the model (rotation curve)
@@ -94,9 +93,9 @@ impl<F> Model<F> {
             #
             ",
             sample_description = self.format_sample_description(),
-            r_0 = self.params.r_0,
-            omega_0 = self.params.omega_0,
-            a = self.params.a,
+            r_0 = fit_params.r_0,
+            omega_0 = fit_params.omega_0,
+            a = fit_params.a,
         );
         let records = self.fit_rotcurve.as_ref().unwrap();
         output::serialize_to(dat_dir, bin_dir, "fit_rotcurve", &header, records)

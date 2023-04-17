@@ -55,6 +55,7 @@ where
         let d_mu_b = self.d_mu_b;
         let par = self.par;
         let d_par = self.d_par;
+        let fit_params = self.fit_params;
         // Create an object for the reduced values
         let mut object_r = Object {
             l: Some(l),
@@ -64,17 +65,17 @@ where
         };
         // Compute the values
         object_r.compute_r_h_nominal();
-        object_r.compute_r_g_nominal(self.fit_params);
+        object_r.compute_r_g_nominal(fit_params);
         // Unpack the data
         let r_h_r = object_r.r_h.unwrap();
         let r_g_r = object_r.r_g.unwrap();
         // Unpack the parameters
-        let r_0 = self.fit_params.r_0;
-        let omega_0 = self.fit_params.omega_0;
-        let a = self.fit_params.a;
-        let u_sun = self.fit_params.u_sun;
-        let w_sun = self.fit_params.w_sun;
-        let k = self.fit_params.k;
+        let r_0 = fit_params.r_0;
+        let omega_0 = fit_params.omega_0;
+        let a = fit_params.a;
+        let u_sun = fit_params.u_sun;
+        let w_sun = fit_params.w_sun;
+        let k = fit_params.k;
         // Compute the sines and cosines of the longitude and latitude
         let sin_l = l.sin();
         let sin_b = b.sin();

@@ -96,8 +96,9 @@ impl<F> Model<F> {
                     .with_context(|| "Couldn't fit the model")?;
                 // Perform per-object computations
                 // with the optimized parameters
+                let fit_params = self.fit_params.as_ref().unwrap();
                 for object in &mut self.objects {
-                    object.compute(self.fit_params.as_ref().unwrap());
+                    object.compute(fit_params);
                 }
                 // Compute the rotation curve based on the fitted parameters
                 self.compute_fit_rotcurve();
@@ -128,8 +129,8 @@ impl<F> Model<F> {
                     .with_context(|| "Couldn't write the objects to a file")?;
             }
             Goal::Fit => {
-                let params = self.fit_params.as_ref().unwrap();
-                self.serialize_to_objects(dat_dir, bin_dir, "fit_objects", params)
+                let fit_params = self.fit_params.as_ref().unwrap();
+                self.serialize_to_objects(dat_dir, bin_dir, "fit_objects", fit_params)
                     .with_context(|| "Couldn't write the objects to a file")?;
                 self.serialize_to_fit_params(dat_dir, bin_dir)
                     .with_context(|| "Couldn't write the fitted parameters to a file")?;
@@ -164,6 +165,7 @@ where
                 alpha_ngp: utils::cast(args.alpha_ngp)?,
                 delta_ngp: utils::cast(args.delta_ngp)?,
                 theta_0: F::zero(),
+                theta_1: F::zero(),
                 theta_sun: utils::cast(args.theta_sun)?,
                 l_ncp: utils::cast(args.l_ncp)?,
                 k: utils::cast(args.k)?,
