@@ -71,7 +71,7 @@ where
                                 omega_0: {i_1:>19.15} {p_1:>19.15} {best_p_1:>19.15}
                                       a: {i_2:>19.15} {p_2:>19.15} {best_p_2:>19.15}
                                   u_sun: {i_3:>19.15} {p_3:>19.15} {best_p_3:>19.15}
-                              theta_sun: {i_4:>19.15} {p_4:>19.15} {best_p_4:>19.15}
+                                  v_sun: {i_4:>19.15} {p_4:>19.15} {best_p_4:>19.15}
                                   w_sun: {i_5:>19.15} {p_5:>19.15} {best_p_5:>19.15}
                                 sigma_r: {i_6:>19.15} {p_6:>19.15} {best_p_6:>19.15}
                             sigma_theta: {i_7:>19.15} {p_7:>19.15} {best_p_7:>19.15}
@@ -85,7 +85,7 @@ where
                 i_1 = self.params.omega_0,
                 i_2 = self.params.a,
                 i_3 = self.params.u_sun,
-                i_4 = self.params.theta_sun,
+                i_4 = self.params.v_sun,
                 i_5 = self.params.w_sun,
                 i_6 = self.params.sigma_r,
                 i_7 = self.params.sigma_theta,

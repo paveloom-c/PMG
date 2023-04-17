@@ -104,9 +104,8 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 let r_g = object.r_g.unwrap();
                 // Unpack the parameters
                 let r_0 = fit_params.r_0;
-                let omega_0 = fit_params.omega_0;
                 let u_sun = fit_params.u_sun;
-                let theta_sun = fit_params.theta_sun;
+                let v_sun = fit_params.v_sun;
                 let w_sun = fit_params.w_sun;
                 let sigma_r = fit_params.sigma_r;
                 let sigma_theta = fit_params.sigma_theta;
@@ -148,8 +147,6 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 let d_mu_l_cos_b = d_mu_l_cos_b_observed + d_mu_l_cos_b_natural;
                 let d_mu_b = d_mu_b_observed + d_mu_b_natural;
                 let d_par = par_e.powi(2);
-                // Compute the peculiar motion of the Sun toward l = 90 degrees (km/s)
-                let v_sun = theta_sun - r_0 * omega_0;
                 // Compute the constant part of the model velocity
                 let v_r_sun = -u_sun * cos_l * cos_b - v_sun * sin_l * cos_b - w_sun * sin_b;
                 // Define a problem of the inner optimization

@@ -102,9 +102,15 @@ where
             .run()?;
         let best_point = res.state().get_best_param().unwrap();
         // let best_cost = res.state().get_best_cost();
-        // Save the new parameters
+        // Prepare storage for the new parameters
         let mut fit_params = self.params.clone();
         fit_params.update_with(best_point);
+        // Compute the derived values
+        self.params.theta_0 = self.params.r_0 * self.params.omega_0;
+        self.params.theta_sun = self.params.theta_0 + self.params.v_sun;
+        fit_params.theta_0 = fit_params.r_0 * fit_params.omega_0;
+        fit_params.theta_sun = fit_params.theta_0 + fit_params.v_sun;
+        // Save the new parameters
         self.fit_params = Some(fit_params);
         // // Prepare arrays for the confidence intervals
         // let mut fit_params_ep = vec![0.; self.objects.len()];

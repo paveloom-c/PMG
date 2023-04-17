@@ -218,11 +218,13 @@ pub struct Args {
     /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
     #[arg(long, default_value_t = 10.7, help_heading = "PARAMETERS")]
     pub u_sun: f64,
-    /// Linear rotation velocity of the Sun (km/s)
+    /// Peculiar motion of the Sun toward l = 90 degrees (km/s)
     ///
-    /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
-    #[arg(long, default_value_t = 247., help_heading = "PARAMETERS")]
-    pub theta_sun: f64,
+    /// This is only used for fitting.
+    ///
+    /// Sources: Rastorguev et al. (2017)
+    #[arg(long, default_value_t = 19.0, help_heading = "PARAMETERS")]
+    pub v_sun: f64,
     /// Peculiar motion of the Sun toward NGP (km/s)
     ///
     /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
@@ -237,6 +239,13 @@ pub struct Args {
     /// Vertical component of the ellipsoid of natural standard deviations (km/s)
     #[arg(long, default_value_t = 3., help_heading = "PARAMETERS")]
     pub sigma_z: f64,
+    /// Linear rotation velocity of the Sun (km/s)
+    ///
+    /// This is only used for computing per-object data.
+    ///
+    /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
+    #[arg(long, default_value_t = 247., help_heading = "PARAMETERS")]
+    pub theta_sun: f64,
     /// The right ascension of the north galactic pole (HMS angle -> radians)
     ///
     /// Source: Reid et al. (2009)
