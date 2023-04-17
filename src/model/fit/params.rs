@@ -86,7 +86,7 @@ where
         };
         let init_param = self.params.to_point();
         let linesearch = MoreThuenteLineSearch::new();
-        let solver = LBFGS::new(linesearch, 7);
+        let solver = LBFGS::new(linesearch, 7).with_tolerance_cost(1e-12)?;
         // Find the local minimum in the outer optimization
         let res = Executor::new(problem, solver)
             .configure(|state| state.param(init_param))
@@ -98,7 +98,8 @@ where
                 },
                 ObserverMode::Always,
             )
-            .run()?;
+            .run()
+            .with_context(|| "Couldn't solve the outer optimization problem")?;
         let best_point = res.state().get_best_param().unwrap();
         // let best_cost = res.state().get_best_cost();
         // Prepare storage for the new parameters

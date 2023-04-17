@@ -10,7 +10,7 @@ use core::cell::RefCell;
 use core::fmt::{Debug, Display};
 use core::iter::Sum;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use argmin::core::{ArgminFloat, CostFunction, Executor, Gradient, State};
 use argmin::solver::goldensectionsearch::GoldenSectionSearch;
 use argmin_math::{
@@ -171,7 +171,8 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 // Find the local minimum in the inner optimization
                 let res = Executor::new(problem, solver)
                     .configure(|state| state.param(init_param).max_iters(1000))
-                    .run()?;
+                    .run()
+                    .with_context(|| "Couldn't solve the inner optimization problem")?;
                 let &best_point = res.state().get_best_param().unwrap();
                 let best_cost = res.state().get_best_cost();
                 // Compute the final sum for this object
