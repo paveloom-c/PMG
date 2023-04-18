@@ -9,4 +9,6 @@ pub enum Goal {
     Objects,
     /// Fit the model of the Galaxy to the data
     Fit,
+    /// Fit the model of the Galaxy to the data (with errors)
+    FitWithErrors,
 }

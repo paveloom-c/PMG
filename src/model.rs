@@ -90,9 +90,10 @@ impl<F> Model<F> {
                     object.compute(&self.params);
                 }
             }
-            Goal::Fit => {
+            Goal::Fit | Goal::FitWithErrors => {
+                let with_errors = self.goal == Goal::FitWithErrors;
                 // Try to fit the model
-                self.try_fit_from()
+                self.try_fit_from(with_errors)
                     .with_context(|| "Couldn't fit the model")?;
                 // Perform per-object computations
                 // with the optimized parameters
@@ -128,7 +129,7 @@ impl<F> Model<F> {
                 self.serialize_to_objects(dat_dir, bin_dir, "objects", params)
                     .with_context(|| "Couldn't write the objects to a file")?;
             }
-            Goal::Fit => {
+            Goal::Fit | Goal::FitWithErrors => {
                 let fit_params = self.fit_params.as_ref().unwrap();
                 self.serialize_to_objects(dat_dir, bin_dir, "fit_objects", fit_params)
                     .with_context(|| "Couldn't write the objects to a file")?;
@@ -154,14 +155,32 @@ where
         let mut model = Self {
             params: Params {
                 r_0: utils::cast(args.r_0)?,
+                r_0_ep: None,
+                r_0_em: None,
                 omega_0: utils::cast(args.omega_0)?,
+                omega_0_ep: None,
+                omega_0_em: None,
                 a: utils::cast(args.a)?,
+                a_ep: None,
+                a_em: None,
                 u_sun: utils::cast(args.u_sun)?,
+                u_sun_ep: None,
+                u_sun_em: None,
                 v_sun: utils::cast(args.v_sun)?,
+                v_sun_ep: None,
+                v_sun_em: None,
                 w_sun: utils::cast(args.w_sun)?,
+                w_sun_ep: None,
+                w_sun_em: None,
                 sigma_r: utils::cast(args.sigma_r)?,
+                sigma_r_ep: None,
+                sigma_r_em: None,
                 sigma_theta: utils::cast(args.sigma_theta)?,
+                sigma_theta_ep: None,
+                sigma_theta_em: None,
                 sigma_z: utils::cast(args.sigma_z)?,
+                sigma_z_ep: None,
+                sigma_z_em: None,
                 alpha_ngp: utils::cast(args.alpha_ngp)?,
                 delta_ngp: utils::cast(args.delta_ngp)?,
                 theta_0: F::zero(),

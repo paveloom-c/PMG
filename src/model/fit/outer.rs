@@ -24,17 +24,18 @@ use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelI
 
 /// A problem for the outer optimization
 #[allow(clippy::missing_docs_in_private_items)]
+#[allow(clippy::type_complexity)]
 pub(super) struct OuterOptimizationProblem<'a, F> {
     pub(super) objects: &'a Objects<F>,
     pub(super) params: &'a Params<F>,
-    pub(super) par_pairs: Rc<RefCell<Vec<(F, F, F)>>>,
+    pub(super) par_pairs: &'a Rc<RefCell<Vec<(F, F, F)>>>,
 }
 
 /// Type of the parameters
-type Param<F> = Vec<F>;
+pub type Param<F> = Vec<F>;
 
 /// Type of the output
-type Output<F> = F;
+pub type Output<F> = F;
 
 impl<'a, F> OuterOptimizationProblem<'a, F> {
     #[allow(clippy::as_conversions)]
@@ -46,7 +47,7 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
     /// Compute the parameterized part of the negative log likelihood function of the model
-    fn inner_cost(&self, p: &Param<F>, update_par_pairs: bool) -> Result<Output<F>>
+    pub(super) fn inner_cost(&self, p: &Param<F>, update_par_pairs: bool) -> Result<Output<F>>
     where
         F: Float
             + Debug

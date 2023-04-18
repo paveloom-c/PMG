@@ -3,24 +3,29 @@
 extern crate alloc;
 
 use super::Model;
-use super::{Logger, OuterOptimizationProblem};
+use super::{
+    ConfidenceIntervalProblem, FrozenOuterOptimizationProblem, Logger, OuterOptimizationProblem,
+};
 
 use alloc::rc::Rc;
+use argmin::solver::linesearch::condition::ArmijoCondition;
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
 use core::iter::Sum;
 use std::fs::File;
 
 use anyhow::{Context, Result};
-use argmin::core::observers::ObserverMode;
+use argmin::core::observers::{ObserverMode, SlogLogger};
 use argmin::core::{ArgminFloat, Executor, State};
-use argmin::solver::linesearch::MoreThuenteLineSearch;
+use argmin::solver::brent::BrentRoot;
+use argmin::solver::linesearch::BacktrackingLineSearch;
 use argmin::solver::quasinewton::LBFGS;
 use argmin_math::{
     ArgminAdd, ArgminDot, ArgminL1Norm, ArgminL2Norm, ArgminMinMax, ArgminMul, ArgminSignum,
     ArgminSub, ArgminZeroLike,
 };
 use finitediff::FiniteDiff;
+use itertools::izip;
 use num::Float;
 use numeric_literals::replace_float_literals;
 
@@ -65,7 +70,7 @@ where
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub(in crate::model) fn try_fit_from(&mut self) -> Result<()> {
+    pub(in crate::model) fn try_fit_from(&mut self, with_errors: bool) -> Result<()> {
         // Prepare a log file
         let log_path = self.output_dir.join("fit.log");
         File::create(log_path.clone()).with_context(|| "Couldn't create a log file")?;
@@ -82,10 +87,11 @@ where
         let problem = OuterOptimizationProblem {
             objects: &self.objects,
             params: &self.params,
-            par_pairs: Rc::clone(&par_pairs),
+            par_pairs: &Rc::clone(&par_pairs),
         };
         let init_param = self.params.to_point();
-        let linesearch = MoreThuenteLineSearch::new();
+        let cond = ArmijoCondition::new(0.5)?;
+        let linesearch = BacktrackingLineSearch::new(cond).rho(0.9)?;
         let solver = LBFGS::new(linesearch, 7).with_tolerance_cost(1e-12)?;
         // Find the local minimum in the outer optimization
         let res = Executor::new(problem, solver)
@@ -94,17 +100,16 @@ where
                 Logger {
                     params: self.params.clone(),
                     path: log_path,
-                    par_pairs,
+                    par_pairs: Rc::clone(&par_pairs),
                 },
                 ObserverMode::Always,
             )
             .run()
             .with_context(|| "Couldn't solve the outer optimization problem")?;
-        let best_point = res.state().get_best_param().unwrap();
-        // let best_cost = res.state().get_best_cost();
+        let best_point = res.state().get_best_param().unwrap().clone();
         // Prepare storage for the new parameters
         let mut fit_params = self.params.clone();
-        fit_params.update_with(best_point);
+        fit_params.update_with(&best_point);
         // Compute the derived values
         self.params.theta_0 = self.params.r_0 * self.params.omega_0;
         self.params.theta_1 = self.params.omega_0 - 2. * self.params.a;
@@ -112,192 +117,104 @@ where
         fit_params.theta_0 = fit_params.r_0 * fit_params.omega_0;
         fit_params.theta_1 = fit_params.omega_0 - 2. * fit_params.a;
         fit_params.theta_sun = fit_params.theta_0 + fit_params.v_sun;
-        // Save the new parameters
+        // Compute the uncertainties if requested
+        if with_errors {
+            // Prepare arrays for the confidence intervals
+            let mut fit_params_ep = vec![0.; 9];
+            let mut fit_params_em = vec![0.; 9];
+            // Define the confidence intervals
+            izip!(&mut fit_params_ep, &mut fit_params_em)
+                .enumerate()
+                .try_for_each(|(index, (fit_param_ep, fit_param_em))| -> Result<()> {
+                    let param = best_point[index];
+
+                    let tolerance = F::sqrt(F::epsilon());
+                    let right_interval_widths = [2.0, 2.0, 2.0, 10.0, 1.5, 4.0, 2.0, 20.0, 2.0];
+                    let left_interval_widths = [2.0, 2.0, 2.0, 10.0, 1.5, 4.0, 2.0, 20.0, 2.0];
+                    let max_iters = 100;
+
+                    // We compute the best value again since the
+                    // parameters are varied differently here
+                    let best_frozen_cost = {
+                        let problem = FrozenOuterOptimizationProblem {
+                            index,
+                            param,
+                            objects: &self.objects,
+                            params: &self.params,
+                            par_pairs: &Rc::clone(&par_pairs),
+                        };
+                        let mut init_param = self.params.to_point();
+                        // Remove the frozen parameter
+                        init_param.remove(index);
+                        let cond = ArmijoCondition::new(0.5)?;
+                        let linesearch = BacktrackingLineSearch::new(cond).rho(0.9)?;
+                        let solver = LBFGS::new(linesearch, 7).with_tolerance_cost(1e-12)?;
+                        // Find the local minimum in the outer optimization
+                        let res = Executor::new(problem, solver)
+                        .configure(|state| state.param(init_param))
+                        .run()
+                        .with_context(|| {
+                            "Couldn't solve the outer optimization problem with a frozen parameter"
+                        })?;
+                        res.state().get_best_cost()
+                    };
+
+                    // Find a root to the right
+                    {
+                        let problem = ConfidenceIntervalProblem {
+                            index,
+                            best_outer_cost: best_frozen_cost,
+                            objects: &self.objects,
+                            params: &self.params,
+                            par_pairs: &Rc::clone(&par_pairs),
+                        };
+
+                        let min = param;
+                        let max = param + right_interval_widths[index];
+                        let solver = BrentRoot::new(min, max, tolerance);
+
+                        let res = Executor::new(problem, solver)
+                            .configure(|state| state.param(param).max_iters(max_iters))
+                            .add_observer(SlogLogger::term(), ObserverMode::Always)
+                            .run()
+                            .with_context(|| "Couldn't find a root to the right")?;
+
+                        let param_p = *res.state().get_best_param().unwrap();
+                        *fit_param_ep = param_p - param;
+                    };
+
+                    // Find a root to the left
+                    {
+                        let problem = ConfidenceIntervalProblem {
+                            index,
+                            best_outer_cost: best_frozen_cost,
+                            objects: &self.objects,
+                            params: &self.params,
+                            par_pairs: &Rc::clone(&par_pairs),
+                        };
+
+                        let min = param - left_interval_widths[index];
+                        let max = param;
+                        let solver = BrentRoot::new(min, max, tolerance);
+
+                        let res = Executor::new(problem, solver)
+                            .configure(|state| state.param(param).max_iters(max_iters))
+                            .add_observer(SlogLogger::term(), ObserverMode::Always)
+                            .run()
+                            .with_context(|| "Couldn't find a root to the left")?;
+
+                        let param_l = *res.state().get_best_param().unwrap();
+                        *fit_param_em = param - param_l;
+                    };
+
+                    Ok(())
+                })
+                .with_context(|| "Couldn't define the confidence intervals")?;
+            fit_params.update_ep_with(&fit_params_ep);
+            fit_params.update_em_with(&fit_params_em);
+        }
+        // Save the results
         self.fit_params = Some(fit_params);
-        // // Prepare arrays for the confidence intervals
-        // let mut fit_params_ep = vec![0.; self.objects.len()];
-        // let mut fit_params_em = vec![0.; self.objects.len()];
-        // // Define the confidence intervals
-        // izip!(&mut fit_params_ep, &mut fit_params_em)
-        //     .enumerate()
-        //     .try_for_each(|(i, (fit_param_ep, fit_param_em))| -> Result<()> {
-        //         let param = best_p[i];
-        //
-        //         let tolerance = 1e-11;
-        //         let max_iters = 100;
-        //
-        //         // Find a root to the right
-        //         {
-        //             let problem = RootsProblem {
-        //                 i,
-        //                 best_l_1,
-        //                 p_0: &p_0,
-        //                 objects: &self.objects,
-        //                 fit_params: &fit_params_clone,
-        //                 rng: &rng,
-        //             };
-        //
-        //             let min = param;
-        //             let max = param + 1.;
-        //             let solver = BrentRoot::new(min, max, tolerance);
-        //
-        //             let res = Executor::new(problem, solver)
-        //                 .configure(|state| state.param(param).max_iters(max_iters))
-        //                 .run()
-        //                 .with_context(|| "Couldn't find a root to the right")?;
-        //
-        //             let param_p = *res.state().get_best_param().unwrap();
-        //             *fit_param_ep = param_p - param;
-        //         };
-        //
-        //         // Find a root to the left
-        //         {
-        //             let problem = RootsProblem {
-        //                 i,
-        //                 best_l_1,
-        //                 p_0: &p_0,
-        //                 objects: &self.objects,
-        //                 fit_params: &fit_params_clone,
-        //                 rng: &rng,
-        //             };
-        //
-        //             let min = param - 1.;
-        //             let max = param;
-        //             let solver = BrentRoot::new(min, max, tolerance);
-        //
-        //             let res = Executor::new(problem, solver)
-        //                 .configure(|state| state.param(param).max_iters(max_iters))
-        //                 .run()
-        //                 .with_context(|| "Couldn't find a root to the left")?;
-        //
-        //             let param_l = *res.state().get_best_param().unwrap();
-        //             *fit_param_em = param - param_l;
-        //         };
-        //
-        //         Ok(())
-        //     })
-        //     .with_context(|| "Couldn't define the confidence intervals")?;
         Ok(())
     }
 }
-
-// #[allow(clippy::missing_docs_in_private_items)]
-// struct RootsProblem<'a, F, R> {
-//     i: usize,
-//     best_l_1: F,
-//     p_0: &'a [F; 9],
-//     objects: &'a Objects<F>,
-//     fit_params: &'a Params<F>,
-//     rng: &'a R,
-// }
-//
-// impl<'a, F, R> CostFunction for RootsProblem<'a, F, R>
-// where
-//     F: Float + Debug + Default + Display + SampleUniform + Sync + Send,
-//     StandardNormal: Distribution<F>,
-//     R: Rng + SeedableRng + Clone,
-// {
-//     type Param = F;
-//     type Output = F;
-//
-//     #[allow(clippy::indexing_slicing)]
-//     #[allow(clippy::unwrap_in_result)]
-//     #[allow(clippy::unwrap_used)]
-//     #[replace_float_literals(F::from(literal).unwrap())]
-//     fn cost(&self, param: &Self::Param) -> Result<Self::Output> {
-//         let i = self.i;
-//         let mut par_pairs = vec![(0., 0., 0.); self.objects.len()];
-//         let mut objects = self.objects.clone();
-//         let mut fit_params = self.fit_params.clone();
-//         let mut rng = (*self.rng).clone();
-//         // Prepare a new point
-//         let mut new_p = [F::zero(); 9];
-//         new_p[i] = *param;
-//         // Redefine the target function
-//         let f = |subset_p: &Point<F, 8>| -> Result<F> {
-//             // Update the new point
-//             let mut shift = 0;
-//             for j in 0..subset_p.len() {
-//                 if j == i {
-//                     shift = 1;
-//                 }
-//                 new_p[j + shift] = subset_p[j];
-//             }
-//             // Update the parameters
-//             fit_params.update_with(&new_p);
-//             // Compute the value
-//             compute_l_1(&mut objects, &fit_params, &mut par_pairs)
-//         };
-//         // Remove the initial value of the frozen parameter
-//         let mut new_p_0 = [F::zero(); 8];
-//         {
-//             let mut shift = 0;
-//             for j in 0..self.p_0.len() {
-//                 if j == i {
-//                     shift = 1;
-//                     continue;
-//                 }
-//                 new_p_0[j - shift] = self.p_0[j];
-//             }
-//         }
-//         // Find the global minimum
-//         let (subset_best_l_1, _) = SA {
-//             f,
-//             p_0: &new_p_0,
-//             t_0: 100.0,
-//             t_min: 1.0,
-//             bounds: &[
-//                 F::zero()..F::infinity(),
-//                 F::zero()..F::infinity(),
-//                 F::zero()..F::infinity(),
-//                 F::zero()..F::infinity(),
-//                 F::zero()..F::infinity(),
-//                 F::zero()..F::infinity(),
-//                 F::zero()..F::infinity(),
-//                 F::zero()..F::infinity(),
-//             ],
-//             apf: &APF::Metropolis,
-//             neighbour: &NeighbourMethod::Custom {
-//                 f: Box::new(|p, bounds, inner_rng| -> Result<Point<F, 8>> {
-//                     // Get a vector of standard deviations
-//                     let stds = Params::stds();
-//                     let mut new_stds = [F::zero(); 8];
-//                     {
-//                         let mut shift = 0;
-//                         for j in 0..stds.len() {
-//                             if j == i {
-//                                 shift = 1;
-//                                 continue;
-//                             }
-//                             new_stds[j - shift] = stds[j];
-//                         }
-//                     }
-//                     // Prepare a new point
-//                     let mut inner_new_p = [F::zero(); 8];
-//                     // Generate a new point
-//                     izip!(&mut inner_new_p, p, bounds).enumerate().for_each(
-//                         |(j, (new_c, &c, r))| {
-//                             // Create a normal distribution around the current coordinate
-//                             let d = Normal::new(c, stds[j]).unwrap();
-//                             // Sample from this distribution
-//                             let mut s = d.sample(inner_rng);
-//                             // If the result is not in the range, repeat until it is
-//                             while !r.contains(&s) {
-//                                 s = d.sample(inner_rng);
-//                             }
-//                             // Save the new coordinate
-//                             *new_c = F::from(s).unwrap();
-//                         },
-//                     );
-//                     Ok(inner_new_p)
-//                 }),
-//             },
-//             schedule: &Schedule::Fast,
-//             status: &mut Status::None,
-//             rng: &mut rng,
-//         }
-//         .findmin()
-//         .with_context(|| "Couldn't find the global minimum")?;
-//         Ok(subset_best_l_1 - self.best_l_1 - 0.5)
-//     }
-// }
