@@ -5,9 +5,10 @@
 result
 
 # Artifacts
-target
-public
 data/output
 plots
+public
+results
+target
 *.log
 *.zip

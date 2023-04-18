@@ -23,7 +23,7 @@ cargo run -r -- -o data/output/hmsfrs_test --goal objects -i data/input/hmsfrs.d
 
 echo -e "${PAD}> Fit all..."
 cargo run -r -- -o data/output/all --goal fit -i data/input/all.dat &>/dev/null
-echo -e "${PAD}> Fit near the solar circle..."
+echo -e "${PAD}> Fit near the solar circle (with errors)..."
 cargo run -r -- -o data/output/near_the_solar_circle --goal fit-with-errors -i data/input/near_the_solar_circle.dat &>/dev/null
 echo -e "${PAD}> Fit HMSFRs..."
 cargo run -r -- -o data/output/hmsfrs --goal fit -i data/input/hmsfrs.dat &>/dev/null

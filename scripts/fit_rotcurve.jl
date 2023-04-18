@@ -216,6 +216,8 @@ function plot(
     # Compute the limits
     x_max, x_min = max_min(x)
     y_max, y_min = max_min(y)
+    # Define the X tick distance
+    xtick_distance = (x_max - x_min) > 10 ? 4 : 2
     # Prepare tables
     objects_table =
         if isempty(evel)
@@ -256,7 +258,8 @@ function plot(
             height = 200,
             width = 200,
             grid = "both",
-            minor_tick_num = 4,
+            xtick_distance = xtick_distance,
+            minor_tick_num = 3,
             minor_grid_style = {opacity = 0.25},
             major_grid_style = {opacity = 0.5},
             tick_label_style = {font = "\\small"},
