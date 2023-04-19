@@ -91,10 +91,14 @@ impl<F> Model<F> {
                 }
             }
             Goal::Fit | Goal::FitWithErrors => {
-                let with_errors = self.goal == Goal::FitWithErrors;
                 // Try to fit the model
-                self.try_fit_from(with_errors)
+                self.try_fit_params()
                     .with_context(|| "Couldn't fit the model")?;
+                // Try to define the confidence intervals if requested
+                if self.goal == Goal::FitWithErrors {
+                    self.try_fit_errors()
+                        .with_context(|| "Couldn't define the confidence intervals")?;
+                }
                 // Perform per-object computations
                 // with the optimized parameters
                 let fit_params = self.fit_params.as_ref().unwrap();

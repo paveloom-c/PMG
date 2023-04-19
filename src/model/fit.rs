@@ -12,7 +12,6 @@ pub mod rotcurve;
 use super::io;
 use super::{Model, Object, Objects, Params};
 
-use errors::ConfidenceIntervalProblem;
 use errors_logger::ErrorsLogger;
 use fit_logger::FitLogger;
 use frozen_outer::FrozenOuterOptimizationProblem;
