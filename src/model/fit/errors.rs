@@ -82,7 +82,7 @@ where
         let mut init_param = self.params.to_point();
         // Remove the frozen parameter
         init_param.remove(self.index);
-        let cond = ArmijoCondition::new(0.5)?;
+        let cond = ArmijoCondition::new(1e-4)?;
         let linesearch = BacktrackingLineSearch::new(cond).rho(0.5)?;
         let solver = LBFGS::new(linesearch, 7).with_tolerance_cost(1e-12)?;
         // Find the local minimum in the outer optimization

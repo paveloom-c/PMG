@@ -73,18 +73,16 @@ where
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
     pub(in crate::model) fn try_fit_from(&mut self, with_errors: bool) -> Result<()> {
-        // Prepare log files
+        // Prepare log directory and log file paths
         let logs_dir_path = self.output_dir.join("logs");
         let fit_log_path = logs_dir_path.join("fit.log");
         let errors_log_path = logs_dir_path.join("errors.log");
         std::fs::create_dir_all(logs_dir_path)
             .with_context(|| "Couldn't create the logs directory")?;
+        // Prepare the fit log file
         let fit_log_file =
             File::create(fit_log_path).with_context(|| "Couldn't create the `fit.log` file")?;
         let fit_log_writer = Rc::new(RefCell::new(BufWriter::new(fit_log_file)));
-        let errors_log_file = File::create(errors_log_path)
-            .with_context(|| "Couldn't create the `errors.log` file")?;
-        let errors_log_writer = Rc::new(RefCell::new(BufWriter::new(errors_log_file)));
         // Compute some of the values that don't
         // depend on the parameters being optimized
         self.objects.iter_mut().for_each(|object| {
@@ -101,7 +99,7 @@ where
             par_pairs: &Rc::clone(&par_pairs),
         };
         let init_param = self.params.to_point();
-        let cond = ArmijoCondition::new(0.5)?;
+        let cond = ArmijoCondition::new(1e-4)?;
         let linesearch = BacktrackingLineSearch::new(cond).rho(0.5)?;
         let solver = LBFGS::new(linesearch, 7).with_tolerance_cost(1e-12)?;
         // Find the local minimum in the outer optimization
@@ -130,6 +128,10 @@ where
         fit_params.theta_sun = fit_params.theta_0 + fit_params.v_sun;
         // Compute the uncertainties if requested
         if with_errors {
+            // Prepare the errors log file
+            let errors_log_file = File::create(errors_log_path)
+                .with_context(|| "Couldn't create the `errors.log` file")?;
+            let errors_log_writer = Rc::new(RefCell::new(BufWriter::new(errors_log_file)));
             // Prepare arrays for the confidence intervals
             let mut fit_params_ep = vec![0.; 9];
             let mut fit_params_em = vec![0.; 9];
@@ -145,8 +147,8 @@ where
                     )?;
 
                     let tolerance = F::sqrt(F::epsilon());
-                    let right_interval_widths = [2.0, 2.0, 2.0, 10.0, 2.0, 4.0, 2.0, 20.0, 2.0];
-                    let left_interval_widths = [2.0, 2.0, 2.0, 10.0, 2.0, 4.0, 2.0, 20.0, 2.0];
+                    let right_interval_widths = [2.0, 2.0, 2.0, 10.0, 2.0, 4.0, 5.0, 20.0, 2.0];
+                    let left_interval_widths = [2.0, 2.0, 2.0, 10.0, 2.0, 4.0, 5.0, 20.0, 2.0];
                     let max_iters = 100;
 
                     // We compute the best value again since the
@@ -162,8 +164,7 @@ where
                         let mut init_param = self.params.to_point();
                         // Remove the frozen parameter
                         init_param.remove(index);
-                        let cond = ArmijoCondition::new(0.5)?;
-                        // let cond = WolfeCondition::new(1e-4, 0.9)?;
+                        let cond = ArmijoCondition::new(1e-4)?;
                         let linesearch = BacktrackingLineSearch::new(cond).rho(0.5)?;
                         let solver = LBFGS::new(linesearch, 7).with_tolerance_cost(1e-12)?;
                         // Find the local minimum in the outer optimization
