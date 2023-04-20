@@ -1,4 +1,4 @@
-//! Computation goal
+//! Computation task
 
 use core::cmp::Ord;
 
@@ -9,6 +9,13 @@ pub enum Goal {
     Objects,
     /// Fit the model of the Galaxy to the data
     Fit,
-    /// Fit the model of the Galaxy to the data (with errors)
-    FitWithErrors,
+}
+
+/// Computation task
+#[derive(Debug)]
+pub struct Task {
+    /// Computation goal
+    pub goal: Goal,
+    /// Try to define the confidence intervals? (fit goal only)
+    pub with_errors: bool,
 }

@@ -199,6 +199,9 @@ pub struct Args {
     /// Computation goal
     #[arg(long, required = true)]
     pub goal: Goal,
+    /// Try to define the confidence intervals (fit goal only)
+    #[arg(long = "with-errors")]
+    pub with_errors: bool,
     /// Input file
     #[arg(short, required = true, value_parser = PathBufParser)]
     pub input: PathBuf,

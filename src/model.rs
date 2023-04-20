@@ -8,7 +8,7 @@ mod sample_description;
 
 use crate::cli::Args;
 use crate::utils;
-use crate::Goal;
+use crate::{Goal, Task};
 pub use fit::rotcurve::RotationCurve;
 pub use objects::{Object, Objects};
 pub use params::Params;
@@ -41,8 +41,8 @@ pub struct Model<F> {
     fit_params: Option<Params<F>>,
     /// Fit of the model (rotation curve)
     fit_rotcurve: Option<RotationCurve<F>>,
-    /// Computation goal
-    goal: Goal,
+    /// Computation task
+    task: Task,
     /// Sample description
     sample_description: Option<String>,
     /// Output directory
@@ -83,19 +83,19 @@ impl<F> Model<F> {
         Vec<F>: ArgminL2Norm<F>,
         Vec<F>: FiniteDiff,
     {
-        match self.goal {
+        match self.task.goal {
             Goal::Objects => {
                 // Perform per-object computations
                 for object in &mut self.objects {
                     object.compute(&self.params);
                 }
             }
-            Goal::Fit | Goal::FitWithErrors => {
+            Goal::Fit => {
                 // Try to fit the model
                 self.try_fit_params()
                     .with_context(|| "Couldn't fit the model")?;
                 // Try to define the confidence intervals if requested
-                if self.goal == Goal::FitWithErrors {
+                if self.task.with_errors {
                     self.try_fit_errors()
                         .with_context(|| "Couldn't define the confidence intervals")?;
                 }
@@ -127,13 +127,13 @@ impl<F> Model<F> {
         fs::create_dir_all(bin_dir)
             .with_context(|| format!("Couldn't create the output directory {bin_dir:?}"))?;
         // Serialize the data
-        match self.goal {
+        match self.task.goal {
             Goal::Objects => {
                 let params = &self.params;
                 self.serialize_to_objects(dat_dir, bin_dir, "objects", params)
                     .with_context(|| "Couldn't write the objects to a file")?;
             }
-            Goal::Fit | Goal::FitWithErrors => {
+            Goal::Fit => {
                 let fit_params = self.fit_params.as_ref().unwrap();
                 self.serialize_to_objects(dat_dir, bin_dir, "fit_objects", fit_params)
                     .with_context(|| "Couldn't write the objects to a file")?;
@@ -199,7 +199,10 @@ where
             objects: Objects::<F>::default(),
             fit_params: None,
             fit_rotcurve: None,
-            goal: args.goal,
+            task: Task {
+                goal: args.goal,
+                with_errors: args.with_errors,
+            },
             sample_description: None,
             output_dir: args.output_dir.clone(),
         };

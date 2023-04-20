@@ -2,12 +2,12 @@
 //! of the Galaxy by optimising over its parametric model.
 
 mod cli;
-mod goal;
 mod model;
+mod task;
 mod utils;
 
-use goal::Goal;
 use model::Model;
+use task::{Goal, Task};
 
 use anyhow::{Context, Result};
 
