@@ -1,12 +1,10 @@
 image: ubuntu:22.10
-
 workflow:
   rules:
     - if: $CI_COMMIT_BRANCH
-
 pages:
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_BRANCH == "main"
   script:
     - |
       apt-get update && apt-get -y install curl build-essential
