@@ -46,7 +46,7 @@ pub struct Params<F> {
     #[serde(rename = "A_em")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub a_em: Option<F>,
-    /// Peculiar motion of the Sun toward GC (km/s)
+    /// Residual motion of the Sun toward GC (km/s)
     #[serde(rename = "U_sun")]
     pub u_sun: F,
     /// Plus uncertainty in `u_sun`
@@ -57,7 +57,7 @@ pub struct Params<F> {
     #[serde(rename = "U_sun_em")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub u_sun_em: Option<F>,
-    /// Peculiar motion of the Sun toward l = 90 degrees (km/s)
+    /// Residual motion of the Sun toward l = 90 degrees (km/s)
     #[serde(rename = "V_sun")]
     pub v_sun: F,
     /// Plus uncertainty in `v_sun`
@@ -68,7 +68,7 @@ pub struct Params<F> {
     #[serde(rename = "V_sun_em")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub v_sun_em: Option<F>,
-    /// Peculiar motion of the Sun toward NGP (km/s)
+    /// Residual motion of the Sun toward NGP (km/s)
     #[serde(rename = "W_sun")]
     pub w_sun: F,
     /// Plus uncertainty in `w_sun`
@@ -238,9 +238,9 @@ impl<F> Model<F> {
             # 01 R_0: Galactocentric distance to the Sun [kpc]
             # 02 omega_0: Circular velocity of the Sun at R = R_0 [km/s/kpc]
             # 03 A: Oort's A constant [km/s/kpc]
-            # 04 U_sun: Peculiar motion of the Sun toward GC [km/s]
-            # 05 V_sun: Peculiar motion of the Sun toward l = 90 degrees [km/s]
-            # 06 W_sun: Peculiar motion of the Sun toward NGP [km/s]
+            # 04 U_sun: Residual motion of the Sun toward GC [km/s]
+            # 05 V_sun: Residual motion of the Sun toward l = 90 degrees [km/s]
+            # 06 W_sun: Residual motion of the Sun toward NGP [km/s]
             # 07 sigma_R: Radial component of the ellipsoid of natural standard deviations [km/s]
             # 08 sigma_theta: Azimuthal component of the ellipsoid of natural standard deviations [km/s]
             # 09 sigma_Z: Vertical component of the ellipsoid of natural standard deviations [km/s]
@@ -262,13 +262,13 @@ impl<F> Model<F> {
             # Oort's A constant [km/s/kpc]
             # A: {a}
             #
-            # Peculiar motion of the Sun toward GC [km/s]
+            # Residual motion of the Sun toward GC [km/s]
             # U_SUN: {u_sun}
             #
-            # Peculiar motion of the Sun toward l = 90 degrees [km/s]
+            # Residual motion of the Sun toward l = 90 degrees [km/s]
             # V_SUN: {v_sun}
             #
-            # Peculiar motion of the Sun toward NGP [km/s]
+            # Residual motion of the Sun toward NGP [km/s]
             # W_SUN: {w_sun}
             #
             # Radial component of the ellipsoid of natural standard deviations [km/s]

@@ -216,19 +216,19 @@ pub struct Args {
     /// Oort's A constant (km/s/kpc)
     #[arg(long, default_value_t = 17., help_heading = "PARAMETERS")]
     pub a: f64,
-    /// Peculiar motion of the Sun toward GC (km/s)
+    /// Residual motion of the Sun toward GC (km/s)
     ///
     /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
     #[arg(long, default_value_t = 10.7, help_heading = "PARAMETERS")]
     pub u_sun: f64,
-    /// Peculiar motion of the Sun toward l = 90 degrees (km/s)
+    /// Residual motion of the Sun toward l = 90 degrees (km/s)
     ///
     /// This is only used for fitting.
     ///
     /// Sources: Rastorguev et al. (2017)
     #[arg(long, default_value_t = 19.0, help_heading = "PARAMETERS")]
     pub v_sun: f64,
-    /// Peculiar motion of the Sun toward NGP (km/s)
+    /// Residual motion of the Sun toward NGP (km/s)
     ///
     /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)
     #[arg(long, default_value_t = 7.7, help_heading = "PARAMETERS")]

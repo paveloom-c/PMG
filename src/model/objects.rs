@@ -533,7 +533,7 @@ impl<F> Model<F> {
             # Galactocentric distance to the Sun [kpc]
             # R_0: {r_0}
             #
-            # Peculiar motion of the Sun toward GC [km/s]
+            # Residual motion of the Sun toward GC [km/s]
             # U_SUN: {u_sun}
             #
             # Linear rotation velocity of the Sun [km/s]
