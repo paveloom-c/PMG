@@ -5,8 +5,6 @@
 result
 
 # Artifacts
-data/output
-plots
 public
 results
 target

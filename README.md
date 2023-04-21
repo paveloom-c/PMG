@@ -2,13 +2,15 @@
 
 1. Check out this repository.
 
-2. Make sure you have the following installed:
+2. Make sure you have installed the following:
 
-- [Rust](https://www.rust-lang.org)
-- [Julia](https://julialang.org)
-- [TexLive](https://tug.org/texlive)
+    - [Nix](https://nixos.org)
+    - [`direnv`](https://github.com/direnv/direnv)
+    - [`nix-direnv`](https://github.com/nix-community/nix-direnv)
 
-3. Run the `compute.bash` script.
+3. Allow `direnv` to load the environment by executing `direnv allow`.
+
+4. While in the environment, run the `compute.bash` script.
 
 ### Notices
 

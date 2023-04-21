@@ -23,13 +23,23 @@ function parse_string(i)::String
     end
 end
 
-# Define default values for arguments
+# Define default values for the arguments
 LEGEND_SHOW_SOURCES = false
+INPUT_FILE = ""
 OUTPUT_DIR = ""
 POSTFIX = ""
 
 # Parse the options
 for i in eachindex(ARGS)
+    # Input file
+    if ARGS[i] == "-i"
+        try
+            global INPUT_FILE = parse_string(i+1)
+        catch
+            println("Couldn't parse the value of the `-i` argument.")
+            exit(1)
+        end
+    end
     # Output directory
     if ARGS[i] == "-o"
         try
@@ -55,16 +65,27 @@ RESET = "\e[0m"
 GREEN = "\e[32m"
 YELLOW = "\e[33m"
 
-# Check for required arguments
+# Show help if requested
 if "--help" in ARGS
     println("""
         $(YELLOW)USAGE:$(RESET)
-        { julia --project=. | ./julia.bash } scripts/compare.jl [-s] [-o <OUTPUT_DIR>] [--postfix <POSTFIX>]
+        { julia --project=. | ./julia.bash } scripts/compare.jl -i <INPUT_FILE> -o <OUTPUT_DIR> [--postfix <POSTFIX>]
 
         $(YELLOW)OPTIONS:$(RESET)
-            $(GREEN)-o <OUTPUT_DIR>$(RESET)        Output directory (relative to the root of the repository)
+            $(GREEN)-i <INPUT_FILE>$(RESET)        Input file
+            $(GREEN)-o <OUTPUT_DIR>$(RESET)        Output directory
             $(GREEN)--postfix <POSTFIX>$(RESET)    A postfix for the names of output files"""
     )
+    exit(1)
+end
+
+# Make sure the required arguments are passed
+if isempty(INPUT_FILE)
+    println("An input file is required.")
+    exit(1)
+end
+if isempty(OUTPUT_DIR)
+    println("An output directory is required.")
     exit(1)
 end
 
@@ -94,17 +115,17 @@ marks = repeat(["*"], 5)
 # Define the paths
 CURRENT_DIR = @__DIR__
 ROOT_DIR = dirname(CURRENT_DIR)
-PLOTS_DIR = joinpath(ROOT_DIR, "plots", OUTPUT_DIR)
-INPUT = joinpath(ROOT_DIR, "data", "input", "vera_reid.dat")
+INPUT_FILE = isabspath(INPUT_FILE) ? INPUT_FILE : joinpath(ROOT_DIR, INPUT_FILE)
+OUTPUT_DIR = isabspath(OUTPUT_DIR) ? OUTPUT_DIR : joinpath(ROOT_DIR, OUTPUT_DIR)
 
 # Make sure the needed directories exist
-mkpath(PLOTS_DIR)
+mkpath(OUTPUT_DIR)
 
 # Define the paths to the data files
 println(pad, "> Loading the data...")
 
 # Read the data
-data = CSV.File(INPUT, delim=' ', comment="#")
+data = CSV.File(INPUT_FILE, delim=' ', comment="#")
 μ_x_e = data.mu_x_e
 μ_y_e = data.mu_y_e
 v_lsr_e = data.v_lsr_e
@@ -177,7 +198,7 @@ push!(tasks, @spawn begin
         L"\sigma_{\mu_x} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[VERA]}",
         L"\sigma_{\mu_x} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[Reid]}",
     )
-    pgfsave(joinpath(PLOTS_DIR, "mu_x$(POSTFIX).pdf"), p)
+    pgfsave(joinpath(OUTPUT_DIR, "mu_x$(POSTFIX).pdf"), p)
 end)
 
 push!(tasks, @spawn begin
@@ -190,7 +211,7 @@ push!(tasks, @spawn begin
         L"\sigma_{\mu_y} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[VERA]}",
         L"\sigma_{\mu_y} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[Reid]}",
     )
-    pgfsave(joinpath(PLOTS_DIR, "mu_y$(POSTFIX).pdf"), p)
+    pgfsave(joinpath(OUTPUT_DIR, "mu_y$(POSTFIX).pdf"), p)
 end)
 
 push!(tasks, @spawn begin
@@ -203,7 +224,7 @@ push!(tasks, @spawn begin
         L"\sigma_{V_{LSR}} \; \mathrm{[km \; s^{-1}]} \; \mathrm{[VERA]}",
         L"\sigma_{V_{LSR}} \; \mathrm{[km \; s^{-1}]} \; \mathrm{[Reid]}",
     )
-    pgfsave(joinpath(PLOTS_DIR, "v_lsr$(POSTFIX).pdf"), p)
+    pgfsave(joinpath(OUTPUT_DIR, "v_lsr$(POSTFIX).pdf"), p)
 end)
 
 for task in tasks

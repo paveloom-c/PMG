@@ -1,13 +1,5 @@
 # This script plots the rotation curve
 
-"Check if the value of the option is the last argument"
-function check_last(i)
-    if i == length(ARGS)
-        println("The last argument is reserved.")
-        exit(1)
-    end
-end
-
 "Parse the string, taking more arguments if it's quoted"
 function parse_string(i)::String
     # Start from the first argument after the flag
@@ -26,14 +18,13 @@ function parse_string(i)::String
         # Return the next argument
         ARGS[i]
     end
-    # Check for the last argument
-    check_last(j)
     return s
 end
 
-# Define default values for arguments
+# Define default values for the arguments
 LEGEND_SHOW_SOURCES = false
 PLOT_TEST = false
+INPUT_DIR = ""
 OUTPUT_DIR = ""
 POSTFIX = ""
 
@@ -41,18 +32,25 @@ POSTFIX = ""
 for i in eachindex(ARGS)
     # Show sources on the legend instead of types
     if ARGS[i] == "-s"
-        check_last(i)
         global LEGEND_SHOW_SOURCES = true
     end
     # Plot the test plot, too
     if ARGS[i] == "--with-test"
-        check_last(i)
         global PLOT_TEST = true
+    end
+    # Input directory
+    if ARGS[i] == "-i"
+        try
+            global INPUT_DIR = parse_string(i+1)
+        catch
+            println("Couldn't parse the value of the `-i` argument.")
+            exit(1)
+        end
     end
     # Output directory
     if ARGS[i] == "-o"
         try
-            global OUTPUT_DIR = parse_string(i + 1)
+            global OUTPUT_DIR = parse_string(i+1)
         catch
             println("Couldn't parse the value of the `-o` argument.")
             exit(1)
@@ -74,25 +72,30 @@ RESET = "\e[0m"
 GREEN = "\e[32m"
 YELLOW = "\e[33m"
 
-# Check for required arguments
-if length(ARGS) <= 1 || "--help" in ARGS
+# Show help if requested
+if "--help" in ARGS
     println("""
         $(YELLOW)USAGE:$(RESET)
-        { julia --project=. | ./julia.bash } scripts/rotcurve.jl [-s] [-o <OUTPUT_DIR>] [--postfix <POSTFIX>] <INPUT_DIR>
-
-        $(YELLOW)ARGS:$(RESET)
-        $(GREEN)<INPUT_DIR>$(RESET)    Input directory (relative to the root of the repository)
+        { julia --project=. | ./julia.bash } scripts/rotcurve.jl -i <INPUT_DIR> -o <OUTPUT_DIR> [-s] [--postfix <POSTFIX>]
 
         $(YELLOW)OPTIONS:$(RESET)
             $(GREEN)-s$(RESET)                     Show sources on the legend instead of types
-            $(GREEN)-o <OUTPUT_DIR>$(RESET)        Output directory (relative to the root of the repository)
+            $(GREEN)-o <INPUT_DIR>$(RESET)         Input directory
+            $(GREEN)-o <OUTPUT_DIR>$(RESET)        Output directory
             $(GREEN)--postfix <POSTFIX>$(RESET)    A postfix for the names of output files"""
     )
     exit(1)
 end
 
-# Define the input directory
-INPUT_DIR = ARGS[end]
+# Make sure the required arguments are passed
+if isempty(INPUT_DIR)
+    println("An input file is required.")
+    exit(1)
+end
+if isempty(OUTPUT_DIR)
+    println("An output directory is required.")
+    exit(1)
+end
 
 "Padding in the output"
 pad = " "^4
@@ -116,11 +119,12 @@ colors = ColorSchemes.tol_bright[2:end]
 # Define the paths
 CURRENT_DIR = @__DIR__
 ROOT_DIR = dirname(CURRENT_DIR)
-PLOTS_DIR = joinpath(ROOT_DIR, "plots", OUTPUT_DIR)
+INPUT_DIR = isabspath(INPUT_DIR) ? INPUT_DIR : joinpath(ROOT_DIR, INPUT_DIR)
+OUTPUT_DIR = isabspath(OUTPUT_DIR) ? OUTPUT_DIR : joinpath(ROOT_DIR, OUTPUT_DIR)
 DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "bin", "objects.bin")
 
 # Make sure the needed directories exist
-mkpath(PLOTS_DIR)
+mkpath(OUTPUT_DIR)
 
 # Define the paths to the data files
 println(pad, "> Loading the data...")
@@ -322,7 +326,7 @@ push!(tasks, @spawn begin
         L"R \; \mathrm{[kpc]}",
         L"\theta \; \mathrm{[km \; s^{-1}]}",
     )
-    pgfsave(joinpath(PLOTS_DIR, "Rotation curve$(POSTFIX).pdf"), p)
+    pgfsave(joinpath(OUTPUT_DIR, "Rotation curve$(POSTFIX).pdf"), p)
 end)
 
 push!(tasks, @spawn begin
@@ -340,7 +344,7 @@ push!(tasks, @spawn begin
         y_m=Θ_m,
         evel=Θ_evel,
     )
-    pgfsave(joinpath(PLOTS_DIR, "Rotation curve (errors)$(POSTFIX).pdf"), p)
+    pgfsave(joinpath(OUTPUT_DIR, "Rotation curve (errors)$(POSTFIX).pdf"), p)
 end)
 
 for task in tasks
@@ -372,7 +376,7 @@ if PLOT_TEST
         L"R \; \mathrm{[kpc]}",
         L"\theta \; \mathrm{[km \; s^{-1}]}",
     )
-    pgfsave(joinpath(PLOTS_DIR, "Rotation curve (test)$(POSTFIX).pdf"), p)
+    pgfsave(joinpath(OUTPUT_DIR, "Rotation curve (test)$(POSTFIX).pdf"), p)
     # Mark data for garbage collection
     data_test = nothing
 end
