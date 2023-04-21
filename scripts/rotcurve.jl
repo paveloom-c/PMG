@@ -121,7 +121,8 @@ CURRENT_DIR = @__DIR__
 ROOT_DIR = dirname(CURRENT_DIR)
 INPUT_DIR = isabspath(INPUT_DIR) ? INPUT_DIR : joinpath(ROOT_DIR, INPUT_DIR)
 OUTPUT_DIR = isabspath(OUTPUT_DIR) ? OUTPUT_DIR : joinpath(ROOT_DIR, OUTPUT_DIR)
-DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "objects.bin")
+OBJECTS_DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "objects.bin")
+PARAMS_DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "params.bin")
 
 # Make sure the needed directories exist
 mkpath(OUTPUT_DIR)
@@ -131,18 +132,19 @@ println(pad, "> Loading the data...")
 
 include(joinpath(CURRENT_DIR, "data_types.jl"))
 
-Data = Types.ObjectsData{F}
+ObjectsData = Types.ObjectsData{F}
+ParamsData = Types.Params{F}
 
 "Read binary files in the `bincode` format"
-function read_bincode(path::AbstractString)::Data
+function read_bincode(path::AbstractString, type::Type)::type
     open(path, "r") do io
         # Read the number of objects
         n = read(io, I)
         # Get the fields and their types
-        fields = fieldnames(Data)
-        types = eltype.(fieldtypes(Data))
+        fields = fieldnames(type)
+        types = eltype.(fieldtypes(type))
         # Initialize the data struct
-        data = Data(ntuple(_ -> [], length(fields))...)
+        data = type(ntuple(_ -> [], length(fields))...)
         # For each object
         for _ in 1:n
             # For each field
@@ -166,10 +168,11 @@ function read_bincode(path::AbstractString)::Data
 end
 
 # Read the data
-data = read_bincode(DATA_PATH)
+objects_data = read_bincode(OBJECTS_DATA_PATH, ObjectsData)
+params_data = read_bincode(PARAMS_DATA_PATH, ParamsData)
 
 # Prepare a group for the data
-group = LEGEND_SHOW_SOURCES ? data.source : data.type
+group = LEGEND_SHOW_SOURCES ? objects_data.source : objects_data.type
 
 # Sort the data by the number of occurrences of different types
 # (rare types will be plotted over common types)
@@ -177,13 +180,17 @@ keys = unique(group)
 counts = Dict([(k, count(==(k), group)) for k in keys])
 I = sortperm(group, by=k -> counts[k], rev=true)
 group = group[I]
-R = data.R[I]
-R_p = data.R_p[I]
-R_m = data.R_m[I]
-Θ = data.Θ[I]
-Θ_p = data.Θ_p[I]
-Θ_m = data.Θ_m[I]
-Θ_evel = data.Θ_evel[I]
+R = objects_data.R[I]
+R_p = objects_data.R_p[I]
+R_m = objects_data.R_m[I]
+Θ = objects_data.Θ[I]
+Θ_p = objects_data.Θ_p[I]
+Θ_m = objects_data.Θ_m[I]
+Θ_evel = objects_data.Θ_evel[I]
+
+# Get the position of the Sun (initial parameters)
+R_0 = params_data.R_0[1]
+θ_sun = params_data.θ_sun[1]
 
 # Prepare labels
 markers = ["a", "b", "c", "d", "e", "g"]
@@ -295,6 +302,14 @@ function scatter(
             },
             table,
         ),
+        Plot(
+            {
+                scatter,
+                color = "black",
+                mark_size = 0.4,
+            },
+            Coordinates([R_0], [θ_sun])
+        ),
         Legend(keys),
     )
     # Add the error lines if additional data sets are specified
@@ -357,6 +372,7 @@ end
 
 # Mark data for garbage collection
 data = nothing
+fit_params_data = nothing
 
 if PLOT_TEST
     using CSV

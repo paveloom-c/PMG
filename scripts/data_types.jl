@@ -82,8 +82,41 @@ module Types
         W_m::Vector{F}
     end
 
-    struct FitData{F}
+    struct FitRotCurveData{F}
         R::Vector{F}
         Θ::Vector{F}
+    end
+
+    struct Params{F}
+        R_0::Vector{F}
+        R_0_ep::Vector{F}
+        R_0_em::Vector{F}
+        ω_0::Vector{F}
+        ω_0_ep::Vector{F}
+        ω_0_em::Vector{F}
+        A::Vector{F}
+        A_ep::Vector{F}
+        A_em::Vector{F}
+        U_sun::Vector{F}
+        U_sun_ep::Vector{F}
+        U_sun_em::Vector{F}
+        V_sun::Vector{F}
+        V_sun_ep::Vector{F}
+        V_sun_em::Vector{F}
+        W_sun::Vector{F}
+        W_sun_ep::Vector{F}
+        W_sun_em::Vector{F}
+        σ_R::Vector{F}
+        σ_R_ep::Vector{F}
+        σ_R_em::Vector{F}
+        σ_θ::Vector{F}
+        σ_θ_ep::Vector{F}
+        σ_θ_em::Vector{F}
+        σ_Z::Vector{F}
+        σ_Z_ep::Vector{F}
+        σ_Z_em::Vector{F}
+        θ_0::Vector{F}
+        θ_1::Vector{F}
+        θ_sun::Vector{F}
     end
 end

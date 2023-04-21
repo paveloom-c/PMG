@@ -118,7 +118,8 @@ ROOT_DIR = dirname(CURRENT_DIR)
 INPUT_DIR = isabspath(INPUT_DIR) ? INPUT_DIR : joinpath(ROOT_DIR, INPUT_DIR)
 OUTPUT_DIR = isabspath(OUTPUT_DIR) ? OUTPUT_DIR : joinpath(ROOT_DIR, OUTPUT_DIR)
 OBJECTS_DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "fit_objects.bin")
-FIT_DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "fit_rotcurve.bin")
+FIT_ROTCURVE_DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "fit_rotcurve.bin")
+FIT_PARAMS_DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "fit_params.bin")
 
 # Make sure the needed directories exist
 mkpath(OUTPUT_DIR)
@@ -129,7 +130,8 @@ println(pad, "> Loading the data...")
 include(joinpath(CURRENT_DIR, "data_types.jl"))
 
 ObjectsData = Types.ObjectsData{F}
-FitData = Types.FitData{F}
+FitRotCurveData = Types.FitRotCurveData{F}
+FitParamsData = Types.Params{F}
 
 "Read binary files in the `bincode` format"
 function read_bincode(path::AbstractString, type::Type)::type
@@ -165,7 +167,8 @@ end
 
 # Read the data
 objects_data = read_bincode(OBJECTS_DATA_PATH, ObjectsData)
-fit_data = read_bincode(FIT_DATA_PATH, FitData)
+fit_rotcurve_data = read_bincode(FIT_ROTCURVE_DATA_PATH, FitRotCurveData)
+fit_params_data = read_bincode(FIT_PARAMS_DATA_PATH, FitParamsData)
 
 # Prepare a group for the data
 group = LEGEND_SHOW_SOURCES ? objects_data.source : objects_data.type
@@ -185,8 +188,10 @@ R_m = objects_data.R_m[I]
 Θ_evel = objects_data.Θ_evel[I]
 
 # Unpack the fit data
-R_fit = fit_data.R
-Θ_fit = fit_data.Θ
+R_fit = fit_rotcurve_data.R
+Θ_fit = fit_rotcurve_data.Θ
+R_0 = fit_params_data.R_0[1]
+θ_sun = fit_params_data.θ_sun[1]
 
 # Prepare labels
 markers = ["a", "b", "c", "d", "e", "g"]
@@ -310,6 +315,14 @@ function plot(
             },
             fit_table,
         ),
+        Plot(
+            {
+                scatter,
+                color = "black",
+                mark_size = 0.4,
+            },
+            Coordinates([R_0], [θ_sun])
+        ),
         Legend(keys),
     )
     # Add the error lines if additional data sets are specified
@@ -376,6 +389,7 @@ end
 
 # Mark data for garbage collection
 objects_data = nothing
-fit_data = nothing
+fit_rotcurve_data = nothing
+fit_params_data = nothing
 
 println()
