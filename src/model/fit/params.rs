@@ -69,10 +69,7 @@ where
     #[replace_float_literals(F::from(literal).unwrap())]
     pub(in crate::model) fn try_fit_params(&mut self) -> Result<()> {
         // Prepare the fit log file
-        let logs_dir_path = self.output_dir.join("logs");
-        let fit_log_path = logs_dir_path.join("fit.log");
-        std::fs::create_dir_all(logs_dir_path)
-            .with_context(|| "Couldn't create the logs directory")?;
+        let fit_log_path = self.output_dir.join("fit.log");
         let fit_log_file =
             File::create(fit_log_path).with_context(|| "Couldn't create the `fit.log` file")?;
         let fit_log_writer = Rc::new(RefCell::new(BufWriter::new(fit_log_file)));

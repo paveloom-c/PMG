@@ -10,15 +10,14 @@ use serde::Serialize;
 
 /// Serialize records to the files
 pub fn serialize_to(
-    dat_dir: &Path,
-    bin_dir: &Path,
+    output_dir: &Path,
     name: &str,
     header: &str,
     records: &[impl Serialize],
 ) -> Result<()> {
     // Define paths to the text and the binary files
-    let dat_path = &dat_dir.join(format!("{name}.dat"));
-    let bin_path = &bin_dir.join(format!("{name}.bin"));
+    let dat_path = &output_dir.join(format!("{name}.dat"));
+    let bin_path = &output_dir.join(format!("{name}.bin"));
     // Open files for writing
     let mut dat_file = File::create(dat_path)
         .with_context(|| format!("Couldn't open the file {dat_path:?} in write-only mode"))?;

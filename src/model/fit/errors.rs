@@ -144,8 +144,7 @@ where
         let fit_params = self.fit_params.as_mut().unwrap();
         let best_point = fit_params.to_point();
         // Prepare the errors log file
-        let logs_dir_path = self.output_dir.join("logs");
-        let errors_log_path = logs_dir_path.join("errors.log");
+        let errors_log_path = self.output_dir.join("errors.log");
         let errors_log_file = File::create(errors_log_path)
             .with_context(|| "Couldn't create the `errors.log` file")?;
         let errors_log_writer = Rc::new(RefCell::new(BufWriter::new(errors_log_file)));

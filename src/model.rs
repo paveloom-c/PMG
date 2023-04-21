@@ -119,27 +119,24 @@ impl<F> Model<F> {
     where
         F: Float + Debug + Display + Serialize,
     {
-        // Make sure the output directories exist
-        let dat_dir = &self.output_dir.join("dat");
-        let bin_dir = &self.output_dir.join("bin");
-        fs::create_dir_all(dat_dir)
-            .with_context(|| format!("Couldn't create the output directory {dat_dir:?}"))?;
-        fs::create_dir_all(bin_dir)
-            .with_context(|| format!("Couldn't create the output directory {bin_dir:?}"))?;
+        let output_dir = &self.output_dir;
+        // Make sure the output directory exists
+        fs::create_dir_all(output_dir)
+            .with_context(|| format!("Couldn't create the output directory {output_dir:?}"))?;
         // Serialize the data
         match self.task.goal {
             Goal::Objects => {
                 let params = &self.params;
-                self.serialize_to_objects(dat_dir, bin_dir, "objects", params)
+                self.serialize_to_objects(output_dir, "objects", params)
                     .with_context(|| "Couldn't write the objects to a file")?;
             }
             Goal::Fit => {
                 let fit_params = self.fit_params.as_ref().unwrap();
-                self.serialize_to_objects(dat_dir, bin_dir, "fit_objects", fit_params)
+                self.serialize_to_objects(output_dir, "fit_objects", fit_params)
                     .with_context(|| "Couldn't write the objects to a file")?;
-                self.serialize_to_fit_params(dat_dir, bin_dir)
+                self.serialize_to_fit_params(output_dir)
                     .with_context(|| "Couldn't write the fitted parameters to a file")?;
-                self.serialize_to_fit_rotcurve(dat_dir, bin_dir)
+                self.serialize_to_fit_rotcurve(output_dir)
                     .with_context(|| "Couldn't write the fitted rotation curve to a file")?;
             }
         }

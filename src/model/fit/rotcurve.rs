@@ -61,11 +61,7 @@ impl<F> Model<F> {
     /// Serialize the fitted parameters
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
-    pub(in crate::model) fn serialize_to_fit_rotcurve(
-        &self,
-        dat_dir: &Path,
-        bin_dir: &Path,
-    ) -> Result<()>
+    pub(in crate::model) fn serialize_to_fit_rotcurve(&self, output_dir: &Path) -> Result<()>
     where
         F: Float + Debug + Display + Serialize,
     {
@@ -98,6 +94,6 @@ impl<F> Model<F> {
             a = fit_params.a,
         );
         let records = self.fit_rotcurve.as_ref().unwrap();
-        output::serialize_to(dat_dir, bin_dir, "fit_rotcurve", &header, records)
+        output::serialize_to(output_dir, "fit_rotcurve", &header, records)
     }
 }
