@@ -4,9 +4,11 @@ use super::io::output;
 use super::Model;
 
 use core::fmt::{Debug, Display};
+use std::fs::File;
+use std::io::Write;
 use std::path::Path;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use indoc::formatdoc;
 use num::Float;
 use serde::Serialize;
@@ -78,13 +80,16 @@ pub struct Params<F> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub w_sun_em: Option<F>,
     /// Radial component of the ellipsoid of natural standard deviations (km/s)
-    pub sigma_r: F,
+    #[serde(rename = "sigma_R")]
+    pub sigma_r_g: F,
     /// Plus uncertainty in `sigma_r`
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sigma_r_ep: Option<F>,
+    #[serde(rename = "sigma_R_ep")]
+    pub sigma_r_g_ep: Option<F>,
     /// Minus uncertainty in `sigma_r`
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sigma_r_em: Option<F>,
+    #[serde(rename = "sigma_R_em")]
+    pub sigma_r_g_em: Option<F>,
     /// Azimuthal component of the ellipsoid of natural standard deviations (km/s)
     pub sigma_theta: F,
     /// Plus uncertainty in `sigma_theta`
@@ -94,12 +99,15 @@ pub struct Params<F> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sigma_theta_em: Option<F>,
     /// Vertical component of the ellipsoid of natural standard deviations (km/s)
+    #[serde(rename = "sigma_Z")]
     pub sigma_z: F,
     /// Plus uncertainty in `sigma_z`
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "sigma_Z_ep")]
     pub sigma_z_ep: Option<F>,
     /// Minus uncertainty in `sigma_z`
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "sigma_Z_em")]
     pub sigma_z_em: Option<F>,
     /// The constant term of the rotation curve (km/s)
     pub theta_0: F,
@@ -145,7 +153,7 @@ impl<F> Params<F> {
         self.u_sun = p[3];
         self.v_sun = p[4];
         self.w_sun = p[5];
-        self.sigma_r = p[6];
+        self.sigma_r_g = p[6];
         self.sigma_theta = p[7];
         self.sigma_z = p[8];
     }
@@ -163,7 +171,7 @@ impl<F> Params<F> {
             self.u_sun,
             self.v_sun,
             self.w_sun,
-            self.sigma_r,
+            self.sigma_r_g,
             self.sigma_theta,
             self.sigma_z,
         ]
@@ -184,7 +192,7 @@ impl<F> Params<F> {
         self.u_sun_ep = Some(p[3]);
         self.v_sun_ep = Some(p[4]);
         self.w_sun_ep = Some(p[5]);
-        self.sigma_r_ep = Some(p[6]);
+        self.sigma_r_g_ep = Some(p[6]);
         self.sigma_theta_ep = Some(p[7]);
         self.sigma_z_ep = Some(p[8]);
     }
@@ -203,7 +211,7 @@ impl<F> Params<F> {
         self.u_sun_em = Some(p[3]);
         self.v_sun_em = Some(p[4]);
         self.w_sun_em = Some(p[5]);
-        self.sigma_r_em = Some(p[6]);
+        self.sigma_r_g_em = Some(p[6]);
         self.sigma_theta_em = Some(p[7]);
         self.sigma_z_em = Some(p[8]);
     }
@@ -211,6 +219,7 @@ impl<F> Params<F> {
 
 impl<F> Model<F> {
     /// Serialize the fitted parameters
+    #[allow(clippy::too_many_lines)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     pub(in crate::model) fn serialize_to_fit_params(&self, output_dir: &Path) -> Result<()>
@@ -232,9 +241,9 @@ impl<F> Model<F> {
             # 04 U_sun: Peculiar motion of the Sun toward GC [km/s]
             # 05 V_sun: Peculiar motion of the Sun toward l = 90 degrees [km/s]
             # 06 W_sun: Peculiar motion of the Sun toward NGP [km/s]
-            # 07 sigma_r: Radial component of the ellipsoid of natural standard deviations [km/s]
+            # 07 sigma_R: Radial component of the ellipsoid of natural standard deviations [km/s]
             # 08 sigma_theta: Azimuthal component of the ellipsoid of natural standard deviations [km/s]
-            # 09 sigma_z: Vertical component of the ellipsoid of natural standard deviations [km/s]
+            # 09 sigma_Z: Vertical component of the ellipsoid of natural standard deviations [km/s]
             # 10 theta_0: The constant term of the rotation curve [km/s]
             # 11 theta_1: The first derivative of the rotation curve [km/s/kpc]
             # 12 theta_sun: Linear rotation velocity of the Sun [km/s]
@@ -263,7 +272,7 @@ impl<F> Model<F> {
             # W_SUN: {w_sun}
             #
             # Radial component of the ellipsoid of natural standard deviations [km/s]
-            # SIGMA_R: {sigma_r}
+            # SIGMA_R: {sigma_r_g}
             #
             # Azimuthal component of the ellipsoid of natural standard deviations [km/s]
             # SIGMA_THETA: {sigma_theta}
@@ -302,7 +311,7 @@ impl<F> Model<F> {
             u_sun = params.u_sun,
             v_sun = params.v_sun,
             w_sun = params.w_sun,
-            sigma_r = params.sigma_r,
+            sigma_r_g = params.sigma_r_g,
             sigma_theta = params.sigma_theta,
             sigma_z = params.sigma_z,
             alpha_ngp = params.alpha_ngp,
@@ -313,7 +322,134 @@ impl<F> Model<F> {
             v_sun_standard = params.v_sun_standard,
             w_sun_standard = params.w_sun_standard,
         );
+        let name = "fit_params";
         let records = vec![fit_params];
-        output::serialize_to(output_dir, "fit_params", &header, &records)
+        output::serialize_to(output_dir, name, &header, &records)?;
+        // Represent in a plain view, too
+        let plain_path = &output_dir.join(format!("{name}.plain"));
+        let mut plain_file = File::create(plain_path)
+            .with_context(|| format!("Couldn't open the file {plain_path:?} in write-only mode"))?;
+        write!(
+            &mut plain_file,
+            "{}",
+            formatdoc!("
+            Fit of the model (parameters)
+            {sample_description}
+            Initial and optimized parameters:
+
+                      R: {r_0:>18.15} -> {fit_r_0:>18.15}{fit_r_0_ep}{fit_r_0_em}
+                omega_0: {omega_0:>18.15} -> {fit_omega_0:>18.15}{fit_omega_0_ep}{fit_omega_0_em}
+                      A: {a:>18.15} -> {fit_a:>18.15}{fit_a_ep}{fit_a_em}
+                  U_sun: {u_sun:>18.15} -> {fit_u_sun:>18.15}{fit_u_sun_ep}{fit_u_sun_em}
+                  V_sun: {v_sun:>18.15} -> {fit_v_sun:>18.15}{fit_v_sun_ep}{fit_v_sun_em}
+                  W_sun: {w_sun:>18.15} -> {fit_w_sun:>18.15}{fit_w_sun_ep}{fit_w_sun_em}
+                sigma_R: {sigma_r_g:>18.15} -> {fit_sigma_r_g:>18.15}{fit_sigma_r_g_ep}{fit_sigma_r_g_em}
+            sigma_theta: {sigma_theta:>18.15} -> {fit_sigma_theta:>18.15}{fit_sigma_theta_ep}{fit_sigma_theta_em}
+                sigma_Z: {sigma_z:>18.15} -> {fit_sigma_z:>18.15}{fit_sigma_z_ep}{fit_sigma_z_em}
+
+            Derived values:
+
+                theta_0: {theta_0:>19.15}
+                theta_1: {theta_1:>19.15}
+              theta_sun: {theta_sun:>19.15}
+
+            Constant parameters used:
+
+            The right ascension of the north galactic pole [radians]
+            ALPHA_NGP: {alpha_ngp}
+
+            The declination of the north galactic pole [radians]
+            DELTA_NGP: {delta_ngp}
+
+            The longitude of the north celestial pole [radians]
+            L_NCP: {l_ncp}
+
+            Linear velocities units conversion coefficient
+            K: {k}
+
+            Standard Solar Motion toward GC [km/s]
+            U_SUN_STANDARD: {u_sun_standard}
+
+            Standard Solar Motion toward l = 90 degrees [km/s]
+            V_SUN_STANDARD: {v_sun_standard}
+
+            Standard Solar Motion toward NGP [km/s]
+            W_SUN_STANDARD: {w_sun_standard}
+            ",
+                sample_description = self.format_sample_description().replace("# ", "").replace('#', ""),
+                r_0 = params.r_0,
+                omega_0 = params.omega_0,
+                a = params.a,
+                u_sun = params.u_sun,
+                v_sun = params.v_sun,
+                w_sun = params.w_sun,
+                sigma_r_g = params.sigma_r_g,
+                sigma_theta = params.sigma_theta,
+                sigma_z = params.sigma_z,
+                fit_r_0 = fit_params.r_0,
+                fit_omega_0 = fit_params.omega_0,
+                fit_a = fit_params.a,
+                fit_u_sun = fit_params.u_sun,
+                fit_v_sun = fit_params.v_sun,
+                fit_w_sun = fit_params.w_sun,
+                fit_sigma_r_g = fit_params.sigma_r_g,
+                fit_sigma_theta = fit_params.sigma_theta,
+                fit_sigma_z = fit_params.sigma_z,
+                fit_r_0_ep = format_ep(fit_params.r_0_ep),
+                fit_omega_0_ep = format_ep(fit_params.omega_0_ep),
+                fit_a_ep = format_ep(fit_params.a_ep),
+                fit_u_sun_ep = format_ep(fit_params.u_sun_ep),
+                fit_v_sun_ep = format_ep(fit_params.v_sun_ep),
+                fit_w_sun_ep = format_ep(fit_params.w_sun_ep),
+                fit_sigma_r_g_ep = format_ep(fit_params.sigma_r_g_ep),
+                fit_sigma_theta_ep = format_ep(fit_params.sigma_theta_ep),
+                fit_sigma_z_ep = format_ep(fit_params.sigma_z_ep),
+                fit_r_0_em = format_em(fit_params.r_0_em),
+                fit_omega_0_em = format_em(fit_params.omega_0_em),
+                fit_a_em = format_em(fit_params.a_em),
+                fit_u_sun_em = format_em(fit_params.u_sun_em),
+                fit_v_sun_em = format_em(fit_params.v_sun_em),
+                fit_w_sun_em = format_em(fit_params.w_sun_em),
+                fit_sigma_r_g_em = format_em(fit_params.sigma_r_g_em),
+                fit_sigma_theta_em = format_em(fit_params.sigma_theta_em),
+                fit_sigma_z_em = format_em(fit_params.sigma_z_em),
+                theta_0 = fit_params.theta_0,
+                theta_1 = fit_params.theta_1,
+                theta_sun = fit_params.theta_sun,
+                alpha_ngp = params.alpha_ngp,
+                delta_ngp = params.delta_ngp,
+                l_ncp = params.l_ncp,
+                k = params.k,
+                u_sun_standard = params.u_sun_standard,
+                v_sun_standard = params.v_sun_standard,
+                w_sun_standard = params.w_sun_standard,
+            )
+        )
+        .with_context(|| format!("Couldn't write to {plain_path:?}"))?;
+        Ok(())
+    }
+}
+
+/// Format the plus error
+fn format_ep<F>(option: Option<F>) -> String
+where
+    F: Float + Debug + Display,
+{
+    if let Some(value) = option {
+        format!(" + {value:>17.15}")
+    } else {
+        String::new()
+    }
+}
+
+/// Format the minus error
+fn format_em<F>(option: Option<F>) -> String
+where
+    F: Float + Debug + Display,
+{
+    if let Some(value) = option {
+        format!(" - {value:>17.15}")
+    } else {
+        String::new()
     }
 }

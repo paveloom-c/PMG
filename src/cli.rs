@@ -235,7 +235,7 @@ pub struct Args {
     pub w_sun: f64,
     /// Radial component of the ellipsoid of natural standard deviations (km/s)
     #[arg(long, default_value_t = 12., help_heading = "PARAMETERS")]
-    pub sigma_r: f64,
+    pub sigma_r_g: f64,
     /// Azimuthal component of the ellipsoid of natural standard deviations (km/s)
     #[arg(long, default_value_t = 6., help_heading = "PARAMETERS")]
     pub sigma_theta: f64,

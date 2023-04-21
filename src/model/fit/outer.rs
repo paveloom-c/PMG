@@ -108,7 +108,7 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 let u_sun = fit_params.u_sun;
                 let v_sun = fit_params.v_sun;
                 let w_sun = fit_params.w_sun;
-                let sigma_r = fit_params.sigma_r;
+                let sigma_r_g = fit_params.sigma_r_g;
                 let sigma_theta = fit_params.sigma_theta;
                 let sigma_z = fit_params.sigma_z;
                 let k = fit_params.k;
@@ -122,7 +122,7 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 let cos_l_sq = cos_l.powi(2);
                 let cos_b_sq = cos_b.powi(2);
                 // Compute the observed dispersions
-                let d_r = sigma_r.powi(2);
+                let d_r = sigma_r_g.powi(2);
                 let d_theta = sigma_theta.powi(2);
                 let d_z = sigma_z.powi(2);
                 // Compute the sines and cosines of the Galactocentric longitude
