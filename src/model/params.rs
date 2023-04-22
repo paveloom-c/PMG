@@ -13,6 +13,22 @@ use indoc::{formatdoc, indoc};
 use num::Float;
 use serde::Serialize;
 
+/// Number of the optimized parameters
+pub const PARAMS_N: usize = 9;
+
+/// Names of the optimized parameters
+pub const PARAMS_NAMES: [&str; PARAMS_N] = [
+    "R_0",
+    "omega_0",
+    "A",
+    "U_sun",
+    "V_sun",
+    "W_sun",
+    "sigma_R",
+    "sigma_theta",
+    "sigma_Z",
+];
+
 /// Model parameters
 #[derive(Default, Debug, Clone, Serialize)]
 pub struct Params<F> {

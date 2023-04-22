@@ -9,9 +9,9 @@ mod sample_description;
 use crate::cli::Args;
 use crate::utils;
 use crate::{Goal, Task};
-pub use fit::rotcurve::RotationCurve;
+pub use fit::{Profiles, RotationCurve};
 pub use objects::{Object, Objects};
-pub use params::Params;
+pub use params::{Params, PARAMS_N, PARAMS_NAMES};
 
 use core::fmt::{Debug, Display};
 use core::iter::Sum;
@@ -41,6 +41,8 @@ pub struct Model<F> {
     fit_params: Option<Params<F>>,
     /// Fit of the model (rotation curve)
     fit_rotcurve: Option<RotationCurve<F>>,
+    /// Profiles
+    profiles: Option<Profiles<F>>,
     /// Computation task
     task: Task,
     /// Sample description
@@ -99,6 +101,11 @@ impl<F> Model<F> {
                     self.try_fit_errors()
                         .with_context(|| "Couldn't define the confidence intervals")?;
                 }
+                // Try to compute the profiles if requested
+                if self.task.with_profiles {
+                    self.try_compute_profiles()
+                        .with_context(|| "Couldn't compute the profiles")?;
+                }
                 // Perform per-object computations
                 // with the optimized parameters
                 let fit_params = self.fit_params.as_ref().unwrap();
@@ -140,6 +147,10 @@ impl<F> Model<F> {
                     .with_context(|| "Couldn't write the fitted parameters to a file")?;
                 self.serialize_to_fit_rotcurve(output_dir)
                     .with_context(|| "Couldn't write the fitted rotation curve to a file")?;
+                if self.task.with_profiles {
+                    self.serialize_to_profiles(output_dir)
+                        .with_context(|| "Couldn't write the fitted rotation curve to a file")?;
+                }
             }
         }
         Ok(())
@@ -198,9 +209,11 @@ where
             objects: Objects::<F>::default(),
             fit_params: None,
             fit_rotcurve: None,
+            profiles: None,
             task: Task {
                 goal: args.goal,
                 with_errors: args.with_errors,
+                with_profiles: args.with_profiles,
             },
             sample_description: None,
             output_dir: args.output_dir.clone(),

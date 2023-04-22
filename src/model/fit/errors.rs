@@ -6,7 +6,6 @@ use super::{ErrorsLogger, FrozenOuterOptimizationProblem};
 use super::{Model, Objects, Params};
 
 use alloc::rc::Rc;
-use argmin::core::observers::ObserverMode;
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
 use core::iter::Sum;
@@ -14,6 +13,7 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 
 use anyhow::{Context, Result};
+use argmin::core::observers::ObserverMode;
 use argmin::core::{ArgminFloat, CostFunction, Executor, State};
 use argmin::solver::brent::BrentRoot;
 use argmin::solver::linesearch::condition::ArmijoCondition;

@@ -18,4 +18,6 @@ pub struct Task {
     pub goal: Goal,
     /// Try to define the confidence intervals? (fit goal only)
     pub with_errors: bool,
+    /// Try to compute the profiles? (fit goal only)
+    pub with_profiles: bool,
 }

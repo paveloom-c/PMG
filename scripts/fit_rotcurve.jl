@@ -117,9 +117,9 @@ CURRENT_DIR = @__DIR__
 ROOT_DIR = dirname(CURRENT_DIR)
 INPUT_DIR = isabspath(INPUT_DIR) ? INPUT_DIR : joinpath(ROOT_DIR, INPUT_DIR)
 OUTPUT_DIR = isabspath(OUTPUT_DIR) ? OUTPUT_DIR : joinpath(ROOT_DIR, OUTPUT_DIR)
-OBJECTS_DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "fit_objects.bin")
-FIT_ROTCURVE_DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "fit_rotcurve.bin")
-FIT_PARAMS_DATA_PATH = joinpath(ROOT_DIR, INPUT_DIR, "fit_params.bin")
+OBJECTS_DATA_PATH = joinpath(INPUT_DIR, "fit_objects.bin")
+FIT_ROTCURVE_DATA_PATH = joinpath(INPUT_DIR, "fit_rotcurve.bin")
+FIT_PARAMS_DATA_PATH = joinpath(INPUT_DIR, "fit_params.bin")
 
 # Make sure the needed directories exist
 mkpath(OUTPUT_DIR)

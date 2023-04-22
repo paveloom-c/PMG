@@ -202,6 +202,9 @@ pub struct Args {
     /// Try to define the confidence intervals (fit goal only)
     #[arg(long = "with-errors")]
     pub with_errors: bool,
+    /// Try to compute the profiles (fit goal only)
+    #[arg(long = "with-profiles")]
+    pub with_profiles: bool,
     /// Input file
     #[arg(short, required = true, value_parser = PathBufParser)]
     pub input: PathBuf,

@@ -119,4 +119,9 @@ module Types
         θ_1::Vector{F}
         θ_sun::Vector{F}
     end
+
+    struct Profile{F}
+        param::Vector{F}
+        cost::Vector{F}
+    end
 end
