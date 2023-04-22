@@ -29,8 +29,8 @@ echo -e "\n${PAD}> Compute per-object data..."
 
 echo -e "${PAD}> Fit all..."
 "${PMG}" -i "${I_ALL}" -o "${R_ALL}" --goal fit
-echo -e "${PAD}> Fit near the solar circle (with errors)..."
-"${PMG}" -i "${I_SOLAR}" -o "${R_SOLAR}" --goal fit --with-errors
+echo -e "${PAD}> Fit near the solar circle (with errors and profiles)..."
+"${PMG}" -i "${I_SOLAR}" -o "${R_SOLAR}" --goal fit --with-errors --with-profiles
 echo -e "${PAD}> Fit HMSFRs..."
 "${PMG}" -i "${I_HMSFRS}" -o "${R_HMSFRS}" --goal fit
 
@@ -69,6 +69,11 @@ echo -e "${PAD}HMSFRs:"
 echo -e "${PAD}HMSFRs (test):"
 "${JULIA}" "${ROTCURVE}" -i "${R_HMSFRS_TEST@Q}" -o "${R_HMSFRS_TEST@Q}" -s --with-test
 
-echo -e "${PAD}Step 6. Zip the results\n"
+echo "${PAD}Step 6. Plot the profiles"
+
+echo -e "${PAD}Near the solar circle:"
+"${JULIA}" "${PROFILES}" -i "${R_SOLAR@Q}" -o "${R_SOLAR@Q}"
+
+echo -e "${PAD}Step 7. Zip the results\n"
 
 zip -rq results.zip results
