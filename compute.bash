@@ -76,4 +76,5 @@ echo -e "${PAD}Near the solar circle:"
 
 echo -e "${PAD}Step 7. Zip the results\n"
 
+rm -f results.zip
 zip -rq results.zip results
