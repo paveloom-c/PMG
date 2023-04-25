@@ -309,7 +309,10 @@ for i in 1:length(PARAMS_NAMES)
     fit_param_ep = fit_params_ep[i]
     fit_param_em = fit_params_em[i]
 
-    profile_data = read_bincode(joinpath(INPUT_DIR, "profile_$(name).bin"), ProfileData)
+    profile_path = joinpath(INPUT_DIR, "profile_$(name).bin")
+    if !isfile(profile_path) continue end
+
+    profile_data = read_bincode(profile_path, ProfileData)
 
     param = profile_data.param
     cost = profile_data.cost

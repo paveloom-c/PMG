@@ -8,10 +8,9 @@ mod sample_description;
 
 use crate::cli::Args;
 use crate::utils;
-use crate::{Goal, Task};
 pub use fit::{Profiles, RotationCurve};
 pub use objects::{Object, Objects};
-pub use params::{Params, PARAMS_N, PARAMS_NAMES};
+pub use params::{Params, N_MAX, PARAMS_N, PARAMS_NAMES};
 
 use core::fmt::{Debug, Display};
 use core::iter::Sum;
@@ -31,31 +30,44 @@ use num::Float;
 use serde::{de::DeserializeOwned, Serialize};
 
 /// Model of the Galaxy
-#[derive(Debug)]
+#[derive(Debug, Clone, Default)]
 pub struct Model<F> {
     /// Initial model parameters
-    params: Params<F>,
+    pub params: Params<F>,
     /// Data objects
-    objects: Objects<F>,
+    pub objects: Objects<F>,
+
+    /// The degree of the polynomial of the rotation curve
+    pub n: Option<usize>,
+    /// The best value of the cost function
+    pub best_cost: Option<F>,
     /// Fit of the model (parameters)
-    fit_params: Option<Params<F>>,
+    pub fit_params: Option<Params<F>>,
     /// Fit of the model (rotation curve)
-    fit_rotcurve: Option<RotationCurve<F>>,
+    pub fit_rotcurve: Option<RotationCurve<F>>,
     /// Profiles
-    profiles: Option<Profiles<F>>,
-    /// Computation task
-    task: Task,
+    pub profiles: Option<Profiles<F>>,
+
     /// Sample description
-    sample_description: Option<String>,
+    pub sample_description: Option<String>,
     /// Output directory
-    output_dir: PathBuf,
+    pub output_dir: PathBuf,
 }
 
 impl<F> Model<F> {
-    /// Perform computations based on the goal
+    /// Perform per-object computations
+    pub fn compute_objects(&mut self)
+    where
+        F: Float + Debug + Default,
+    {
+        for object in &mut self.objects {
+            object.compute(&self.params);
+        }
+    }
+    /// Fit the model with the specified degree of the polynomial
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
-    pub fn compute(&mut self) -> Result<()>
+    pub fn try_fit(&mut self, n: usize) -> Result<()>
     where
         F: Float
             + Debug
@@ -85,151 +97,109 @@ impl<F> Model<F> {
         Vec<F>: ArgminL2Norm<F>,
         Vec<F>: FiniteDiff,
     {
-        match self.task.goal {
-            Goal::Objects => {
-                // Perform per-object computations
-                for object in &mut self.objects {
-                    object.compute(&self.params);
-                }
-            }
-            Goal::Fit => {
-                // Try to fit the model
-                self.try_fit_params()
-                    .with_context(|| "Couldn't fit the model")?;
-                // Try to define the confidence intervals if requested
-                if self.task.with_errors {
-                    self.try_fit_errors()
-                        .with_context(|| "Couldn't define the confidence intervals")?;
-                }
-                // Try to compute the profiles if requested
-                if self.task.with_profiles {
-                    self.try_compute_profiles()
-                        .with_context(|| "Couldn't compute the profiles")?;
-                }
-                // Perform per-object computations
-                // with the optimized parameters
-                let fit_params = self.fit_params.as_ref().unwrap();
-                for object in &mut self.objects {
-                    object.compute(fit_params);
-                }
-                // Compute the rotation curve based on the fitted parameters
-                self.compute_fit_rotcurve();
-            }
+        // Try to fit the model
+        self.try_fit_params(n)
+            .with_context(|| "Couldn't fit the model")?;
+        // Perform per-object computations
+        // with the optimized parameters
+        let fit_params = self.fit_params.as_ref().unwrap();
+        for object in &mut self.objects {
+            object.compute(fit_params);
         }
+        // Compute the rotation curve based on the fitted parameters
+        self.compute_fit_rotcurve();
         Ok(())
     }
-    /// Write the model data to files in the
-    /// output directory based on the goal
+    /// Write the objects data
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
-    pub fn write(&self) -> Result<()>
+    pub fn write_objects_data(&self) -> Result<()>
     where
         F: Float + Debug + Display + Serialize,
     {
-        let output_dir = &self.output_dir;
-        // Make sure the output directory exists
-        fs::create_dir_all(output_dir)
-            .with_context(|| format!("Couldn't create the output directory {output_dir:?}"))?;
-        // Serialize the data
-        match self.task.goal {
-            Goal::Objects => {
-                let params = &self.params;
-                self.serialize_to_objects(output_dir, "objects", params)
-                    .with_context(|| "Couldn't write the objects to a file")?;
-                self.serialize_to_params(output_dir)
-                    .with_context(|| "Couldn't write the initial parameters to a file")?;
-            }
-            Goal::Fit => {
-                let fit_params = self.fit_params.as_ref().unwrap();
-                self.serialize_to_objects(output_dir, "fit_objects", fit_params)
-                    .with_context(|| "Couldn't write the objects to a file")?;
-                self.serialize_to_fit_params(output_dir)
-                    .with_context(|| "Couldn't write the fitted parameters to a file")?;
-                self.serialize_to_fit_rotcurve(output_dir)
-                    .with_context(|| "Couldn't write the fitted rotation curve to a file")?;
-                if self.task.with_profiles {
-                    self.serialize_to_profiles(output_dir)
-                        .with_context(|| "Couldn't write the fitted rotation curve to a file")?;
-                }
-            }
-        }
+        let params = &self.params;
+
+        fs::create_dir_all(&self.output_dir).with_context(|| {
+            format!("Couldn't create the output directory {:?}", self.output_dir)
+        })?;
+
+        self.serialize_to_objects("objects", params)
+            .with_context(|| "Couldn't write the objects to a file")?;
+        self.serialize_to_params()
+            .with_context(|| "Couldn't write the initial parameters to a file")?;
+
         Ok(())
     }
-}
+    /// Write the fit data
+    #[allow(clippy::unwrap_in_result)]
+    #[allow(clippy::unwrap_used)]
+    pub fn write_fit_data(&self) -> Result<()>
+    where
+        F: Float + Debug + Display + Serialize,
+    {
+        let fit_params = &self.fit_params.as_ref().unwrap();
 
-impl<F> TryFrom<&Args> for Model<F>
-where
-    F: Float + Debug + Default + DeserializeOwned + FromStr,
-    <F as FromStr>::Err: Error + Send + Sync + 'static,
-{
-    type Error = anyhow::Error;
+        fs::create_dir_all(&self.output_dir).with_context(|| {
+            format!("Couldn't create the output directory {:?}", self.output_dir)
+        })?;
 
-    fn try_from(args: &Args) -> Result<Self> {
-        // Initialize an empty model
+        self.serialize_to_objects("fit_objects", fit_params)
+            .with_context(|| "Couldn't write the objects to a file")?;
+        self.serialize_to_fit_params()
+            .with_context(|| "Couldn't write the fitted parameters to a file")?;
+        self.serialize_to_fit_rotcurve()
+            .with_context(|| "Couldn't write the fitted rotation curve to a file")?;
+
+        self.serialize_to_profiles()
+            .with_context(|| "Couldn't write a profile to a file")?;
+
+        Ok(())
+    }
+    /// Create a model from the arguments with a specific degree
+    /// of the polynomial of the rotation curve
+    pub fn try_from(args: &Args, output_dir: PathBuf) -> Result<Self>
+    where
+        F: Float + Debug + Default + DeserializeOwned + FromStr,
+        <F as FromStr>::Err: Error + Send + Sync + 'static,
+    {
         let mut model = Self {
             params: Params {
                 r_0: utils::cast(args.r_0)?,
-                r_0_ep: F::zero(),
-                r_0_em: F::zero(),
                 omega_0: utils::cast(args.omega_0)?,
-                omega_0_ep: F::zero(),
-                omega_0_em: F::zero(),
                 a: utils::cast(args.a)?,
-                a_ep: F::zero(),
-                a_em: F::zero(),
                 u_sun: utils::cast(args.u_sun)?,
-                u_sun_ep: F::zero(),
-                u_sun_em: F::zero(),
                 v_sun: utils::cast(args.v_sun)?,
-                v_sun_ep: F::zero(),
-                v_sun_em: F::zero(),
                 w_sun: utils::cast(args.w_sun)?,
-                w_sun_ep: F::zero(),
-                w_sun_em: F::zero(),
                 sigma_r_g: utils::cast(args.sigma_r_g)?,
-                sigma_r_g_ep: F::zero(),
-                sigma_r_g_em: F::zero(),
                 sigma_theta: utils::cast(args.sigma_theta)?,
-                sigma_theta_ep: F::zero(),
-                sigma_theta_em: F::zero(),
                 sigma_z: utils::cast(args.sigma_z)?,
-                sigma_z_ep: F::zero(),
-                sigma_z_em: F::zero(),
                 alpha_ngp: utils::cast(args.alpha_ngp)?,
                 delta_ngp: utils::cast(args.delta_ngp)?,
-                theta_0: F::zero(),
-                theta_1: F::zero(),
                 theta_sun: utils::cast(args.theta_sun)?,
                 l_ncp: utils::cast(args.l_ncp)?,
                 k: utils::cast(args.k)?,
                 u_sun_standard: utils::cast(args.u_sun_standard)?,
                 v_sun_standard: utils::cast(args.v_sun_standard)?,
                 w_sun_standard: utils::cast(args.w_sun_standard)?,
+                ..Default::default()
             },
             objects: Objects::<F>::default(),
-            fit_params: None,
-            fit_rotcurve: None,
-            profiles: None,
-            task: Task {
-                goal: args.goal,
-                with_errors: args.with_errors,
-                with_profiles: args.with_profiles,
-            },
-            sample_description: None,
-            output_dir: args.output_dir.clone(),
+            output_dir,
+            ..Default::default()
         };
-        // Make sure the output directory exists
+
         fs::create_dir_all(&model.output_dir).with_context(|| {
             format!(
                 "Couldn't create the output directory {:?}",
                 &model.output_dir
             )
         })?;
+
         model.try_read_sample_description_from(&args.input)?;
         model
             .try_load_data_from(&args.input)
             .with_context(|| format!("Couldn't load the data from the file {:?}", args.input))?;
-        // Return the result
+
         Ok(model)
     }
 }

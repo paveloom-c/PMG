@@ -1,6 +1,5 @@
 //! Command-line interface
 
-use super::Goal;
 use crate::utils;
 
 use core::ops::Range;
@@ -8,6 +7,15 @@ use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 use clap::{builder::TypedValueParser, Parser};
+
+/// Computation goal
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, clap::ValueEnum)]
+pub enum Goal {
+    /// Perform per-object computations
+    Objects,
+    /// Fit the model of the Galaxy to the data
+    Fit,
+}
 
 /// Parser of angles in the hours-minutes-seconds form
 #[derive(Clone)]
@@ -193,6 +201,9 @@ impl TypedValueParser for PathBufParser {
     {all-args}{after-help}"
 ))]
 pub struct Args {
+    /// Input file
+    #[arg(short, required = true, value_parser = PathBufParser)]
+    pub input: PathBuf,
     /// Output directory
     #[arg(short, required = true)]
     pub output_dir: PathBuf,
@@ -205,9 +216,6 @@ pub struct Args {
     /// Try to compute the profiles (fit goal only)
     #[arg(long = "with-profiles")]
     pub with_profiles: bool,
-    /// Input file
-    #[arg(short, required = true, value_parser = PathBufParser)]
-    pub input: PathBuf,
     /// Galactocentric distance to the Sun (kpc)
     ///
     /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)

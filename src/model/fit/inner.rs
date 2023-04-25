@@ -1,5 +1,6 @@
 //! Inner optimization problem
 
+use super::rotcurve::compute_rot_curve_series;
 use super::{Object, Params};
 
 use core::fmt::Debug;
@@ -72,7 +73,6 @@ where
         // Unpack the parameters
         let r_0 = fit_params.r_0;
         let omega_0 = fit_params.omega_0;
-        let a = fit_params.a;
         let u_sun = fit_params.u_sun;
         let w_sun = fit_params.w_sun;
         let k = fit_params.k;
@@ -82,9 +82,9 @@ where
         let cos_l = l.cos();
         let cos_b = b.cos();
         // Compute the difference between the Galactocentric distances
-        let delta_r = r_g_r - r_0;
+        let delta_r_g = r_g_r - r_0;
         // Compute the sum of the terms in the series of the rotation curve
-        let rot_curve_series = -2. * a * delta_r;
+        let rot_curve_series = compute_rot_curve_series(delta_r_g, fit_params);
         // Compute the full model velocity
         let v_r_rot = rot_curve_series * r_0 / r_g_r * sin_l * cos_b;
         let v_r_mod = v_r_rot + v_r_sun;

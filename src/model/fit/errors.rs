@@ -31,6 +31,7 @@ use numeric_literals::replace_float_literals;
 #[allow(clippy::missing_docs_in_private_items)]
 #[allow(clippy::type_complexity)]
 pub(super) struct ConfidenceIntervalProblem<'a, F> {
+    pub(super) n: usize,
     pub(super) index: usize,
     pub(super) best_outer_cost: F,
     pub(super) objects: &'a Objects<F>,
@@ -84,7 +85,7 @@ where
             params: self.params,
             par_pairs: self.par_pairs,
         };
-        let mut init_param = self.params.to_point();
+        let mut init_param = self.params.to_point(self.n);
         // Remove the frozen parameter
         init_param.remove(self.index);
         let cond = ArmijoCondition::new(1e-4)?;
@@ -139,10 +140,10 @@ where
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub(in crate::model) fn try_fit_errors(&mut self) -> Result<()> {
+    pub fn try_fit_errors(&mut self, n: usize) -> Result<()> {
         // Make sure the fitting happened before this call
         let fit_params = self.fit_params.as_mut().unwrap();
-        let best_point = fit_params.to_point();
+        let best_point = fit_params.to_point(n);
         // Prepare the errors log file
         let errors_log_path = self.output_dir.join("errors.log");
         let errors_log_file = File::create(errors_log_path)
@@ -178,7 +179,7 @@ where
                         params: &self.params,
                         par_pairs: &Rc::clone(&par_pairs),
                     };
-                    let mut init_param = self.params.to_point();
+                    let mut init_param = self.params.to_point(n);
                     // Remove the frozen parameter
                     init_param.remove(index);
                     let cond = ArmijoCondition::new(1e-4)?;
@@ -204,6 +205,7 @@ where
                     writeln!(errors_log_writer.borrow_mut(), "\nto the right:")?;
 
                     let problem = ConfidenceIntervalProblem {
+                        n,
                         index,
                         best_outer_cost: best_frozen_cost,
                         objects: &self.objects,
@@ -246,6 +248,7 @@ where
                     writeln!(errors_log_writer.borrow_mut(), "\nto the left:")?;
 
                     let problem = ConfidenceIntervalProblem {
+                        n,
                         index,
                         best_outer_cost: best_frozen_cost,
                         objects: &self.objects,

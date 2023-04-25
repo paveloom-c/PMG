@@ -10,7 +10,6 @@ use alloc::rc::Rc;
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
 use core::iter::Sum;
-use std::path::Path;
 
 use anyhow::{Context, Result};
 use argmin::core::{ArgminFloat, Executor};
@@ -34,7 +33,7 @@ pub type Profiles<F> = Vec<Profile<F>>;
 pub type Profile<F> = Vec<ProfilePoint<F>>;
 
 /// A point on the profile
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct ProfilePoint<F> {
     /// Value of the parameter
     param: F,
@@ -52,7 +51,7 @@ impl<F> Model<F> {
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub(in crate::model) fn try_compute_profiles(&mut self) -> Result<()>
+    pub fn try_compute_profiles(&mut self, n: usize) -> Result<()>
     where
         F: Float
             + Debug
@@ -83,7 +82,7 @@ impl<F> Model<F> {
         Vec<F>: FiniteDiff,
     {
         // Get the optimized parameters as arrays
-        let fit_params = self.fit_params.as_ref().unwrap().to_point();
+        let fit_params = self.fit_params.as_ref().unwrap().to_point(n);
         let fit_params_ep = [1.0; PARAMS_N];
         let fit_params_em = [1.0; PARAMS_N];
         // Prepare storage for the profiles and the reduced parallaxes
@@ -111,7 +110,7 @@ impl<F> Model<F> {
                     params: &self.params,
                     par_pairs: &Rc::clone(&par_pairs),
                 };
-                let mut init_param = self.params.to_point();
+                let mut init_param = self.params.to_point(n);
                 // Remove the frozen parameter
                 init_param.remove(index);
                 let cond = ArmijoCondition::new(1e-4)?;
@@ -140,10 +139,14 @@ impl<F> Model<F> {
     #[allow(clippy::indexing_slicing)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
-    pub(in crate::model) fn serialize_to_profiles(&self, output_dir: &Path) -> Result<()>
+    pub(in crate::model) fn serialize_to_profiles(&self) -> Result<()>
     where
         F: Float + Debug + Display + Serialize,
     {
+        if self.profiles.is_none() {
+            return Ok(());
+        };
+
         // Prepare a header
         let params = &self.params;
         let fit_params = self.fit_params.as_ref().unwrap();
@@ -235,7 +238,7 @@ impl<F> Model<F> {
 
             let mut file_name = "profile_".to_owned();
             file_name.push_str(param_name);
-            output::serialize_to(output_dir, &file_name, &header, records)?;
+            output::serialize_to(&self.output_dir, &file_name, &header, records)?;
         }
         Ok(())
     }

@@ -1,10 +1,9 @@
 //! Fit of the model (rotation curve)
 
 use super::io::output;
-use super::Model;
+use super::{Model, Params};
 
 use core::fmt::{Debug, Display};
-use std::path::Path;
 
 use anyhow::Result;
 use indoc::formatdoc;
@@ -35,9 +34,7 @@ impl<F> Model<F> {
     {
         // Unpack some of the parameters
         let fit_params = self.fit_params.as_ref().unwrap();
-        let r_0 = fit_params.r_0;
-        let theta_0 = fit_params.theta_0;
-        let theta_1 = fit_params.theta_1;
+        let Params { r_0, omega_0, .. } = *fit_params;
         // Compute the rotation curve (linear model for now)
         let n_int = 1000;
         let n_float = F::from(n_int).unwrap();
@@ -52,7 +49,7 @@ impl<F> Model<F> {
                     let r_g = start + i_float * h;
                     // Compute the azimuthal velocity
                     let delta_r_g = r_g - r_0;
-                    let theta = theta_0 + theta_1 * delta_r_g;
+                    let theta = omega_0 * r_g + compute_rot_curve_series(delta_r_g, fit_params);
                     RotationCurvePoint { r_g, theta }
                 })
                 .collect(),
@@ -61,7 +58,7 @@ impl<F> Model<F> {
     /// Serialize the fitted rotation curve
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
-    pub(in crate::model) fn serialize_to_fit_rotcurve(&self, output_dir: &Path) -> Result<()>
+    pub(in crate::model) fn serialize_to_fit_rotcurve(&self) -> Result<()>
     where
         F: Float + Debug + Display + Serialize,
     {
@@ -94,6 +91,44 @@ impl<F> Model<F> {
             a = fit_params.a,
         );
         let records = self.fit_rotcurve.as_ref().unwrap();
-        output::serialize_to(output_dir, "fit_rotcurve", &header, records)
+        output::serialize_to(&self.output_dir, "fit_rotcurve", &header, records)
     }
+}
+
+/// Compute the linear rotation curve approximation
+/// via Taylor series with the specified degree
+#[allow(clippy::as_conversions)]
+#[allow(clippy::cast_possible_truncation)]
+#[allow(clippy::cast_possible_wrap)]
+#[allow(clippy::indexing_slicing)]
+#[allow(clippy::unwrap_used)]
+#[replace_float_literals(F::from(literal).unwrap())]
+pub fn compute_rot_curve_series<F>(delta_r_g: F, fit_params: &Params<F>) -> F
+where
+    F: Float,
+{
+    let Params {
+        a,
+        theta_2,
+        theta_3,
+        theta_4,
+        theta_5,
+        theta_6,
+        theta_7,
+        theta_8,
+        theta_9,
+        theta_10,
+        ..
+    } = *fit_params;
+
+    -2. * a * delta_r_g
+        + theta_2 / 2. * (delta_r_g).powi(2)
+        + theta_3 / 6. * (delta_r_g).powi(3)
+        + theta_4 / 24. * (delta_r_g).powi(4)
+        + theta_5 / 120. * (delta_r_g).powi(5)
+        + theta_6 / 720. * (delta_r_g).powi(6)
+        + theta_7 / 5040. * (delta_r_g).powi(7)
+        + theta_8 / 40320. * (delta_r_g).powi(8)
+        + theta_9 / 362_880. * (delta_r_g).powi(9)
+        + theta_10 / 3_628_800. * (delta_r_g).powi(10)
 }

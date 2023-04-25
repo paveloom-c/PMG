@@ -77,7 +77,7 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
         Vec<F>: ArgminL2Norm<F>,
         Vec<F>: FiniteDiff,
     {
-        // Prepare storage
+        // Unpack the problem
         let mut fit_objects = self.objects.clone();
         let mut fit_params = self.params.clone();
         // Update the parameters
@@ -89,7 +89,7 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
             .par_iter_mut()
             .zip(costs.par_iter_mut())
             .zip(self.par_pairs.borrow_mut().par_iter_mut())
-            .try_for_each(|((object, sum), par_pair)| -> Result<()> {
+            .try_for_each(|((object, cost), par_pair)| -> Result<()> {
                 // Compute some values
                 object.compute_r_g(&fit_params);
                 // Unpack the data
@@ -177,7 +177,7 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 let &best_point = res.state().get_best_param().unwrap();
                 let best_cost = res.state().get_best_cost();
                 // Compute the final sum for this object
-                *sum = F::ln(F::sqrt(d_v_r))
+                *cost = F::ln(F::sqrt(d_v_r))
                     + F::ln(F::sqrt(d_mu_l_cos_b))
                     + F::ln(F::sqrt(d_mu_b))
                     + 0.5 * best_cost;

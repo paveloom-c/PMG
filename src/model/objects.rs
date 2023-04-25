@@ -433,7 +433,6 @@ impl<F> Model<F> {
     #[allow(clippy::too_many_lines)]
     pub(in crate::model) fn serialize_to_objects(
         &self,
-        output_dir: &Path,
         name: &str,
         params: &Params<F>,
     ) -> Result<()>
@@ -574,6 +573,6 @@ impl<F> Model<F> {
             w_sun_standard = params.w_sun_standard,
         );
         let records = &self.objects;
-        output::serialize_to(output_dir, name, &header, records)
+        output::serialize_to(&self.output_dir, name, &header, records)
     }
 }

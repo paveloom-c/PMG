@@ -67,7 +67,7 @@ where
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub(in crate::model) fn try_fit_params(&mut self) -> Result<()> {
+    pub(in crate::model) fn try_fit_params(&mut self, n: usize) -> Result<()> {
         // Prepare the fit log file
         let fit_log_path = self.output_dir.join("fit.log");
         let fit_log_file =
@@ -88,7 +88,7 @@ where
             params: &self.params,
             par_pairs: &Rc::clone(&par_pairs),
         };
-        let init_param = self.params.to_point();
+        let init_param = self.params.to_point(n);
         let cond = ArmijoCondition::new(1e-4)?;
         let linesearch = BacktrackingLineSearch::new(cond).rho(0.5)?;
         let solver = LBFGS::new(linesearch, 7).with_tolerance_cost(1e-12)?;
@@ -105,6 +105,7 @@ where
             )
             .run()
             .with_context(|| "Couldn't solve the outer optimization problem")?;
+        let best_cost = res.state().get_best_cost();
         let best_point = res.state().get_best_param().unwrap().clone();
         // Prepare storage for the new parameters
         let mut fit_params = self.params.clone();
@@ -117,6 +118,8 @@ where
         fit_params.theta_1 = fit_params.omega_0 - 2. * fit_params.a;
         fit_params.theta_sun = fit_params.theta_0 + fit_params.v_sun;
         // Save the results
+        self.n = Some(n);
+        self.best_cost = Some(best_cost);
         self.fit_params = Some(fit_params);
         Ok(())
     }

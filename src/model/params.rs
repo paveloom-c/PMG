@@ -6,7 +6,6 @@ use super::Model;
 use core::fmt::{Debug, Display};
 use std::fs::File;
 use std::io::Write;
-use std::path::Path;
 
 use anyhow::{Context, Result};
 use indoc::{formatdoc, indoc};
@@ -15,6 +14,10 @@ use serde::Serialize;
 
 /// Number of the optimized parameters
 pub const PARAMS_N: usize = 9;
+
+/// Maximum degree of the polynomial
+/// of the rotation curve supported
+pub const N_MAX: usize = 10;
 
 /// Names of the optimized parameters
 pub const PARAMS_NAMES: [&str; PARAMS_N] = [
@@ -109,10 +112,64 @@ pub struct Params<F> {
     pub sigma_z_em: F,
     /// The constant term of the rotation curve (km/s)
     pub theta_0: F,
-    /// The first derivative of the rotation curve (km/s/kpc)
+    /// The first derivative of the linear rotation velocity (km/s/kpc)
     pub theta_1: F,
     /// Linear rotation velocity of the Sun (km/s)
     pub theta_sun: F,
+    /// The second derivative of the linear rotation velocity (km/s/kpc^2)
+    pub theta_2: F,
+    /// Plus uncertainty in `theta_2`
+    pub theta_2_ep: F,
+    /// Minus uncertainty in `theta_2`
+    pub theta_2_em: F,
+    /// The third derivative of the linear rotation velocity (km/s/kpc^3)
+    pub theta_3: F,
+    /// Plus uncertainty in `theta_3`
+    pub theta_3_ep: F,
+    /// Minus uncertainty in `theta_3`
+    pub theta_3_em: F,
+    /// The 4th derivative of the linear rotation velocity (km/s/kpc^4)
+    pub theta_4: F,
+    /// Plus uncertainty in `theta_4`
+    pub theta_4_ep: F,
+    /// Minus uncertainty in `theta_4`
+    pub theta_4_em: F,
+    /// The 5th derivative of the linear rotation velocity (km/s/kpc^5)
+    pub theta_5: F,
+    /// Plus uncertainty in `theta_5`
+    pub theta_5_ep: F,
+    /// Minus uncertainty in `theta_5`
+    pub theta_5_em: F,
+    /// The 6th derivative of the linear rotation velocity (km/s/kpc^6)
+    pub theta_6: F,
+    /// Plus uncertainty in `theta_6`
+    pub theta_6_ep: F,
+    /// Minus uncertainty in `theta_6`
+    pub theta_6_em: F,
+    /// The 7th derivative of the linear rotation velocity (km/s/kpc^7)
+    pub theta_7: F,
+    /// Plus uncertainty in `theta_7`
+    pub theta_7_ep: F,
+    /// Minus uncertainty in `theta_7`
+    pub theta_7_em: F,
+    /// The 8th derivative of the linear rotation velocity (km/s/kpc^8)
+    pub theta_8: F,
+    /// Plus uncertainty in `theta_8`
+    pub theta_8_ep: F,
+    /// Minus uncertainty in `theta_8`
+    pub theta_8_em: F,
+    /// The 9th derivative of the linear rotation velocity (km/s/kpc^9)
+    pub theta_9: F,
+    /// Plus uncertainty in `theta_9`
+    pub theta_9_ep: F,
+    /// Minus uncertainty in `theta_9`
+    pub theta_9_em: F,
+    /// The 10th derivative of the linear rotation velocity (km/s/kpc^10)
+    pub theta_10: F,
+    /// Plus uncertainty in `theta_10`
+    pub theta_10_ep: F,
+    /// Minus uncertainty in `theta_10`
+    pub theta_10_em: F,
     /// The right ascension of the north galactic pole (radians)
     #[serde(skip)]
     pub alpha_ngp: F,
@@ -145,24 +202,38 @@ impl<F> Params<F> {
     where
         F: Float + Debug,
     {
-        self.r_0 = p[0];
-        self.omega_0 = p[1];
-        self.a = p[2];
-        self.u_sun = p[3];
-        self.v_sun = p[4];
-        self.w_sun = p[5];
-        self.sigma_r_g = p[6];
-        self.sigma_theta = p[7];
-        self.sigma_z = p[8];
+        let len = p.len();
+        let mut new_p = [F::zero(); 18];
+        new_p[0..len].copy_from_slice(&p[0..len]);
+
+        self.r_0 = new_p[0];
+        self.omega_0 = new_p[1];
+        self.a = new_p[2];
+        self.u_sun = new_p[3];
+        self.v_sun = new_p[4];
+        self.w_sun = new_p[5];
+        self.sigma_r_g = new_p[6];
+        self.sigma_theta = new_p[7];
+        self.sigma_z = new_p[8];
+        self.theta_2 = new_p[9];
+        self.theta_3 = new_p[10];
+        self.theta_4 = new_p[11];
+        self.theta_5 = new_p[12];
+        self.theta_6 = new_p[13];
+        self.theta_7 = new_p[14];
+        self.theta_8 = new_p[15];
+        self.theta_9 = new_p[16];
+        self.theta_10 = new_p[17];
     }
     /// Construct a point in the parameter space from the parameters
     ///
     /// Note that not all fields are used, but only those needed for fitting
-    pub fn to_point(&self) -> Vec<F>
+    #[allow(clippy::indexing_slicing)]
+    pub fn to_point(&self, n: usize) -> Vec<F>
     where
         F: Float + Debug,
     {
-        [
+        let array = [
             self.r_0,
             self.omega_0,
             self.a,
@@ -172,8 +243,18 @@ impl<F> Params<F> {
             self.sigma_r_g,
             self.sigma_theta,
             self.sigma_z,
-        ]
-        .to_vec()
+            self.theta_2,
+            self.theta_3,
+            self.theta_4,
+            self.theta_5,
+            self.theta_6,
+            self.theta_7,
+            self.theta_8,
+            self.theta_9,
+            self.theta_10,
+        ];
+        let slice = &array[0..=8 + (n - 1)];
+        slice.to_vec()
     }
     /// Update the plus uncertainties of the parameters
     /// with the values in the provided vector
@@ -245,9 +326,36 @@ const DESCRIPTIONS: &str = indoc!(
     # 25 sigma_Z: Vertical component of the ellipsoid of natural standard deviations [km/s]
     # 26 sigma_Z_ep: Plus uncertainty in `sigma_Z` [km/s]
     # 27 sigma_Z_em: Minus uncertainty in `sigma_Z` [km/s]
-    # 28 theta_0: The constant term of the rotation curve [km/s]
-    # 29 theta_1: The first derivative of the rotation curve [km/s/kpc]
-    # 30 theta_sun: Linear rotation velocity of the Sun [km/s]"
+    # 28 theta_2: The second derivative of the linear rotation velocity [km/s/kpc^2]
+    # 29 theta_2_ep: Plus uncertainty in `theta_2` [km/s/kpc^2]
+    # 30 theta_2_em: Minus uncertainty in `theta_2` [km/s/kpc^2]
+    # 31 theta_3: The third derivative of the linear rotation velocity [km/s/kpc^3]
+    # 32 theta_3_ep: Plus uncertainty in `theta_3` [km/s/kpc^3]
+    # 33 theta_3_em: Minus uncertainty in `theta_3` [km/s/kpc^3]
+    # 34 theta_4: The 4th derivative of the linear rotation velocity [km/s/kpc^4]
+    # 35 theta_4_ep: Plus uncertainty in `theta_4` [km/s/kpc^4]
+    # 36 theta_4_em: Minus uncertainty in `theta_4` [km/s/kpc^4]
+    # 37 theta_5: The 5th derivative of the linear rotation velocity [km/s/kpc^5]
+    # 38 theta_5_ep: Plus uncertainty in `theta_5` [km/s/kpc^5]
+    # 39 theta_5_em: Minus uncertainty in `theta_5` [km/s/kpc^5]
+    # 40 theta_6: The 6th derivative of the linear rotation velocity [km/s/kpc^6]
+    # 41 theta_6_ep: Plus uncertainty in `theta_6` [km/s/kpc^6]
+    # 42 theta_6_em: Minus uncertainty in `theta_6` [km/s/kpc^6]
+    # 43 theta_7: The 7th derivative of the linear rotation velocity [km/s/kpc^7]
+    # 44 theta_7_ep: Plus uncertainty in `theta_7` [km/s/kpc^7]
+    # 45 theta_7_em: Minus uncertainty in `theta_7` [km/s/kpc^7]
+    # 46 theta_8: The 8th derivative of the linear rotation velocity [km/s/kpc^8]
+    # 47 theta_8_ep: Plus uncertainty in `theta_8` [km/s/kpc^8]
+    # 48 theta_8_em: Minus uncertainty in `theta_8` [km/s/kpc^8]
+    # 49 theta_9: The 9th derivative of the linear rotation velocity [km/s/kpc^9]
+    # 50 theta_9_ep: Plus uncertainty in `theta_9` [km/s/kpc^9]
+    # 51 theta_9_em: Minus uncertainty in `theta_9` [km/s/kpc^9]
+    # 52 theta_10: The 10th derivative of the linear rotation velocity [km/s/kpc^10]
+    # 53 theta_10_ep: Plus uncertainty in `theta_10` [km/s/kpc^10]
+    # 54 theta_10_em: Minus uncertainty in `theta_10` [km/s/kpc^10]
+    # 55 theta_0: The constant term of the rotation curve [km/s]
+    # 56 theta_1: The first derivative of the linear rotation velocity [km/s/kpc]
+    # 57 theta_sun: Linear rotation velocity of the Sun [km/s]"
 );
 
 impl<F> Model<F> {
@@ -255,7 +363,7 @@ impl<F> Model<F> {
     #[allow(clippy::too_many_lines)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
-    pub(in crate::model) fn serialize_to_params(&self, output_dir: &Path) -> Result<()>
+    pub(in crate::model) fn serialize_to_params(&self) -> Result<()>
     where
         F: Float + Debug + Display + Serialize,
     {
@@ -305,13 +413,13 @@ impl<F> Model<F> {
             w_sun_standard = params.w_sun_standard,
         );
         let records = vec![params];
-        output::serialize_to(output_dir, "params", &header, &records)
+        output::serialize_to(&self.output_dir, "params", &header, &records)
     }
     /// Serialize the fitted parameters
     #[allow(clippy::too_many_lines)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
-    pub(in crate::model) fn serialize_to_fit_params(&self, output_dir: &Path) -> Result<()>
+    pub(in crate::model) fn serialize_to_fit_params(&self) -> Result<()>
     where
         F: Float + Debug + Display + Serialize,
     {
@@ -401,9 +509,9 @@ impl<F> Model<F> {
         );
         let name = "fit_params";
         let records = vec![fit_params];
-        output::serialize_to(output_dir, name, &header, &records)?;
+        output::serialize_to(&self.output_dir, name, &header, &records)?;
         // Represent in a plain view, too
-        let plain_path = &output_dir.join(format!("{name}.plain"));
+        let plain_path = &self.output_dir.join(format!("{name}.plain"));
         let mut plain_file = File::create(plain_path)
             .with_context(|| format!("Couldn't open the file {plain_path:?} in write-only mode"))?;
         write!(
@@ -412,7 +520,10 @@ impl<F> Model<F> {
             formatdoc!("
             Fit of the model (parameters)
             {sample_description}
-            Parameters:
+            Optimization results:
+
+                      n: {n}
+                    L_1: {best_cost}
 
                       R: {r_0:>18.15} -> {fit_r_0:>18.15} + {fit_r_0_ep:>17.15} - {fit_r_0_em:>17.15}
                 omega_0: {omega_0:>18.15} -> {fit_omega_0:>18.15} + {fit_omega_0_ep:>17.15} - {fit_omega_0_em:>17.15}
@@ -423,6 +534,15 @@ impl<F> Model<F> {
                 sigma_R: {sigma_r_g:>18.15} -> {fit_sigma_r_g:>18.15} + {fit_sigma_r_g_ep:>17.15} - {fit_sigma_r_g_em:>17.15}
             sigma_theta: {sigma_theta:>18.15} -> {fit_sigma_theta:>18.15} + {fit_sigma_theta_ep:>17.15} - {fit_sigma_theta_em:>17.15}
                 sigma_Z: {sigma_z:>18.15} -> {fit_sigma_z:>18.15} + {fit_sigma_z_ep:>17.15} - {fit_sigma_z_em:>17.15}
+                theta_2: {theta_2:>18.15} -> {fit_theta_2:>18.15} + {fit_theta_2_ep:>17.15} - {fit_theta_2_em:>17.15}
+                theta_3: {theta_3:>18.15} -> {fit_theta_3:>18.15} + {fit_theta_3_ep:>17.15} - {fit_theta_3_em:>17.15}
+                theta_4: {theta_4:>18.15} -> {fit_theta_4:>18.15} + {fit_theta_4_ep:>17.15} - {fit_theta_4_em:>17.15}
+                theta_5: {theta_5:>18.15} -> {fit_theta_5:>18.15} + {fit_theta_5_ep:>17.15} - {fit_theta_5_em:>17.15}
+                theta_6: {theta_6:>18.15} -> {fit_theta_6:>18.15} + {fit_theta_6_ep:>17.15} - {fit_theta_6_em:>17.15}
+                theta_7: {theta_7:>18.15} -> {fit_theta_7:>18.15} + {fit_theta_7_ep:>17.15} - {fit_theta_7_em:>17.15}
+                theta_8: {theta_8:>18.15} -> {fit_theta_8:>18.15} + {fit_theta_8_ep:>17.15} - {fit_theta_8_em:>17.15}
+                theta_9: {theta_9:>18.15} -> {fit_theta_9:>18.15} + {fit_theta_9_ep:>17.15} - {fit_theta_9_em:>17.15}
+               theta_10: {theta_10:>18.15} -> {fit_theta_10:>18.15} + {fit_theta_10_ep:>17.15} - {fit_theta_10_em:>17.15}
 
             Derived values:
 
@@ -454,6 +574,8 @@ impl<F> Model<F> {
             W_SUN_STANDARD: {w_sun_standard}
             ",
                 sample_description = self.format_sample_description().replace("# ", "").replace('#', ""),
+                n = self.n.unwrap(),
+                best_cost = self.best_cost.unwrap(),
                 r_0 = params.r_0,
                 omega_0 = params.omega_0,
                 a = params.a,
@@ -463,6 +585,15 @@ impl<F> Model<F> {
                 sigma_r_g = params.sigma_r_g,
                 sigma_theta = params.sigma_theta,
                 sigma_z = params.sigma_z,
+                theta_2 = params.theta_2,
+                theta_3 = params.theta_3,
+                theta_4 = params.theta_4,
+                theta_5 = params.theta_5,
+                theta_6 = params.theta_6,
+                theta_7 = params.theta_7,
+                theta_8 = params.theta_8,
+                theta_9 = params.theta_9,
+                theta_10 = params.theta_10,
                 theta_0 = params.theta_0,
                 theta_1 = params.theta_1,
                 theta_sun = params.theta_sun,
@@ -493,6 +624,33 @@ impl<F> Model<F> {
                 fit_sigma_r_g_em = fit_params.sigma_r_g_em,
                 fit_sigma_theta_em = fit_params.sigma_theta_em,
                 fit_sigma_z_em = fit_params.sigma_z_em,
+                fit_theta_2 = fit_params.theta_2,
+                fit_theta_3 = fit_params.theta_3,
+                fit_theta_4 = fit_params.theta_4,
+                fit_theta_5 = fit_params.theta_5,
+                fit_theta_6 = fit_params.theta_6,
+                fit_theta_7 = fit_params.theta_7,
+                fit_theta_8 = fit_params.theta_8,
+                fit_theta_9 = fit_params.theta_9,
+                fit_theta_10 = fit_params.theta_10,
+                fit_theta_2_ep = fit_params.theta_2_ep,
+                fit_theta_3_ep = fit_params.theta_3_ep,
+                fit_theta_4_ep = fit_params.theta_4_ep,
+                fit_theta_5_ep = fit_params.theta_5_ep,
+                fit_theta_6_ep = fit_params.theta_6_ep,
+                fit_theta_7_ep = fit_params.theta_7_ep,
+                fit_theta_8_ep = fit_params.theta_8_ep,
+                fit_theta_9_ep = fit_params.theta_9_ep,
+                fit_theta_10_ep = fit_params.theta_10_ep,
+                fit_theta_2_em = fit_params.theta_2_em,
+                fit_theta_3_em = fit_params.theta_3_em,
+                fit_theta_4_em = fit_params.theta_4_em,
+                fit_theta_5_em = fit_params.theta_5_em,
+                fit_theta_6_em = fit_params.theta_6_em,
+                fit_theta_7_em = fit_params.theta_7_em,
+                fit_theta_8_em = fit_params.theta_8_em,
+                fit_theta_9_em = fit_params.theta_9_em,
+                fit_theta_10_em = fit_params.theta_10_em,
                 fit_theta_0 = fit_params.theta_0,
                 fit_theta_1 = fit_params.theta_1,
                 fit_theta_sun = fit_params.theta_sun,
