@@ -3,6 +3,7 @@
 extern crate alloc;
 
 use super::io::output;
+use super::params::{ARMIJO_PARAM, BACKTRACKING_PARAM, LBFGS_M, LBFGS_TOLERANCE};
 use super::{FrozenOuterOptimizationProblem, OuterOptimizationProblem};
 use super::{Model, PARAMS_N, PARAMS_NAMES};
 
@@ -123,9 +124,11 @@ impl<F> Model<F> {
                 let mut init_param = self.params.to_point(n);
                 // Remove the frozen parameter
                 init_param.remove(index);
-                let cond = ArmijoCondition::new(1e-4)?;
-                let linesearch = BacktrackingLineSearch::new(cond).rho(0.5)?;
-                let solver = LBFGS::new(linesearch, 7).with_tolerance_cost(1e-12)?;
+                let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;
+                let linesearch =
+                    BacktrackingLineSearch::new(cond).rho(F::from(BACKTRACKING_PARAM).unwrap())?;
+                let solver = LBFGS::new(linesearch, LBFGS_M)
+                    .with_tolerance_cost(F::from(LBFGS_TOLERANCE).unwrap())?;
                 // Find the local minimum in the outer optimization
                 let res = Executor::new(problem, solver)
                     .configure(|state| state.param(init_param))

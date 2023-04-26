@@ -26,6 +26,18 @@ use finitediff::FiniteDiff;
 use num::Float;
 use numeric_literals::replace_float_literals;
 
+/// A parameter for the Armijo condition
+pub const ARMIJO_PARAM: f64 = 1e-4;
+
+/// A parameter for the backtracking search
+pub const BACKTRACKING_PARAM: f64 = 0.9;
+
+/// Memory length of the L-BFGS algorithm
+pub const LBFGS_M: usize = 7;
+
+/// Tolerance of the L-BFGS algorithm
+pub const LBFGS_TOLERANCE: f64 = 1e-15;
+
 impl<F> Model<F>
 where
     F: Float
@@ -89,9 +101,11 @@ where
             par_pairs: &Rc::clone(&par_pairs),
         };
         let init_param = self.params.to_point(n);
-        let cond = ArmijoCondition::new(1e-4)?;
-        let linesearch = BacktrackingLineSearch::new(cond).rho(0.5)?;
-        let solver = LBFGS::new(linesearch, 7).with_tolerance_cost(1e-12)?;
+        let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;
+        let linesearch =
+            BacktrackingLineSearch::new(cond).rho(F::from(BACKTRACKING_PARAM).unwrap())?;
+        let solver = LBFGS::new(linesearch, LBFGS_M)
+            .with_tolerance_cost(F::from(LBFGS_TOLERANCE).unwrap())?;
         // Find the local minimum in the outer optimization
         let res = Executor::new(problem, solver)
             .configure(|state| state.param(init_param))
