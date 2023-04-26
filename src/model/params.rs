@@ -119,12 +119,6 @@ pub struct Params<F> {
     /// Minus uncertainty in `sigma_z`
     #[serde(rename = "sigma_Z_em")]
     pub sigma_z_em: F,
-    /// The constant term of the rotation curve (km/s)
-    pub theta_0: F,
-    /// The first derivative of the linear rotation velocity (km/s/kpc)
-    pub theta_1: F,
-    /// Linear rotation velocity of the Sun (km/s)
-    pub theta_sun: F,
     /// The second derivative of the linear rotation velocity (km/s/kpc^2)
     pub theta_2: F,
     /// Plus uncertainty in `theta_2`
@@ -179,6 +173,12 @@ pub struct Params<F> {
     pub theta_10_ep: F,
     /// Minus uncertainty in `theta_10`
     pub theta_10_em: F,
+    /// The constant term of the rotation curve (km/s)
+    pub theta_0: F,
+    /// The first derivative of the linear rotation velocity (km/s/kpc)
+    pub theta_1: F,
+    /// Linear rotation velocity of the Sun (km/s)
+    pub theta_sun: F,
     /// The right ascension of the north galactic pole (radians)
     #[serde(skip)]
     pub alpha_ngp: F,

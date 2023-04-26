@@ -178,8 +178,8 @@ function scatter(
     xlabel,
     ylabel,
     fit_param,
-    fit_param_ep,
-    fit_param_em,
+    fit_param_p,
+    fit_param_m,
 )
     # Compute the limits
     x_max, x_min = max_min(x)
@@ -201,7 +201,9 @@ function scatter(
             height = 200,
             width = 200,
             grid = "both",
-            minor_x_tick_num = 3,
+            xtick_distance = 0.5,
+            ytick_distance = 5,
+            minor_x_tick_num = 4,
             minor_y_tick_num = 4,
             minor_grid_style = {opacity = 0.25},
             major_grid_style = {opacity = 0.5},
@@ -237,8 +239,8 @@ function scatter(
                 color = colors[3]
             },
             Coordinates([
-                (fit_param_ep, y_min + 0.04 * (y_max - y_min)),
-                (fit_param_ep, y_max - 0.015 * (y_max - y_min)),
+                (fit_param_p, y_min + 0.04 * (y_max - y_min)),
+                (fit_param_p, y_max - 0.015 * (y_max - y_min)),
             ]),
         ),
         Plot(
@@ -248,8 +250,8 @@ function scatter(
                 color = colors[3]
             },
             Coordinates([
-                (fit_param_em, y_min + 0.04 * (y_max - y_min)),
-                (fit_param_em, y_max - 0.015 * (y_max - y_min)),
+                (fit_param_m, y_min + 0.04 * (y_max - y_min)),
+                (fit_param_m, y_max - 0.015 * (y_max - y_min)),
             ]),
         ),
     )
@@ -335,12 +337,15 @@ for prefix in prefixes
         latex_name = PARAMS_LATEX_NAMES[i]
         latex_unit = PARAMS_LATEX_UNITS[i]
 
+        profile_path = joinpath(INPUT_DIR, "$(prefix)_profile_$(name).bin")
+        if !isfile(profile_path) continue end
+
         fit_param = fit_params[i]
         fit_param_ep = fit_params_ep[i]
         fit_param_em = fit_params_em[i]
 
-        profile_path = joinpath(INPUT_DIR, "$(prefix)_profile_$(name).bin")
-        if !isfile(profile_path) continue end
+        fit_param_p = fit_param + fit_param_ep
+        fit_param_m = fit_param - fit_param_ep
 
         profile_data = read_bincode(profile_path, ProfileData)
 
@@ -357,8 +362,8 @@ for prefix in prefixes
                 latexstring(latex_name, latex_unit),
                 latexstring(L"L_p(", latex_name, L")"),
                 fit_param,
-                fit_param_ep,
-                fit_param_em,
+                fit_param_p,
+                fit_param_m,
             )
             pgfsave(
                 joinpath(
