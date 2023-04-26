@@ -268,6 +268,15 @@ PARAMS_NAMES = [
     "sigma_R",
     "sigma_theta",
     "sigma_Z",
+    "theta_2",
+    "theta_3",
+    "theta_4",
+    "theta_5",
+    "theta_6",
+    "theta_7",
+    "theta_8",
+    "theta_9",
+    "theta_10",
 ]
 
 PARAMS_LATEX_NAMES = [
@@ -280,6 +289,15 @@ PARAMS_LATEX_NAMES = [
     L"\sigma_R",
     L"\sigma_\theta",
     L"\sigma_Z",
+    L"\theta_2",
+    L"\theta_3",
+    L"\theta_4",
+    L"\theta_5",
+    L"\theta_6",
+    L"\theta_7",
+    L"\theta_8",
+    L"\theta_9",
+    L"\theta_10",
 ]
 
 PARAMS_LATEX_UNITS = [
@@ -292,6 +310,15 @@ PARAMS_LATEX_UNITS = [
     L"\; \mathrm{[km/s]}",
     L"\; \mathrm{[km/s]}",
     L"\; \mathrm{[km/s]}",
+    L"\; \mathrm{[km/s/kpc^2]}",
+    L"\; \mathrm{[km/s/kpc^3]}",
+    L"\; \mathrm{[km/s/kpc^4]}",
+    L"\; \mathrm{[km/s/kpc^5]}",
+    L"\; \mathrm{[km/s/kpc^6]}",
+    L"\; \mathrm{[km/s/kpc^7]}",
+    L"\; \mathrm{[km/s/kpc^8]}",
+    L"\; \mathrm{[km/s/kpc^9]}",
+    L"\; \mathrm{[km/s/kpc^10]}",
 ]
 
 fit_params_vec = map(i -> getfield(fit_params_data, i)[1], 1:fieldcount(ParamsData))
@@ -299,41 +326,51 @@ fit_params = fit_params_vec[1:3:end]
 fit_params_ep = fit_params_vec[2:3:end]
 fit_params_em = fit_params_vec[3:3:end]
 
+prefixes = ["conditional", "frozen"]
+
 # Create a plot for each profile
-for i in 1:length(PARAMS_NAMES)
-    name = PARAMS_NAMES[i]
-    latex_name = PARAMS_LATEX_NAMES[i]
-    latex_unit = PARAMS_LATEX_UNITS[i]
+for prefix in prefixes
+    for i in 1:length(PARAMS_NAMES)
+        name = PARAMS_NAMES[i]
+        latex_name = PARAMS_LATEX_NAMES[i]
+        latex_unit = PARAMS_LATEX_UNITS[i]
 
-    fit_param = fit_params[i]
-    fit_param_ep = fit_params_ep[i]
-    fit_param_em = fit_params_em[i]
+        fit_param = fit_params[i]
+        fit_param_ep = fit_params_ep[i]
+        fit_param_em = fit_params_em[i]
 
-    profile_path = joinpath(INPUT_DIR, "profile_$(name).bin")
-    if !isfile(profile_path) continue end
+        profile_path = joinpath(INPUT_DIR, "$(prefix)_profile_$(name).bin")
+        if !isfile(profile_path) continue end
 
-    profile_data = read_bincode(profile_path, ProfileData)
+        profile_data = read_bincode(profile_path, ProfileData)
 
-    param = profile_data.param
-    cost = profile_data.cost
+        param = profile_data.param
+        cost = profile_data.cost
 
-    push!(tasks, @spawn begin
-        lock(print_lock) do
-            println(pad, pad, "for $(name)...")
-        end
-        p = scatter(
-            param,
-            cost,
-            latexstring(latex_name, latex_unit),
-            latexstring(L"L_p(", latex_name, L")"),
-            fit_param,
-            fit_param_ep,
-            fit_param_em,
-        )
-        pgfsave(joinpath(OUTPUT_DIR, "Profile of $(name)$(POSTFIX).pdf"), p)
-    end)
+        push!(tasks, @spawn begin
+            lock(print_lock) do
+                println(pad, pad, "for $(name)...")
+            end
+            p = scatter(
+                param,
+                cost,
+                latexstring(latex_name, latex_unit),
+                latexstring(L"L_p(", latex_name, L")"),
+                fit_param,
+                fit_param_ep,
+                fit_param_em,
+            )
+            pgfsave(
+                joinpath(
+                    OUTPUT_DIR,
+                    "$(titlecase(prefix)) profile of $(name)$(POSTFIX).pdf",
+                ),
+                p,
+            )
+        end)
 
-    profile_data = nothing
+        profile_data = nothing
+    end
 end
 
 for task in tasks

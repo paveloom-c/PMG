@@ -8,7 +8,7 @@ mod sample_description;
 
 use crate::cli::Args;
 use crate::utils;
-pub use fit::{Profiles, RotationCurve};
+pub use fit::{ProfileType, Profiles, RotationCurve};
 pub use objects::{Object, Objects};
 pub use params::{Params, N_MAX, PARAMS_N, PARAMS_NAMES};
 
@@ -45,8 +45,10 @@ pub struct Model<F> {
     pub fit_params: Option<Params<F>>,
     /// Fit of the model (rotation curve)
     pub fit_rotcurve: Option<RotationCurve<F>>,
-    /// Profiles
-    pub profiles: Option<Profiles<F>>,
+    /// Conditional profiles
+    pub conditional_profiles: Option<Profiles<F>>,
+    /// Frozen profiles
+    pub frozen_profiles: Option<Profiles<F>>,
 
     /// Sample description
     pub sample_description: Option<String>,
@@ -150,8 +152,10 @@ impl<F> Model<F> {
         self.serialize_to_fit_rotcurve()
             .with_context(|| "Couldn't write the fitted rotation curve to a file")?;
 
-        self.serialize_to_profiles()
-            .with_context(|| "Couldn't write a profile to a file")?;
+        self.serialize_to_profiles(&ProfileType::Conditional)
+            .with_context(|| "Couldn't write a conditional profile to a file")?;
+        self.serialize_to_profiles(&ProfileType::Frozen)
+            .with_context(|| "Couldn't write a frozen profile to a file")?;
 
         Ok(())
     }

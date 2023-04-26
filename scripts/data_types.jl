@@ -115,6 +115,33 @@ module Types
         σ_Z::Vector{F}
         σ_Z_ep::Vector{F}
         σ_Z_em::Vector{F}
+        θ_2::Vector{F}
+        θ_2_ep::Vector{F}
+        θ_2_em::Vector{F}
+        θ_3::Vector{F}
+        θ_3_ep::Vector{F}
+        θ_3_em::Vector{F}
+        θ_4::Vector{F}
+        θ_4_ep::Vector{F}
+        θ_4_em::Vector{F}
+        θ_5::Vector{F}
+        θ_5_ep::Vector{F}
+        θ_5_em::Vector{F}
+        θ_6::Vector{F}
+        θ_6_ep::Vector{F}
+        θ_6_em::Vector{F}
+        θ_7::Vector{F}
+        θ_7_ep::Vector{F}
+        θ_7_em::Vector{F}
+        θ_8::Vector{F}
+        θ_8_ep::Vector{F}
+        θ_8_em::Vector{F}
+        θ_9::Vector{F}
+        θ_9_ep::Vector{F}
+        θ_9_em::Vector{F}
+        θ_10::Vector{F}
+        θ_10_ep::Vector{F}
+        θ_10_em::Vector{F}
         θ_0::Vector{F}
         θ_1::Vector{F}
         θ_sun::Vector{F}

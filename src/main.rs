@@ -67,10 +67,15 @@ pub fn main() -> Result<()> {
                     .try_fit_errors(best_n)
                     .with_context(|| "Couldn't define the confidence intervals")?;
             }
-            if args.with_profiles {
+            if args.with_conditional_profiles {
                 best_model
-                    .try_compute_profiles(best_n)
-                    .with_context(|| "Couldn't compute the profiles")?;
+                    .try_compute_conditional_profiles(best_n)
+                    .with_context(|| "Couldn't compute the conditional profiles")?;
+            }
+            if args.with_frozen_profiles {
+                best_model
+                    .try_compute_frozen_profiles(best_n)
+                    .with_context(|| "Couldn't compute the frozen profiles")?;
             }
 
             for model in &models {

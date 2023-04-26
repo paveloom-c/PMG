@@ -213,9 +213,12 @@ pub struct Args {
     /// Try to define the confidence intervals (fit goal only)
     #[arg(long = "with-errors")]
     pub with_errors: bool,
-    /// Try to compute the profiles (fit goal only)
-    #[arg(long = "with-profiles")]
-    pub with_profiles: bool,
+    /// Try to compute conditional profiles (fit goal only)
+    #[arg(long = "with-conditional-profiles")]
+    pub with_conditional_profiles: bool,
+    /// Try to compute frozen profiles (fit goal only)
+    #[arg(long = "with-frozen-profiles")]
+    pub with_frozen_profiles: bool,
     /// Galactocentric distance to the Sun (kpc)
     ///
     /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)

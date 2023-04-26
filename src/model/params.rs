@@ -13,7 +13,7 @@ use num::Float;
 use serde::Serialize;
 
 /// Number of the optimized parameters
-pub const PARAMS_N: usize = 9;
+pub const PARAMS_N: usize = 18;
 
 /// Maximum degree of the polynomial
 /// of the rotation curve supported
@@ -30,6 +30,15 @@ pub const PARAMS_NAMES: [&str; PARAMS_N] = [
     "sigma_R",
     "sigma_theta",
     "sigma_Z",
+    "theta_2",
+    "theta_3",
+    "theta_4",
+    "theta_5",
+    "theta_6",
+    "theta_7",
+    "theta_8",
+    "theta_9",
+    "theta_10",
 ];
 
 /// Model parameters

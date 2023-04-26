@@ -3,7 +3,7 @@
 extern crate alloc;
 
 use super::io::output;
-use super::FrozenOuterOptimizationProblem;
+use super::{FrozenOuterOptimizationProblem, OuterOptimizationProblem};
 use super::{Model, PARAMS_N, PARAMS_NAMES};
 
 use alloc::rc::Rc;
@@ -32,6 +32,14 @@ pub type Profiles<F> = Vec<Profile<F>>;
 /// A profile
 pub type Profile<F> = Vec<ProfilePoint<F>>;
 
+/// Type of a profile
+pub enum ProfileType {
+    /// One parameter fixed, the rest are free
+    Conditional,
+    /// All parameters are fixed
+    Frozen,
+}
+
 /// A point on the profile
 #[derive(Debug, Clone, Serialize)]
 pub struct ProfilePoint<F> {
@@ -42,16 +50,16 @@ pub struct ProfilePoint<F> {
 }
 
 /// Number of points in a profile
-const N: usize = 100;
+const POINTS_N: usize = 100;
 
 impl<F> Model<F> {
-    /// Try to compute the profiles
+    /// Try to compute the conditional profiles
     #[allow(clippy::indexing_slicing)]
     #[allow(clippy::similar_names)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub fn try_compute_profiles(&mut self, n: usize) -> Result<()>
+    pub fn try_compute_conditional_profiles(&mut self, n: usize) -> Result<()>
     where
         F: Float
             + Debug
@@ -88,19 +96,21 @@ impl<F> Model<F> {
         // Prepare storage for the profiles and the reduced parallaxes
         let mut profiles = Profiles::<F>::with_capacity(PARAMS_N);
         let par_pairs = Rc::new(RefCell::new(vec![(0., 0., 0.); self.objects.len()]));
-        // For each parameter
-        for index in 0..fit_params_ep.len() {
+
+        // Compute conditional profiles (one parameter is fixed
+        // and externally varied, the rest are free)
+        for index in 0..(8 + (n - 1)) {
             let fit_param = fit_params[index];
             let fit_param_ep = fit_params_ep[index];
             let fit_param_em = fit_params_em[index];
 
             let start = fit_param - fit_param_em;
             let end = fit_param + fit_param_ep;
-            let h = (end - start) / F::from(N).unwrap();
+            let h = (end - start) / F::from(POINTS_N).unwrap();
 
-            let mut profile = Vec::<ProfilePoint<F>>::with_capacity(N);
+            let mut profile = Vec::<ProfilePoint<F>>::with_capacity(POINTS_N);
 
-            for j in 0..=N {
+            for j in 0..=POINTS_N {
                 let param = start + F::from(j).unwrap() * h;
 
                 let problem = FrozenOuterOptimizationProblem {
@@ -131,33 +141,132 @@ impl<F> Model<F> {
             profiles.push(profile);
         }
 
-        self.profiles = Some(profiles);
+        self.conditional_profiles = Some(profiles);
+
+        Ok(())
+    }
+    /// Try to compute the frozen profiles
+    #[allow(clippy::indexing_slicing)]
+    #[allow(clippy::similar_names)]
+    #[allow(clippy::unwrap_in_result)]
+    #[allow(clippy::unwrap_used)]
+    #[replace_float_literals(F::from(literal).unwrap())]
+    pub fn try_compute_frozen_profiles(&mut self, n: usize) -> Result<()>
+    where
+        F: Float
+            + Debug
+            + Default
+            + Display
+            + Sync
+            + Send
+            + Sum
+            + ArgminFloat
+            + ArgminL2Norm<F>
+            + ArgminSub<F, F>
+            + ArgminAdd<F, F>
+            + ArgminDot<F, F>
+            + ArgminMul<F, F>
+            + ArgminZeroLike
+            + ArgminMul<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminSub<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminSub<F, Vec<F>>,
+        Vec<F>: ArgminAdd<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminAdd<F, Vec<F>>,
+        Vec<F>: ArgminMul<F, Vec<F>>,
+        Vec<F>: ArgminMul<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminL1Norm<F>,
+        Vec<F>: ArgminSignum,
+        Vec<F>: ArgminMinMax,
+        Vec<F>: ArgminDot<Vec<F>, F>,
+        Vec<F>: ArgminL2Norm<F>,
+        Vec<F>: FiniteDiff,
+    {
+        // Get the optimized parameters as arrays
+        let fit_params = self.fit_params.as_ref().unwrap().to_point(n);
+        let fit_params_ep = [1.0; PARAMS_N];
+        let fit_params_em = [1.0; PARAMS_N];
+        // Prepare storage for the profiles and the reduced parallaxes
+        let mut profiles = Profiles::<F>::with_capacity(PARAMS_N);
+        let par_pairs = Rc::new(RefCell::new(vec![(0., 0., 0.); self.objects.len()]));
+
+        let problem = OuterOptimizationProblem {
+            objects: &self.objects,
+            params: &self.params,
+            par_pairs: &Rc::clone(&par_pairs),
+        };
+
+        // Compute frozen profiles (all parameters are
+        // fixed, but one is externally varied)
+        //
+        // We compute for the first parameter
+        // only here (R_0) for debug purposes
+        for index in 0..(8 + (n - 1)) {
+            let fit_param = fit_params[index];
+            let fit_param_ep = fit_params_ep[index];
+            let fit_param_em = fit_params_em[index];
+
+            let start = fit_param - fit_param_em;
+            let end = fit_param + fit_param_ep;
+            let h = (end - start) / F::from(POINTS_N).unwrap();
+
+            let mut profile = Vec::<ProfilePoint<F>>::with_capacity(POINTS_N);
+
+            let mut p = fit_params.clone();
+
+            for j in 0..=POINTS_N {
+                let param = start + F::from(j).unwrap() * h;
+
+                p[index] = param;
+                let cost = problem.inner_cost(&p, false)?;
+
+                profile.push(ProfilePoint { param, cost });
+            }
+
+            profiles.push(profile);
+        }
+
+        self.frozen_profiles = Some(profiles);
 
         Ok(())
     }
     /// Serialize the profiles
     #[allow(clippy::indexing_slicing)]
+    #[allow(clippy::too_many_lines)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
-    pub(in crate::model) fn serialize_to_profiles(&self) -> Result<()>
+    pub(in crate::model) fn serialize_to_profiles(&self, profile_type: &ProfileType) -> Result<()>
     where
         F: Float + Debug + Display + Serialize,
     {
-        if self.profiles.is_none() {
+        let profiles_option = match *profile_type {
+            ProfileType::Conditional => &self.conditional_profiles,
+            ProfileType::Frozen => &self.frozen_profiles,
+        };
+
+        if profiles_option.is_none() {
             return Ok(());
+        };
+
+        let profiles = profiles_option.as_ref().unwrap();
+        let description_prefix = match *profile_type {
+            ProfileType::Conditional => "Conditional",
+            ProfileType::Frozen => "Frozen",
+        };
+        let file_prefix = match *profile_type {
+            ProfileType::Conditional => "conditional",
+            ProfileType::Frozen => "frozen",
         };
 
         // Prepare a header
         let params = &self.params;
         let fit_params = self.fit_params.as_ref().unwrap();
-        let profiles = self.profiles.as_ref().unwrap();
         for i in 0..profiles.len() {
             let records = &profiles[i];
             let param_name = PARAMS_NAMES[i];
 
             let header = formatdoc!(
                 "
-            # Profile of {param_name}
+            # {description_prefix} profile of {param_name}
             {sample_description}
             # Descriptions:
             #
@@ -236,7 +345,8 @@ impl<F> Model<F> {
                 w_sun_standard = params.w_sun_standard,
             );
 
-            let mut file_name = "profile_".to_owned();
+            let mut file_name = file_prefix.to_owned();
+            file_name.push_str("_profile_");
             file_name.push_str(param_name);
             output::serialize_to(&self.output_dir, &file_name, &header, records)?;
         }
