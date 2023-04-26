@@ -168,7 +168,7 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 };
                 let init_param = par;
                 let solver = GoldenSectionSearch::new(par - 5. * par_e, par + 5. * par_e)?
-                    .with_tolerance(par_e * 1e-3)?;
+                    .with_tolerance(1e-10)?;
                 // Find the local minimum in the inner optimization
                 let res = Executor::new(problem, solver)
                     .configure(|state| state.param(init_param).max_iters(1000))

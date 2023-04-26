@@ -212,7 +212,7 @@ impl<F> Params<F> {
         F: Float + Debug,
     {
         let len = p.len();
-        let mut new_p = [F::zero(); 18];
+        let mut new_p = [F::zero(); PARAMS_N];
         new_p[0..len].copy_from_slice(&p[0..len]);
 
         self.r_0 = new_p[0];

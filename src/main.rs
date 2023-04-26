@@ -8,6 +8,8 @@ mod utils;
 use cli::Goal;
 use model::{Model, N_MAX};
 
+use std::fs::File;
+
 use anyhow::{Context, Result};
 
 /// Run the program
@@ -61,6 +63,9 @@ pub fn main() -> Result<()> {
             }
             let best_model = &mut models[best_i];
             let best_n = best_i + 1;
+
+            let best_n_file = args.output_dir.join(format!("best n = {best_n}"));
+            File::create(best_n_file).ok();
 
             if args.with_errors {
                 best_model

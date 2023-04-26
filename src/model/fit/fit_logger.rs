@@ -2,12 +2,11 @@
 
 extern crate alloc;
 
-use super::Params;
+use super::{Params, PARAMS_N};
 
 use alloc::rc::Rc;
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
-use core::ops::Index;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 
@@ -28,12 +27,11 @@ pub(super) struct FitLogger<F> {
 
 impl<I, F> Observe<I> for FitLogger<F>
 where
-    I: State,
-    <I as State>::Param: Index<usize>,
-    <<I as State>::Param as Index<usize>>::Output: Display + Sized,
+    I: State<Param = Vec<F>>,
     F: Float + Debug + Display,
 {
     #[allow(clippy::indexing_slicing)]
+    #[allow(clippy::too_many_lines)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     fn observe_iter(&mut self, state: &I, _kv: &KV) -> Result<()> {
@@ -43,6 +41,13 @@ where
         let best_cost = state.get_best_cost();
         let param = state.get_param().unwrap();
         let best_param = state.get_best_param().unwrap();
+
+        let len = param.len();
+        let mut p = [F::zero(); PARAMS_N];
+        let mut best_p = [F::zero(); PARAMS_N];
+        p[0..len].copy_from_slice(&param[0..len]);
+        best_p[0..len].copy_from_slice(&best_param[0..len]);
+
         // Write the found reduced parallaxes
         for (i, &(par, par_e, par_r)) in self.par_pairs.borrow().iter().enumerate() {
             writeln!(
@@ -69,6 +74,15 @@ where
                     sigma_R: {i_6:>19.15} {p_6:>19.15} {best_p_6:>19.15}
                 sigma_theta: {i_7:>19.15} {p_7:>19.15} {best_p_7:>19.15}
                     sigma_Z: {i_8:>19.15} {p_8:>19.15} {best_p_8:>19.15}
+                    theta_2: {i_9:>19.15} {p_9:>19.15} {best_p_9:>19.15}
+                    theta_3: {i_10:>19.15} {p_10:>19.15} {best_p_10:>19.15}
+                    theta_4: {i_11:>19.15} {p_11:>19.15} {best_p_11:>19.15}
+                    theta_5: {i_12:>19.15} {p_12:>19.15} {best_p_12:>19.15}
+                    theta_6: {i_13:>19.15} {p_13:>19.15} {best_p_13:>19.15}
+                    theta_7: {i_14:>19.15} {p_14:>19.15} {best_p_14:>19.15}
+                    theta_8: {i_15:>19.15} {p_15:>19.15} {best_p_15:>19.15}
+                    theta_9: {i_16:>19.15} {p_16:>19.15} {best_p_16:>19.15}
+                   theta_10: {i_17:>19.15} {p_17:>19.15} {best_p_17:>19.15}
                 ",
                 empty = "",
                 i_0 = self.params.r_0,
@@ -80,24 +94,51 @@ where
                 i_6 = self.params.sigma_r_g,
                 i_7 = self.params.sigma_theta,
                 i_8 = self.params.sigma_z,
-                p_0 = param[0],
-                p_1 = param[1],
-                p_2 = param[2],
-                p_3 = param[3],
-                p_4 = param[4],
-                p_5 = param[5],
-                p_6 = param[6],
-                p_7 = param[7],
-                p_8 = param[8],
-                best_p_0 = best_param[0],
-                best_p_1 = best_param[1],
-                best_p_2 = best_param[2],
-                best_p_3 = best_param[3],
-                best_p_4 = best_param[4],
-                best_p_5 = best_param[5],
-                best_p_6 = best_param[6],
-                best_p_7 = best_param[7],
-                best_p_8 = best_param[8],
+                i_9 = self.params.theta_2,
+                i_10 = self.params.theta_3,
+                i_11 = self.params.theta_4,
+                i_12 = self.params.theta_5,
+                i_13 = self.params.theta_6,
+                i_14 = self.params.theta_7,
+                i_15 = self.params.theta_8,
+                i_16 = self.params.theta_9,
+                i_17 = self.params.theta_10,
+                p_0 = p[0],
+                p_1 = p[1],
+                p_2 = p[2],
+                p_3 = p[3],
+                p_4 = p[4],
+                p_5 = p[5],
+                p_6 = p[6],
+                p_7 = p[7],
+                p_8 = p[8],
+                p_9 = p[9],
+                p_10 = p[10],
+                p_11 = p[11],
+                p_12 = p[12],
+                p_13 = p[13],
+                p_14 = p[14],
+                p_15 = p[15],
+                p_16 = p[16],
+                p_17 = p[17],
+                best_p_0 = best_p[0],
+                best_p_1 = best_p[1],
+                best_p_2 = best_p[2],
+                best_p_3 = best_p[3],
+                best_p_4 = best_p[4],
+                best_p_5 = best_p[5],
+                best_p_6 = best_p[6],
+                best_p_7 = best_p[7],
+                best_p_8 = best_p[8],
+                best_p_9 = best_p[9],
+                best_p_10 = best_p[10],
+                best_p_11 = best_p[11],
+                best_p_12 = best_p[12],
+                best_p_13 = best_p[13],
+                best_p_14 = best_p[14],
+                best_p_15 = best_p[15],
+                best_p_16 = best_p[16],
+                best_p_17 = best_p[17],
             ),
         )?;
         Ok(())

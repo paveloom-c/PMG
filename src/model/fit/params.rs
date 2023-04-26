@@ -33,7 +33,7 @@ pub const ARMIJO_PARAM: f64 = 1e-4;
 pub const BACKTRACKING_PARAM: f64 = 0.9;
 
 /// Memory length of the L-BFGS algorithm
-pub const LBFGS_M: usize = 7;
+pub const LBFGS_M: usize = 30;
 
 /// Tolerance of the L-BFGS algorithm
 pub const LBFGS_TOLERANCE: f64 = 1e-15;
