@@ -274,15 +274,28 @@ impl<F> Params<F> {
     where
         F: Float + Debug,
     {
-        self.r_0_ep = p[0];
-        self.omega_0_ep = p[1];
-        self.a_ep = p[2];
-        self.u_sun_ep = p[3];
-        self.v_sun_ep = p[4];
-        self.w_sun_ep = p[5];
-        self.sigma_r_g_ep = p[6];
-        self.sigma_theta_ep = p[7];
-        self.sigma_z_ep = p[8];
+        let len = p.len();
+        let mut new_p = [F::zero(); PARAMS_N];
+        new_p[0..len].copy_from_slice(&p[0..len]);
+
+        self.r_0_ep = new_p[0];
+        self.omega_0_ep = new_p[1];
+        self.a_ep = new_p[2];
+        self.u_sun_ep = new_p[3];
+        self.v_sun_ep = new_p[4];
+        self.w_sun_ep = new_p[5];
+        self.sigma_r_g_ep = new_p[6];
+        self.sigma_theta_ep = new_p[7];
+        self.sigma_z_ep = new_p[8];
+        self.theta_2_ep = new_p[9];
+        self.theta_3_ep = new_p[10];
+        self.theta_4_ep = new_p[11];
+        self.theta_5_ep = new_p[12];
+        self.theta_6_ep = new_p[13];
+        self.theta_7_ep = new_p[14];
+        self.theta_8_ep = new_p[15];
+        self.theta_9_ep = new_p[16];
+        self.theta_10_ep = new_p[17];
     }
     /// Update the minus uncertainties of the parameters
     /// with the values in the provided vector
@@ -293,15 +306,28 @@ impl<F> Params<F> {
     where
         F: Float + Debug,
     {
-        self.r_0_em = p[0];
-        self.omega_0_em = p[1];
-        self.a_em = p[2];
-        self.u_sun_em = p[3];
-        self.v_sun_em = p[4];
-        self.w_sun_em = p[5];
-        self.sigma_r_g_em = p[6];
-        self.sigma_theta_em = p[7];
-        self.sigma_z_em = p[8];
+        let len = p.len();
+        let mut new_p = [F::zero(); PARAMS_N];
+        new_p[0..len].copy_from_slice(&p[0..len]);
+
+        self.r_0_em = new_p[0];
+        self.omega_0_em = new_p[1];
+        self.a_em = new_p[2];
+        self.u_sun_em = new_p[3];
+        self.v_sun_em = new_p[4];
+        self.w_sun_em = new_p[5];
+        self.sigma_r_g_em = new_p[6];
+        self.sigma_theta_em = new_p[7];
+        self.sigma_z_em = new_p[8];
+        self.theta_2_em = new_p[9];
+        self.theta_3_em = new_p[10];
+        self.theta_4_em = new_p[11];
+        self.theta_5_em = new_p[12];
+        self.theta_6_em = new_p[13];
+        self.theta_7_em = new_p[14];
+        self.theta_8_em = new_p[15];
+        self.theta_9_em = new_p[16];
+        self.theta_10_em = new_p[17];
     }
 }
 
