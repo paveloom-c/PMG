@@ -302,14 +302,7 @@ function scatter(
             },
             table,
         ),
-        Plot(
-            {
-                scatter,
-                color = "black",
-                mark_size = 0.4,
-            },
-            Coordinates([R_0], [θ_sun])
-        ),
+        [raw"\node[font=\fontsize{1}{0}\selectfont] at ", Coordinate(R_0, θ_sun), raw"{$\odot$};"],
         Legend(keys),
     )
     # Add the error lines if additional data sets are specified
