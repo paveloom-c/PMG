@@ -5,6 +5,7 @@ extern crate alloc;
 use super::outer::{Output, Param};
 use super::OuterOptimizationProblem;
 use super::{Objects, Params};
+use crate::utils::FiniteDiff;
 use alloc::rc::Rc;
 use core::cell::RefCell;
 
@@ -17,7 +18,6 @@ use argmin_math::{
     ArgminAdd, ArgminDot, ArgminL1Norm, ArgminL2Norm, ArgminMinMax, ArgminMul, ArgminSignum,
     ArgminSub, ArgminZeroLike,
 };
-use finitediff::FiniteDiff;
 use num::Float;
 use numeric_literals::replace_float_literals;
 
@@ -60,7 +60,7 @@ where
     Vec<F>: ArgminMinMax,
     Vec<F>: ArgminDot<Vec<F>, F>,
     Vec<F>: ArgminL2Norm<F>,
-    Vec<F>: FiniteDiff,
+    Vec<F>: FiniteDiff<F>,
 {
     type Param = Param<F>;
     type Output = Output<F>;
@@ -116,13 +116,15 @@ where
     Vec<F>: ArgminMinMax,
     Vec<F>: ArgminDot<Vec<F>, F>,
     Vec<F>: ArgminL2Norm<F>,
-    Vec<F>: FiniteDiff,
+    Vec<F>: FiniteDiff<F>,
 {
     type Param = Vec<F>;
     type Gradient = Vec<F>;
 
+    #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
+    #[replace_float_literals(F::from(literal).unwrap())]
     fn gradient(&self, p: &Self::Param) -> Result<Self::Gradient> {
-        Ok((*p).central_diff(&|x| self.cost(x).unwrap().to_f64().unwrap()))
+        Ok((*p).central_diff(&|x| self.cost(x).unwrap(), F::sqrt(F::epsilon())))
     }
 }

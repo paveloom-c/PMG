@@ -30,7 +30,8 @@ echo -e "\n${PAD}> Compute per-object data..."
 echo -e "${PAD}> Fit all..."
 "${PMG}" -i "${I_ALL}" -o "${R_ALL}" --goal fit
 echo -e "${PAD}> Fit near the solar circle (with errors and profiles)..."
-"${PMG}" -i "${I_SOLAR}" -o "${R_SOLAR}" --goal fit --with-errors --with-profiles
+"${PMG}" -i "${I_SOLAR}" -o "${R_SOLAR}" --goal fit \
+  --with-errors --with-frozen-profiles --with-conditional-profiles
 echo -e "${PAD}> Fit HMSFRs..."
 "${PMG}" -i "${I_HMSFRS}" -o "${R_HMSFRS}" --goal fit
 

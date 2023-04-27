@@ -4,20 +4,20 @@ extern crate alloc;
 
 use super::InnerOptimizationProblem;
 use super::{Objects, Params};
+use crate::utils::FiniteDiff;
 
 use alloc::rc::Rc;
+use argmin::solver::brent::BrentOpt;
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
 use core::iter::Sum;
 
 use anyhow::{Context, Result};
 use argmin::core::{ArgminFloat, CostFunction, Executor, Gradient, State};
-use argmin::solver::goldensectionsearch::GoldenSectionSearch;
 use argmin_math::{
     ArgminAdd, ArgminDot, ArgminL1Norm, ArgminL2Norm, ArgminMinMax, ArgminMul, ArgminSignum,
     ArgminSub, ArgminZeroLike,
 };
-use finitediff::FiniteDiff;
 use num::Float;
 use numeric_literals::replace_float_literals;
 use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
@@ -75,7 +75,7 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
         Vec<F>: ArgminMinMax,
         Vec<F>: ArgminDot<Vec<F>, F>,
         Vec<F>: ArgminL2Norm<F>,
-        Vec<F>: FiniteDiff,
+        Vec<F>: FiniteDiff<F>,
     {
         // Unpack the problem
         let mut fit_objects = self.objects.clone();
@@ -104,14 +104,17 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 let mu_b = object.mu_b.unwrap();
                 let r_g = object.r_g.unwrap();
                 // Unpack the parameters
-                let r_0 = fit_params.r_0;
-                let u_sun = fit_params.u_sun;
-                let v_sun = fit_params.v_sun;
-                let w_sun = fit_params.w_sun;
-                let sigma_r_g = fit_params.sigma_r_g;
-                let sigma_theta = fit_params.sigma_theta;
-                let sigma_z = fit_params.sigma_z;
-                let k = fit_params.k;
+                let Params {
+                    r_0,
+                    u_sun,
+                    v_sun,
+                    w_sun,
+                    sigma_r_g,
+                    sigma_theta,
+                    sigma_z,
+                    k,
+                    ..
+                } = fit_params;
                 // Compute the sines and cosines of the longitude and latitude
                 let sin_l = l.sin();
                 let sin_b = b.sin();
@@ -167,11 +170,12 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                     fit_params: &fit_params,
                 };
                 let init_param = par;
-                let solver = GoldenSectionSearch::new(par - 5. * par_e, par + 5. * par_e)?
-                    .with_tolerance(1e-10)?;
+                let solver =
+                    BrentOpt::new(F::max(F::epsilon(), par - 5. * par_e), par + 5. * par_e)
+                        .set_tolerance(F::sqrt(F::epsilon()), 1e-6);
                 // Find the local minimum in the inner optimization
                 let res = Executor::new(problem, solver)
-                    .configure(|state| state.param(init_param).max_iters(1000))
+                    .configure(|state| state.param(init_param).max_iters(100))
                     .run()
                     .with_context(|| "Couldn't solve the inner optimization problem")?;
                 let &best_point = res.state().get_best_param().unwrap();
@@ -223,7 +227,7 @@ where
     Vec<F>: ArgminMinMax,
     Vec<F>: ArgminDot<Vec<F>, F>,
     Vec<F>: ArgminL2Norm<F>,
-    Vec<F>: FiniteDiff,
+    Vec<F>: FiniteDiff<F>,
 {
     type Param = Param<F>;
     type Output = Output<F>;
@@ -269,13 +273,18 @@ where
     Vec<F>: ArgminMinMax,
     Vec<F>: ArgminDot<Vec<F>, F>,
     Vec<F>: ArgminL2Norm<F>,
-    Vec<F>: FiniteDiff,
+    Vec<F>: FiniteDiff<F>,
 {
     type Param = Vec<F>;
     type Gradient = Vec<F>;
 
+    #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
+    #[replace_float_literals(F::from(literal).unwrap())]
     fn gradient(&self, p: &Self::Param) -> Result<Self::Gradient> {
-        Ok((*p).central_diff(&|x| self.inner_cost(x, false).unwrap().to_f64().unwrap()))
+        Ok((*p).central_diff(
+            &|x| self.inner_cost(x, false).unwrap(),
+            F::sqrt(F::epsilon()),
+        ))
     }
 }

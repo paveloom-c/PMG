@@ -6,6 +6,7 @@ use super::io::output;
 use super::params::{ARMIJO_PARAM, BACKTRACKING_PARAM, LBFGS_M, LBFGS_TOLERANCE};
 use super::{FrozenOuterOptimizationProblem, OuterOptimizationProblem};
 use super::{Model, PARAMS_N, PARAMS_NAMES};
+use crate::utils::FiniteDiff;
 
 use alloc::rc::Rc;
 use core::cell::RefCell;
@@ -21,7 +22,6 @@ use argmin_math::{
     ArgminAdd, ArgminDot, ArgminL1Norm, ArgminL2Norm, ArgminMinMax, ArgminMul, ArgminSignum,
     ArgminSub, ArgminZeroLike,
 };
-use finitediff::FiniteDiff;
 use indoc::formatdoc;
 use num::Float;
 use numeric_literals::replace_float_literals;
@@ -88,7 +88,7 @@ impl<F> Model<F> {
         Vec<F>: ArgminMinMax,
         Vec<F>: ArgminDot<Vec<F>, F>,
         Vec<F>: ArgminL2Norm<F>,
-        Vec<F>: FiniteDiff,
+        Vec<F>: FiniteDiff<F>,
     {
         // Get the optimized parameters as arrays
         let fit_params = self.fit_params.as_ref().unwrap().to_point(n);
@@ -100,7 +100,7 @@ impl<F> Model<F> {
 
         // Compute conditional profiles (one parameter is fixed
         // and externally varied, the rest are free)
-        for index in 0..(8 + (n - 1)) {
+        for index in 0..=(8 + (n - 1)) {
             let fit_param = fit_params[index];
             let fit_param_ep = fit_params_ep[index];
             let fit_param_em = fit_params_em[index];
@@ -140,6 +140,9 @@ impl<F> Model<F> {
 
                 profile.push(ProfilePoint { param, cost });
             }
+
+            self.serialize_to_profile(&ProfileType::Conditional, &profile, index)
+                .with_context(|| "Couldn't write a conditional profile to a file")?;
 
             profiles.push(profile);
         }
@@ -182,7 +185,7 @@ impl<F> Model<F> {
         Vec<F>: ArgminMinMax,
         Vec<F>: ArgminDot<Vec<F>, F>,
         Vec<F>: ArgminL2Norm<F>,
-        Vec<F>: FiniteDiff,
+        Vec<F>: FiniteDiff<F>,
     {
         // Get the optimized parameters as arrays
         let fit_params = self.fit_params.as_ref().unwrap().to_point(n);
@@ -203,7 +206,7 @@ impl<F> Model<F> {
         //
         // We compute for the first parameter
         // only here (R_0) for debug purposes
-        for index in 0..(8 + (n - 1)) {
+        for index in 0..=(8 + (n - 1)) {
             let fit_param = fit_params[index];
             let fit_param_ep = fit_params_ep[index];
             let fit_param_em = fit_params_em[index];
@@ -225,6 +228,9 @@ impl<F> Model<F> {
                 profile.push(ProfilePoint { param, cost });
             }
 
+            self.serialize_to_profile(&ProfileType::Frozen, &profile, index)
+                .with_context(|| "Couldn't write a frozen profile to a file")?;
+
             profiles.push(profile);
         }
 
@@ -237,20 +243,15 @@ impl<F> Model<F> {
     #[allow(clippy::too_many_lines)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
-    pub(in crate::model) fn serialize_to_profiles(&self, profile_type: &ProfileType) -> Result<()>
+    pub fn serialize_to_profile(
+        &self,
+        profile_type: &ProfileType,
+        profile: &Profile<F>,
+        index: usize,
+    ) -> Result<()>
     where
         F: Float + Debug + Display + Serialize,
     {
-        let profiles_option = match *profile_type {
-            ProfileType::Conditional => &self.conditional_profiles,
-            ProfileType::Frozen => &self.frozen_profiles,
-        };
-
-        if profiles_option.is_none() {
-            return Ok(());
-        };
-
-        let profiles = profiles_option.as_ref().unwrap();
         let description_prefix = match *profile_type {
             ProfileType::Conditional => "Conditional",
             ProfileType::Frozen => "Frozen",
@@ -263,12 +264,11 @@ impl<F> Model<F> {
         // Prepare a header
         let params = &self.params;
         let fit_params = self.fit_params.as_ref().unwrap();
-        for i in 0..profiles.len() {
-            let records = &profiles[i];
-            let param_name = PARAMS_NAMES[i];
+        let records = &profile;
+        let param_name = PARAMS_NAMES[index];
 
-            let header = formatdoc!(
-                "
+        let header = formatdoc!(
+            "
             # {description_prefix} profile of {param_name}
             {sample_description}
             # Descriptions:
@@ -329,30 +329,29 @@ impl<F> Model<F> {
             # W_SUN_STANDARD: {w_sun_standard}
             #
             ",
-                sample_description = self.format_sample_description(),
-                r_0 = fit_params.r_0,
-                omega_0 = fit_params.omega_0,
-                a = fit_params.a,
-                u_sun = fit_params.u_sun,
-                v_sun = fit_params.v_sun,
-                w_sun = fit_params.w_sun,
-                sigma_r_g = fit_params.sigma_r_g,
-                sigma_theta = fit_params.sigma_theta,
-                sigma_z = fit_params.sigma_z,
-                alpha_ngp = params.alpha_ngp,
-                delta_ngp = params.delta_ngp,
-                l_ncp = params.l_ncp,
-                k = params.k,
-                u_sun_standard = params.u_sun_standard,
-                v_sun_standard = params.v_sun_standard,
-                w_sun_standard = params.w_sun_standard,
-            );
+            sample_description = self.format_sample_description(),
+            r_0 = fit_params.r_0,
+            omega_0 = fit_params.omega_0,
+            a = fit_params.a,
+            u_sun = fit_params.u_sun,
+            v_sun = fit_params.v_sun,
+            w_sun = fit_params.w_sun,
+            sigma_r_g = fit_params.sigma_r_g,
+            sigma_theta = fit_params.sigma_theta,
+            sigma_z = fit_params.sigma_z,
+            alpha_ngp = params.alpha_ngp,
+            delta_ngp = params.delta_ngp,
+            l_ncp = params.l_ncp,
+            k = params.k,
+            u_sun_standard = params.u_sun_standard,
+            v_sun_standard = params.v_sun_standard,
+            w_sun_standard = params.w_sun_standard,
+        );
 
-            let mut file_name = file_prefix.to_owned();
-            file_name.push_str("_profile_");
-            file_name.push_str(param_name);
-            output::serialize_to(&self.output_dir, &file_name, &header, records)?;
-        }
+        let mut file_name = file_prefix.to_owned();
+        file_name.push_str("_profile_");
+        file_name.push_str(param_name);
+        output::serialize_to(&self.output_dir, &file_name, &header, records)?;
         Ok(())
     }
 }

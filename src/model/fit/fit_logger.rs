@@ -52,7 +52,8 @@ where
         for (i, &(par, par_e, par_r)) in self.par_pairs.borrow().iter().enumerate() {
             writeln!(
                 self.writer.borrow_mut(),
-                "{i}: par: {par} \u{b1} {par_e} -> par_r: {par_r}",
+                "{}: par: {par} \u{b1} {par_e} -> par_r: {par_r}",
+                i + 1
             )
             .ok();
         }

@@ -431,11 +431,7 @@ impl<F> Model<F> {
     }
     /// Serialize the per-object data
     #[allow(clippy::too_many_lines)]
-    pub(in crate::model) fn serialize_to_objects(
-        &self,
-        name: &str,
-        params: &Params<F>,
-    ) -> Result<()>
+    pub fn serialize_to_objects(&self, name: &str, params: &Params<F>) -> Result<()>
     where
         F: Float + Debug + Display + Serialize,
     {

@@ -7,7 +7,7 @@ mod params;
 mod sample_description;
 
 use crate::cli::Args;
-use crate::utils;
+use crate::utils::{self, FiniteDiff};
 pub use fit::{ProfileType, Profiles, RotationCurve};
 pub use objects::{Object, Objects};
 pub use params::{Params, N_MAX, PARAMS_N, PARAMS_NAMES};
@@ -25,7 +25,6 @@ use argmin_math::{
     ArgminAdd, ArgminDot, ArgminL1Norm, ArgminL2Norm, ArgminMinMax, ArgminMul, ArgminSignum,
     ArgminSub, ArgminZeroLike,
 };
-use finitediff::FiniteDiff;
 use num::Float;
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -97,7 +96,7 @@ impl<F> Model<F> {
         Vec<F>: ArgminMinMax,
         Vec<F>: ArgminDot<Vec<F>, F>,
         Vec<F>: ArgminL2Norm<F>,
-        Vec<F>: FiniteDiff,
+        Vec<F>: FiniteDiff<F>,
     {
         // Try to fit the model
         self.try_fit_params(n)
@@ -129,33 +128,6 @@ impl<F> Model<F> {
             .with_context(|| "Couldn't write the objects to a file")?;
         self.serialize_to_params()
             .with_context(|| "Couldn't write the initial parameters to a file")?;
-
-        Ok(())
-    }
-    /// Write the fit data
-    #[allow(clippy::unwrap_in_result)]
-    #[allow(clippy::unwrap_used)]
-    pub fn write_fit_data(&self) -> Result<()>
-    where
-        F: Float + Debug + Display + Serialize,
-    {
-        let fit_params = &self.fit_params.as_ref().unwrap();
-
-        fs::create_dir_all(&self.output_dir).with_context(|| {
-            format!("Couldn't create the output directory {:?}", self.output_dir)
-        })?;
-
-        self.serialize_to_objects("fit_objects", fit_params)
-            .with_context(|| "Couldn't write the objects to a file")?;
-        self.serialize_to_fit_params()
-            .with_context(|| "Couldn't write the fitted parameters to a file")?;
-        self.serialize_to_fit_rotcurve()
-            .with_context(|| "Couldn't write the fitted rotation curve to a file")?;
-
-        self.serialize_to_profiles(&ProfileType::Conditional)
-            .with_context(|| "Couldn't write a conditional profile to a file")?;
-        self.serialize_to_profiles(&ProfileType::Frozen)
-            .with_context(|| "Couldn't write a frozen profile to a file")?;
 
         Ok(())
     }

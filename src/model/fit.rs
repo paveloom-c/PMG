@@ -9,6 +9,7 @@ mod outer;
 pub mod params;
 mod profiles;
 pub mod rotcurve;
+mod steepest_descent;
 
 use super::io;
 use super::{Model, Object, Objects, Params, PARAMS_N, PARAMS_NAMES};

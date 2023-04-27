@@ -9,6 +9,7 @@ use cli::Goal;
 use model::{Model, N_MAX};
 
 use std::fs::File;
+use std::io::Write;
 
 use anyhow::{Context, Result};
 
@@ -45,48 +46,72 @@ pub fn main() -> Result<()> {
             for i in 0..N_MAX {
                 let model = &mut models[i];
                 let n = i + 1;
+
                 // Try to fit a model with the specified degree
                 model.try_fit(n).with_context(|| "Couldn't fit the model")?;
             }
 
             // Choose the best fit
             let mut best_i = 0;
+            let mut best_cost = f64::INFINITY;
             {
-                let mut best_cost = models[best_i].best_cost.unwrap();
                 for j in 1..N_MAX {
-                    let cost = models[j].best_cost.unwrap();
-                    if cost < best_cost {
-                        best_i = j;
-                        best_cost = cost;
+                    if let Some(cost) = models[j].best_cost {
+                        if cost < best_cost {
+                            best_i = j;
+                            best_cost = cost;
+                        }
                     }
                 }
             }
-            let best_model = &mut models[best_i];
+
             let best_n = best_i + 1;
+            {
+                let best_model = &mut models[best_i];
 
-            let best_n_file = args.output_dir.join(format!("best n = {best_n}"));
-            File::create(best_n_file).ok();
+                let best_n_file_path = args.output_dir.join("best n");
+                if let Ok(mut best_n_file) = File::create(best_n_file_path) {
+                    writeln!(best_n_file, "{best_n}").ok();
+                }
 
-            if args.with_errors {
-                best_model
-                    .try_fit_errors(best_n)
-                    .with_context(|| "Couldn't define the confidence intervals")?;
+                if args.with_errors {
+                    best_model
+                        .try_fit_errors(best_n)
+                        .with_context(|| "Couldn't define the confidence intervals")?;
+                }
             }
-            if args.with_conditional_profiles {
-                best_model
-                    .try_compute_conditional_profiles(best_n)
-                    .with_context(|| "Couldn't compute the conditional profiles")?;
+
+            for model in &models {
+                std::fs::create_dir_all(&model.output_dir).with_context(|| {
+                    format!(
+                        "Couldn't create the output directory {:?}",
+                        model.output_dir
+                    )
+                })?;
+
+                if let Some(ref fit_params) = model.fit_params {
+                    model
+                        .serialize_to_objects("fit_objects", fit_params)
+                        .with_context(|| "Couldn't write the objects to a file")?;
+                    model
+                        .serialize_to_fit_params()
+                        .with_context(|| "Couldn't write the fitted parameters to a file")?;
+                    model
+                        .serialize_to_fit_rotcurve()
+                        .with_context(|| "Couldn't write the fitted rotation curve to a file")?;
+                }
             }
+
+            let best_model = &mut models[best_i];
             if args.with_frozen_profiles {
                 best_model
                     .try_compute_frozen_profiles(best_n)
                     .with_context(|| "Couldn't compute the frozen profiles")?;
             }
-
-            for model in &models {
-                model
-                    .write_fit_data()
-                    .with_context(|| "Couldn't write the model data")?;
+            if args.with_conditional_profiles {
+                best_model
+                    .try_compute_conditional_profiles(best_n)
+                    .with_context(|| "Couldn't compute the conditional profiles")?;
             }
         }
     }

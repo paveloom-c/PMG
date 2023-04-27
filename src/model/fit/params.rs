@@ -4,6 +4,7 @@ extern crate alloc;
 
 use super::Model;
 use super::{FitLogger, OuterOptimizationProblem};
+use crate::utils::FiniteDiff;
 
 use alloc::rc::Rc;
 use core::cell::RefCell;
@@ -13,7 +14,7 @@ use std::fs::File;
 use std::io::BufWriter;
 
 use anyhow::{Context, Result};
-use argmin::core::observers::ObserverMode;
+use argmin::core::observers::{ObserverMode, SlogLogger};
 use argmin::core::{ArgminFloat, Executor, State};
 use argmin::solver::linesearch::condition::ArmijoCondition;
 use argmin::solver::linesearch::BacktrackingLineSearch;
@@ -22,7 +23,6 @@ use argmin_math::{
     ArgminAdd, ArgminDot, ArgminL1Norm, ArgminL2Norm, ArgminMinMax, ArgminMul, ArgminSignum,
     ArgminSub, ArgminZeroLike,
 };
-use finitediff::FiniteDiff;
 use num::Float;
 use numeric_literals::replace_float_literals;
 
@@ -36,7 +36,7 @@ pub const BACKTRACKING_PARAM: f64 = 0.9;
 pub const LBFGS_M: usize = 30;
 
 /// Tolerance of the L-BFGS algorithm
-pub const LBFGS_TOLERANCE: f64 = 1e-15;
+pub const LBFGS_TOLERANCE: f64 = 1e-10;
 
 impl<F> Model<F>
 where
@@ -66,7 +66,7 @@ where
     Vec<F>: ArgminMinMax,
     Vec<F>: ArgminDot<Vec<F>, F>,
     Vec<F>: ArgminL2Norm<F>,
-    Vec<F>: FiniteDiff,
+    Vec<F>: FiniteDiff<F>,
 {
     /// Try to fit the model of the Galaxy to the data
     #[allow(clippy::as_conversions)]
@@ -109,6 +109,7 @@ where
         // Find the local minimum in the outer optimization
         let res = Executor::new(problem, solver)
             .configure(|state| state.param(init_param))
+            .add_observer(SlogLogger::term_noblock(), ObserverMode::Always)
             .add_observer(
                 FitLogger {
                     params: self.params.clone(),

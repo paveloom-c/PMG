@@ -58,7 +58,7 @@ impl<F> Model<F> {
     /// Serialize the fitted rotation curve
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
-    pub(in crate::model) fn serialize_to_fit_rotcurve(&self) -> Result<()>
+    pub fn serialize_to_fit_rotcurve(&self) -> Result<()>
     where
         F: Float + Debug + Display + Serialize,
     {

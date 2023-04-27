@@ -42,21 +42,24 @@ where
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    fn cost(&self, &par_r: &Self::Param) -> Result<Self::Output> {
+    fn cost(&self, p: &Self::Param) -> Result<Self::Output> {
+        let par_r = *p;
         // Unpack the problem
-        let l = self.l;
-        let b = self.b;
-        let v_sun = self.v_sun;
-        let v_r_sun = self.v_r_sun;
-        let v_r = self.v_r;
-        let d_v_r = self.d_v_r;
-        let mu_l_cos_b = self.mu_l_cos_b;
-        let d_mu_l_cos_b = self.d_mu_l_cos_b;
-        let mu_b = self.mu_b;
-        let d_mu_b = self.d_mu_b;
-        let par = self.par;
-        let d_par = self.d_par;
-        let fit_params = self.fit_params;
+        let Self {
+            l,
+            b,
+            v_sun,
+            v_r_sun,
+            v_r,
+            d_v_r,
+            mu_l_cos_b,
+            d_mu_l_cos_b,
+            mu_b,
+            d_mu_b,
+            par,
+            d_par,
+            fit_params,
+        } = *self;
         // Create an object for the reduced values
         let mut object_r = Object {
             l: Some(l),
@@ -71,11 +74,14 @@ where
         let r_h_r = object_r.r_h.unwrap();
         let r_g_r = object_r.r_g.unwrap();
         // Unpack the parameters
-        let r_0 = fit_params.r_0;
-        let omega_0 = fit_params.omega_0;
-        let u_sun = fit_params.u_sun;
-        let w_sun = fit_params.w_sun;
-        let k = fit_params.k;
+        let Params {
+            r_0,
+            omega_0,
+            u_sun,
+            w_sun,
+            k,
+            ..
+        } = *fit_params;
         // Compute the sines and cosines of the longitude and latitude
         let sin_l = l.sin();
         let sin_b = b.sin();

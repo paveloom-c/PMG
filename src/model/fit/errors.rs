@@ -5,6 +5,7 @@ extern crate alloc;
 use super::params::{ARMIJO_PARAM, BACKTRACKING_PARAM, LBFGS_M, LBFGS_TOLERANCE};
 use super::{ErrorsLogger, FrozenOuterOptimizationProblem};
 use super::{Model, Objects, Params};
+use crate::utils::FiniteDiff;
 
 use alloc::rc::Rc;
 use core::cell::RefCell;
@@ -24,7 +25,6 @@ use argmin_math::{
     ArgminAdd, ArgminDot, ArgminL1Norm, ArgminL2Norm, ArgminMinMax, ArgminMul, ArgminSignum,
     ArgminSub, ArgminZeroLike,
 };
-use finitediff::FiniteDiff;
 use itertools::izip;
 use num::Float;
 use numeric_literals::replace_float_literals;
@@ -68,7 +68,7 @@ where
     Vec<F>: ArgminMinMax,
     Vec<F>: ArgminDot<Vec<F>, F>,
     Vec<F>: ArgminL2Norm<F>,
-    Vec<F>: FiniteDiff,
+    Vec<F>: FiniteDiff<F>,
 {
     type Param = F;
     type Output = F;
@@ -134,7 +134,7 @@ where
     Vec<F>: ArgminMinMax,
     Vec<F>: ArgminDot<Vec<F>, F>,
     Vec<F>: ArgminL2Norm<F>,
-    Vec<F>: FiniteDiff,
+    Vec<F>: FiniteDiff<F>,
 {
     /// Try to define the confidence intervals
     #[allow(clippy::indexing_slicing)]
