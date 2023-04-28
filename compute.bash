@@ -31,7 +31,7 @@ echo -e "${PAD}> Fit all..."
 "${PMG}" -i "${I_ALL}" -o "${R_ALL}" --goal fit
 echo -e "${PAD}> Fit near the solar circle (with errors and profiles)..."
 "${PMG}" -i "${I_SOLAR}" -o "${R_SOLAR}" --goal fit \
-  --with-errors --with-frozen-profiles --with-conditional-profiles
+  --with-conditional-profiles --with-errors
 echo -e "${PAD}> Fit HMSFRs..."
 "${PMG}" -i "${I_HMSFRS}" -o "${R_HMSFRS}" --goal fit
 
@@ -92,10 +92,25 @@ echo -e "${PAD}HMSFRs (test):"
 
 echo "${PAD}Step 6. Plot the profiles"
 
-echo -e "${PAD}Near the solar circle:"
+echo -e "\n${PAD}All:\n"
+
+for i in {1..10}; do
+  echo -e "${PAD}n = $i"
+  "${JULIA}" "${PROFILES}" -i "'${R_ALL}/n = $i'" -o "'${R_ALL}/n = $i'"
+done
+
+echo -e "${PAD}Near the solar circle:\n"
+
 for i in {1..10}; do
   echo -e "${PAD}n = $i"
   "${JULIA}" "${PROFILES}" -i "'${R_SOLAR}/n = $i'" -o "'${R_SOLAR}/n = $i'"
+done
+
+echo -e "${PAD}HMSFRs:\n"
+
+for i in {1..10}; do
+  echo -e "${PAD}n = $i"
+  "${JULIA}" "${PROFILES}" -i "'${R_HMSFRS}/n = $i'" -o "'${R_HMSFRS}/n = $i'"
 done
 
 echo -e "${PAD}Step 7. Zip the results\n"

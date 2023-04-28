@@ -1,5 +1,7 @@
 //! Model of the Galaxy
 
+extern crate alloc;
+
 mod fit;
 mod io;
 mod objects;
@@ -8,15 +10,19 @@ mod sample_description;
 
 use crate::cli::Args;
 use crate::utils::{self, FiniteDiff};
-pub use fit::{ProfileType, Profiles, RotationCurve};
+pub use fit::{ProfileType, Profiles, RotationCurve, Triple, Triples};
 pub use objects::{Object, Objects};
 pub use params::{Params, N_MAX, PARAMS_N, PARAMS_NAMES};
 
+use alloc::rc::Rc;
+use core::cell::RefCell;
 use core::fmt::{Debug, Display};
 use core::iter::Sum;
 use core::str::FromStr;
 use std::error::Error;
 use std::fs;
+use std::fs::File;
+use std::io::BufWriter;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -34,7 +40,7 @@ pub struct Model<F> {
     /// Initial model parameters
     pub params: Params<F>,
     /// Data objects
-    pub objects: Objects<F>,
+    pub objects: Rc<RefCell<Objects<F>>>,
 
     /// The degree of the polynomial of the rotation curve
     pub n: Option<usize>,
@@ -44,6 +50,8 @@ pub struct Model<F> {
     pub fit_params: Option<Params<F>>,
     /// Fit of the model (rotation curve)
     pub fit_rotcurve: Option<RotationCurve<F>>,
+    /// Triples
+    pub triples: Rc<RefCell<Vec<Triples<F>>>>,
     /// Conditional profiles
     pub conditional_profiles: Option<Profiles<F>>,
     /// Frozen profiles
@@ -61,14 +69,19 @@ impl<F> Model<F> {
     where
         F: Float + Debug + Default,
     {
-        for object in &mut self.objects {
+        for object in self.objects.borrow_mut().iter_mut() {
             object.compute(&self.params);
         }
     }
     /// Fit the model with the specified degree of the polynomial
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
-    pub fn try_fit(&mut self, n: usize) -> Result<()>
+    pub fn try_fit(
+        &mut self,
+        n: usize,
+        sample_iteration: usize,
+        fit_log_writer: &Rc<RefCell<BufWriter<File>>>,
+    ) -> Result<()>
     where
         F: Float
             + Debug
@@ -99,12 +112,12 @@ impl<F> Model<F> {
         Vec<F>: FiniteDiff<F>,
     {
         // Try to fit the model
-        self.try_fit_params(n)
+        self.try_fit_params(n, sample_iteration, fit_log_writer)
             .with_context(|| "Couldn't fit the model")?;
         // Perform per-object computations
         // with the optimized parameters
         let fit_params = self.fit_params.as_ref().unwrap();
-        for object in &mut self.objects {
+        for object in self.objects.borrow_mut().iter_mut() {
             object.compute(fit_params);
         }
         // Compute the rotation curve based on the fitted parameters
@@ -159,7 +172,6 @@ impl<F> Model<F> {
                 w_sun_standard: utils::cast(args.w_sun_standard)?,
                 ..Default::default()
             },
-            objects: Objects::<F>::default(),
             output_dir,
             ..Default::default()
         };
@@ -175,6 +187,9 @@ impl<F> Model<F> {
         model
             .try_load_data_from(&args.input)
             .with_context(|| format!("Couldn't load the data from the file {:?}", args.input))?;
+
+        let triple = vec![Triple::<F>::default(); 4];
+        model.triples = Rc::new(RefCell::new(vec![triple; model.objects.borrow().len()]));
 
         Ok(model)
     }

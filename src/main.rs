@@ -1,6 +1,8 @@
 //! This binary crate allows a user to infer the parameters
 //! of the Galaxy by optimising over its parametric model.
 
+extern crate alloc;
+
 mod cli;
 mod model;
 mod utils;
@@ -8,8 +10,10 @@ mod utils;
 use cli::Goal;
 use model::{Model, N_MAX};
 
+use alloc::rc::Rc;
+use core::cell::RefCell;
 use std::fs::File;
-use std::io::Write;
+use std::io::{BufWriter, Write};
 
 use anyhow::{Context, Result};
 
@@ -47,23 +51,44 @@ pub fn main() -> Result<()> {
                 let model = &mut models[i];
                 let n = i + 1;
 
-                // Try to fit a model with the specified degree
-                model.try_fit(n).with_context(|| "Couldn't fit the model")?;
+                // Prepare the fit log file
+                let fit_log_path = model.output_dir.join("fit.log");
+                let fit_log_file = File::create(fit_log_path)
+                    .with_context(|| "Couldn't create the `fit.log` file")?;
+                let fit_log_writer = Rc::new(RefCell::new(BufWriter::new(fit_log_file)));
+
+                let mut sample_iteration = 0;
+
+                loop {
+                    // Try to fit a model with the specified degree
+                    model
+                        .try_fit(n, sample_iteration, &fit_log_writer)
+                        .with_context(|| "Couldn't fit the model")?;
+                    // Check the vicinity of the found minimum, make sure there are no jumps
+                    let stop = model
+                        .try_compute_frozen_profiles(n)
+                        .with_context(|| "Couldn't compute the frozen profiles")?;
+                    if stop {
+                        break;
+                    }
+                    sample_iteration += 1;
+                }
             }
 
             // Choose the best fit
-            let mut best_i = 0;
-            let mut best_cost = f64::INFINITY;
-            {
-                for j in 1..N_MAX {
-                    if let Some(cost) = models[j].best_cost {
-                        if cost < best_cost {
-                            best_i = j;
-                            best_cost = cost;
-                        }
-                    }
-                }
-            }
+            let best_i = 0;
+            // let mut best_sigma_theta = f64::INFINITY;
+            // {
+            //     for j in 0..N_MAX {
+            //         if let Some(ref fit_params) = models[j].fit_params {
+            //             let sigma_theta = fit_params.sigma_theta;
+            //             if sigma_theta > 0. && sigma_theta < best_sigma_theta {
+            //                 best_i = j;
+            //                 best_sigma_theta = sigma_theta;
+            //             }
+            //         }
+            //     }
+            // }
 
             let best_n = best_i + 1;
             {
@@ -103,11 +128,6 @@ pub fn main() -> Result<()> {
             }
 
             let best_model = &mut models[best_i];
-            if args.with_frozen_profiles {
-                best_model
-                    .try_compute_frozen_profiles(best_n)
-                    .with_context(|| "Couldn't compute the frozen profiles")?;
-            }
             if args.with_conditional_profiles {
                 best_model
                     .try_compute_conditional_profiles(best_n)

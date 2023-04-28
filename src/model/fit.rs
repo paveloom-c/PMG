@@ -1,5 +1,7 @@
 //! Modules related to fitting
 
+#![allow(clippy::module_name_repetitions)]
+
 mod errors;
 mod errors_logger;
 mod fit_logger;
@@ -14,10 +16,10 @@ mod steepest_descent;
 use super::io;
 use super::{Model, Object, Objects, Params, PARAMS_N, PARAMS_NAMES};
 
-use errors_logger::ErrorsLogger;
-use fit_logger::FitLogger;
-use frozen_outer::FrozenOuterOptimizationProblem;
-use inner::InnerOptimizationProblem;
-use outer::OuterOptimizationProblem;
+pub use errors_logger::ErrorsLogger;
+pub use fit_logger::FitLogger;
+pub use frozen_outer::FrozenOuterOptimizationProblem;
+pub use inner::{InnerOptimizationProblem, Triple, Triples};
+pub use outer::OuterOptimizationProblem;
 pub use profiles::{ProfileType, Profiles};
 pub use rotcurve::RotationCurve;

@@ -14,7 +14,7 @@ use std::fs::File;
 use std::io::BufWriter;
 
 use anyhow::{Context, Result};
-use argmin::core::observers::{ObserverMode, SlogLogger};
+use argmin::core::observers::ObserverMode;
 use argmin::core::{ArgminFloat, Executor, State};
 use argmin::solver::linesearch::condition::ArmijoCondition;
 use argmin::solver::linesearch::BacktrackingLineSearch;
@@ -36,7 +36,7 @@ pub const BACKTRACKING_PARAM: f64 = 0.9;
 pub const LBFGS_M: usize = 30;
 
 /// Tolerance of the L-BFGS algorithm
-pub const LBFGS_TOLERANCE: f64 = 1e-10;
+pub const LBFGS_TOLERANCE: f64 = 1e-15;
 
 impl<F> Model<F>
 where
@@ -79,49 +79,52 @@ where
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub(in crate::model) fn try_fit_params(&mut self, n: usize) -> Result<()> {
-        // Prepare the fit log file
-        let fit_log_path = self.output_dir.join("fit.log");
-        let fit_log_file =
-            File::create(fit_log_path).with_context(|| "Couldn't create the `fit.log` file")?;
-        let fit_log_writer = Rc::new(RefCell::new(BufWriter::new(fit_log_file)));
+    pub(in crate::model) fn try_fit_params(
+        &mut self,
+        n: usize,
+        sample_iteration: usize,
+        fit_log_writer: &Rc<RefCell<BufWriter<File>>>,
+    ) -> Result<()> {
         // Compute some of the values that don't
         // depend on the parameters being optimized
-        self.objects.iter_mut().for_each(|object| {
+        self.objects.borrow_mut().iter_mut().for_each(|object| {
             object.compute_l_b(&self.params);
             object.compute_v_r(&self.params);
             object.compute_r_h();
             object.compute_mu_l_cos_b_mu_b(&self.params);
         });
+
         // Define the problem of the outer optimization
-        let par_pairs = Rc::new(RefCell::new(vec![(0., 0., 0.); self.objects.len()]));
         let problem = OuterOptimizationProblem {
             objects: &self.objects,
             params: &self.params,
-            par_pairs: &Rc::clone(&par_pairs),
+            triples: &Rc::clone(&self.triples),
         };
-        let init_param = self.params.to_point(n);
+        // Find the local minimum in the outer optimization
+        let init_param = self.params.to_vec(n);
         let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;
         let linesearch =
             BacktrackingLineSearch::new(cond).rho(F::from(BACKTRACKING_PARAM).unwrap())?;
         let solver = LBFGS::new(linesearch, LBFGS_M)
             .with_tolerance_cost(F::from(LBFGS_TOLERANCE).unwrap())?;
-        // Find the local minimum in the outer optimization
         let res = Executor::new(problem, solver)
             .configure(|state| state.param(init_param))
-            .add_observer(SlogLogger::term_noblock(), ObserverMode::Always)
             .add_observer(
                 FitLogger {
+                    sample_iteration,
+                    objects: Rc::clone(&self.objects),
                     params: self.params.clone(),
-                    par_pairs: Rc::clone(&par_pairs),
-                    writer: fit_log_writer,
+                    triples: Rc::clone(&self.triples),
+                    writer: Rc::clone(fit_log_writer),
                 },
                 ObserverMode::Always,
             )
             .run()
             .with_context(|| "Couldn't solve the outer optimization problem")?;
+
         let best_cost = res.state().get_best_cost();
         let best_point = res.state().get_best_param().unwrap().clone();
+
         // Prepare storage for the new parameters
         let mut fit_params = self.params.clone();
         fit_params.update_with(&best_point);

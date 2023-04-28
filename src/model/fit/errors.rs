@@ -3,7 +3,7 @@
 extern crate alloc;
 
 use super::params::{ARMIJO_PARAM, BACKTRACKING_PARAM, LBFGS_M, LBFGS_TOLERANCE};
-use super::{ErrorsLogger, FrozenOuterOptimizationProblem};
+use super::{ErrorsLogger, FrozenOuterOptimizationProblem, Triple, Triples};
 use super::{Model, Objects, Params};
 use crate::utils::FiniteDiff;
 
@@ -35,9 +35,9 @@ pub(super) struct ConfidenceIntervalProblem<'a, F> {
     pub(super) n: usize,
     pub(super) index: usize,
     pub(super) best_outer_cost: F,
-    pub(super) objects: &'a Objects<F>,
+    pub(super) objects: &'a Rc<RefCell<Objects<F>>>,
     pub(super) params: &'a Params<F>,
-    pub(super) par_pairs: &'a Rc<RefCell<Vec<(F, F, F)>>>,
+    pub(super) triples: &'a Rc<RefCell<Vec<Triples<F>>>>,
 }
 
 impl<'a, F> CostFunction for ConfidenceIntervalProblem<'a, F>
@@ -84,9 +84,9 @@ where
             param: *param,
             objects: self.objects,
             params: self.params,
-            par_pairs: self.par_pairs,
+            triples: self.triples,
         };
-        let mut init_param = self.params.to_point(self.n);
+        let mut init_param = self.params.to_vec(self.n);
         // Remove the frozen parameter
         init_param.remove(self.index);
         let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;
@@ -146,16 +146,25 @@ where
     pub fn try_fit_errors(&mut self, n: usize) -> Result<()> {
         // Make sure the fitting happened before this call
         let fit_params = self.fit_params.as_mut().unwrap();
-        let best_point = fit_params.to_point(n);
+        let best_point = fit_params.to_vec(n);
         // Prepare the errors log file
         let errors_log_path = self.output_dir.join("errors.log");
         let errors_log_file = File::create(errors_log_path)
             .with_context(|| "Couldn't create the `errors.log` file")?;
         let errors_log_writer = Rc::new(RefCell::new(BufWriter::new(errors_log_file)));
         // Prepare arrays for the confidence intervals
-        let par_pairs = Rc::new(RefCell::new(vec![(0., 0., 0.); self.objects.len()]));
-        let mut fit_params_ep = vec![0.; 9];
-        let mut fit_params_em = vec![0.; 9];
+        let triple = vec![Triple::<F>::default(); 4];
+        let triples = Rc::new(RefCell::new(vec![triple; self.objects.borrow().len()]));
+
+        let len = 9 + (n - 1);
+        let mut fit_params_ep = vec![F::zero(); len];
+        let mut fit_params_em = vec![F::zero(); len];
+
+        let right_interval_widths = vec![3.0; len];
+        let left_interval_widths = vec![3.0; len];
+        let tolerance = F::sqrt(F::epsilon());
+        let max_iters = 100;
+
         // Define the confidence intervals
         izip!(&mut fit_params_ep, &mut fit_params_em)
             .enumerate()
@@ -167,11 +176,6 @@ where
                     "index: {index}, init_param: {param}"
                 )?;
 
-                let tolerance = F::sqrt(F::epsilon());
-                let right_interval_widths = [2.0, 2.0, 2.0, 10.0, 2.0, 4.0, 5.0, 20.0, 2.0];
-                let left_interval_widths = [2.0, 2.0, 2.0, 10.0, 2.0, 4.0, 5.0, 20.0, 2.0];
-                let max_iters = 100;
-
                 // We compute the best value again since the
                 // parameters are varied differently here
                 let best_frozen_cost = {
@@ -180,9 +184,9 @@ where
                         param,
                         objects: &self.objects,
                         params: &self.params,
-                        par_pairs: &Rc::clone(&par_pairs),
+                        triples: &Rc::clone(&triples),
                     };
-                    let mut init_param = self.params.to_point(n);
+                    let mut init_param = self.params.to_vec(n);
                     // Remove the frozen parameter
                     init_param.remove(index);
                     let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;
@@ -215,7 +219,7 @@ where
                         best_outer_cost: best_frozen_cost,
                         objects: &self.objects,
                         params: &self.params,
-                        par_pairs: &Rc::clone(&par_pairs),
+                        triples: &Rc::clone(&triples),
                     };
 
                     let min = param;
@@ -258,7 +262,7 @@ where
                         best_outer_cost: best_frozen_cost,
                         objects: &self.objects,
                         params: &self.params,
-                        par_pairs: &Rc::clone(&par_pairs),
+                        triples: &Rc::clone(&triples),
                     };
 
                     let min = param - left_interval_widths[index];

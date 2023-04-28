@@ -2,7 +2,7 @@
 
 extern crate alloc;
 
-use super::InnerOptimizationProblem;
+use super::{InnerOptimizationProblem, Triples};
 use super::{Objects, Params};
 use crate::utils::FiniteDiff;
 
@@ -25,10 +25,10 @@ use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelI
 /// A problem for the outer optimization
 #[allow(clippy::missing_docs_in_private_items)]
 #[allow(clippy::type_complexity)]
-pub(super) struct OuterOptimizationProblem<'a, F> {
-    pub(super) objects: &'a Objects<F>,
-    pub(super) params: &'a Params<F>,
-    pub(super) par_pairs: &'a Rc<RefCell<Vec<(F, F, F)>>>,
+pub struct OuterOptimizationProblem<'a, F> {
+    pub objects: &'a Rc<RefCell<Objects<F>>>,
+    pub params: &'a Params<F>,
+    pub triples: &'a Rc<RefCell<Vec<Triples<F>>>>,
 }
 
 /// Type of the parameters
@@ -47,7 +47,7 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
     /// Compute the parameterized part of the negative log likelihood function of the model
-    pub(super) fn inner_cost(&self, p: &Param<F>, update_par_pairs: bool) -> Result<Output<F>>
+    pub(super) fn inner_cost(&self, p: &Param<F>, update_triples: bool) -> Result<Output<F>>
     where
         F: Float
             + Debug
@@ -78,18 +78,23 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
         Vec<F>: FiniteDiff<F>,
     {
         // Unpack the problem
-        let mut fit_objects = self.objects.clone();
         let mut fit_params = self.params.clone();
         // Update the parameters
         fit_params.update_with(p);
         // Prepare storage for the costs
-        let mut costs = vec![F::zero(); self.objects.len()];
+        let mut costs = vec![F::zero(); self.objects.borrow().len()];
         // Compute the new value of the function
-        fit_objects
+        self.objects
+            .borrow_mut()
             .par_iter_mut()
             .zip(costs.par_iter_mut())
-            .zip(self.par_pairs.borrow_mut().par_iter_mut())
-            .try_for_each(|((object, cost), par_pair)| -> Result<()> {
+            .zip(self.triples.borrow_mut().par_iter_mut())
+            .try_for_each(|((object, cost), triple)| -> Result<()> {
+                // Skip if the object has been blacklisted
+                if object.blacklisted {
+                    return Ok(());
+                };
+
                 // Compute some values
                 object.compute_r_g(&fit_params);
                 // Unpack the data
@@ -146,11 +151,10 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 // Compute the dispersions of the observed proper motions
                 let (d_mu_l_cos_b_observed, d_mu_b_observed) =
                     object.compute_d_mu_l_cos_b_mu_b(&fit_params);
-                // Compute the full dispersions
-                let d_v_r = v_r_e.powi(2) + d_v_r_natural;
-                let d_mu_l_cos_b = d_mu_l_cos_b_observed + d_mu_l_cos_b_natural;
-                let d_mu_b = d_mu_b_observed + d_mu_b_natural;
-                let d_par = par_e.powi(2);
+                // Compute the full errors
+                let v_r_error = F::sqrt(v_r_e.powi(2) + d_v_r_natural);
+                let mu_l_cos_b_error = F::sqrt(d_mu_l_cos_b_observed + d_mu_l_cos_b_natural);
+                let mu_b_error = F::sqrt(d_mu_b_observed + d_mu_b_natural);
                 // Compute the constant part of the model velocity
                 let v_r_sun = -u_sun * cos_l * cos_b - v_sun * sin_l * cos_b - w_sun * sin_b;
                 // Define a problem of the inner optimization
@@ -160,34 +164,34 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                     v_sun,
                     v_r_sun,
                     v_r,
-                    d_v_r,
+                    v_r_error,
                     mu_l_cos_b,
-                    d_mu_l_cos_b,
+                    mu_l_cos_b_error,
                     mu_b,
-                    d_mu_b,
+                    mu_b_error,
                     par,
-                    d_par,
+                    par_e,
                     fit_params: &fit_params,
                 };
                 let init_param = par;
                 let solver =
-                    BrentOpt::new(F::max(F::epsilon(), par - 5. * par_e), par + 5. * par_e)
-                        .set_tolerance(F::sqrt(F::epsilon()), 1e-6);
+                    BrentOpt::new(F::max(F::epsilon(), par - 3. * par_e), par + 3. * par_e)
+                        .set_tolerance(F::sqrt(F::epsilon()), 1e-8);
                 // Find the local minimum in the inner optimization
-                let res = Executor::new(problem, solver)
-                    .configure(|state| state.param(init_param).max_iters(100))
+                let res = Executor::new(problem.clone(), solver)
+                    .configure(|state| state.param(init_param).max_iters(200))
                     .run()
                     .with_context(|| "Couldn't solve the inner optimization problem")?;
                 let &best_point = res.state().get_best_param().unwrap();
                 let best_cost = res.state().get_best_cost();
                 // Compute the final sum for this object
-                *cost = F::ln(F::sqrt(d_v_r))
-                    + F::ln(F::sqrt(d_mu_l_cos_b))
-                    + F::ln(F::sqrt(d_mu_b))
+                *cost = F::ln(v_r_error)
+                    + F::ln(mu_l_cos_b_error)
+                    + F::ln(mu_b_error)
                     + 0.5 * best_cost;
                 // Save the results
-                if update_par_pairs {
-                    *par_pair = (par, par_e, best_point);
+                if update_triples {
+                    *triple = problem.compute_triples(best_point);
                 }
                 Ok(())
             })?;

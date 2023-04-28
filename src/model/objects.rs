@@ -1,5 +1,7 @@
 //! Data objects
 
+extern crate alloc;
+
 mod equatorial_spherical;
 mod galactic_cartesian;
 mod galactic_spherical;
@@ -10,6 +12,8 @@ mod theta;
 use super::io::{input, output};
 use super::{Model, Params};
 
+use alloc::rc::Rc;
+use core::cell::RefCell;
 use core::fmt::{Debug, Display};
 use core::str::FromStr;
 use std::error::Error;
@@ -42,6 +46,10 @@ where
 #[derive(Clone, Debug, Default, Serialize)]
 #[serde(bound = "F: Serialize")]
 pub struct Object<F> {
+    /// Is this object blacklisted? (one of the
+    /// discrepancies turned out to be too big)
+    #[serde(skip)]
+    pub blacklisted: bool,
     /// Name of the object
     #[serde(serialize_with = "serialize_option")]
     pub name: Option<String>,
@@ -422,11 +430,12 @@ impl<F> Model<F> {
             .from_path(path)
             .with_context(|| format!("Couldn't read from the file {path:?}"))?;
         // Try to collect objects
-        self.objects = rdr
+        let objects = rdr
             .deserialize()
             .map(deserialize)
             .collect::<Result<Vec<Object<F>>>>()
             .with_context(|| format!("Couldn't get objects from the file {path:?}"))?;
+        self.objects = Rc::new(RefCell::new(objects));
         Ok(())
     }
     /// Serialize the per-object data
@@ -568,7 +577,7 @@ impl<F> Model<F> {
             v_sun_standard = params.v_sun_standard,
             w_sun_standard = params.w_sun_standard,
         );
-        let records = &self.objects;
+        let records = &self.objects.borrow();
         output::serialize_to(&self.output_dir, name, &header, records)
     }
 }

@@ -2,7 +2,7 @@
 
 extern crate alloc;
 
-use super::{Params, PARAMS_N};
+use super::{Objects, Params, Triple, Triples, PARAMS_N};
 
 use alloc::rc::Rc;
 use core::cell::RefCell;
@@ -15,14 +15,17 @@ use argmin::core::observers::Observe;
 use argmin::core::State;
 use argmin::core::KV;
 use indoc::formatdoc;
+use itertools::izip;
 use num::Float;
 
 /// Fit logger
 #[allow(clippy::missing_docs_in_private_items)]
-pub(super) struct FitLogger<F> {
-    pub(super) params: Params<F>,
-    pub(super) par_pairs: Rc<RefCell<Vec<(F, F, F)>>>,
-    pub(super) writer: Rc<RefCell<BufWriter<File>>>,
+pub struct FitLogger<F> {
+    pub sample_iteration: usize,
+    pub objects: Rc<RefCell<Objects<F>>>,
+    pub params: Params<F>,
+    pub triples: Rc<RefCell<Vec<Triples<F>>>>,
+    pub writer: Rc<RefCell<BufWriter<File>>>,
 }
 
 impl<I, F> Observe<I> for FitLogger<F>
@@ -48,42 +51,67 @@ where
         p[0..len].copy_from_slice(&param[0..len]);
         best_p[0..len].copy_from_slice(&best_param[0..len]);
 
-        // Write the found reduced parallaxes
-        for (i, &(par, par_e, par_r)) in self.par_pairs.borrow().iter().enumerate() {
-            writeln!(
-                self.writer.borrow_mut(),
-                "{}: par: {par} \u{b1} {par_e} -> par_r: {par_r}",
-                i + 1
-            )
-            .ok();
+        // Write the sample iteration
+        writeln!(
+            self.writer.borrow_mut(),
+            "sample_iteration: {}\nfit_iteration: {iter}\n",
+            self.sample_iteration
+        )
+        .ok();
+        // Log the found reduced parallaxes
+        for (i, (object, triples)) in
+            izip!(self.objects.borrow().iter(), self.triples.borrow().iter()).enumerate()
+        {
+            // Unpack the par triple
+            let Triple {
+                observed: par,
+                model: par_r,
+                error: par_e,
+            } = triples[3];
+            // Log the values
+            if object.blacklisted {
+                writeln!(
+                    self.writer.borrow_mut(),
+                    "{}: par: {par} \u{b1} {par_e} -> BLACKLISTED",
+                    i + 1
+                )
+                .ok();
+            } else {
+                writeln!(
+                    self.writer.borrow_mut(),
+                    "{}: par: {par} \u{b1} {par_e} -> par_r: {par_r}",
+                    i + 1
+                )
+                .ok();
+            }
         }
-        // Writer the state
+        // Log the state
         writeln!(
             self.writer.borrow_mut(),
             "{}",
             formatdoc!(
                 "
-                iter: {iter}
+
                              {empty:11} initial {empty:11} current {empty:14} best
-                        L_1: {empty:17} - {cost:>19} {best_cost:>19}
-                          R: {i_0:>19.15} {p_0:>19.15} {best_p_0:>19.15}
-                    omega_0: {i_1:>19.15} {p_1:>19.15} {best_p_1:>19.15}
-                          A: {i_2:>19.15} {p_2:>19.15} {best_p_2:>19.15}
-                      U_sun: {i_3:>19.15} {p_3:>19.15} {best_p_3:>19.15}
-                      V_sun: {i_4:>19.15} {p_4:>19.15} {best_p_4:>19.15}
-                      W_sun: {i_5:>19.15} {p_5:>19.15} {best_p_5:>19.15}
-                    sigma_R: {i_6:>19.15} {p_6:>19.15} {best_p_6:>19.15}
-                sigma_theta: {i_7:>19.15} {p_7:>19.15} {best_p_7:>19.15}
-                    sigma_Z: {i_8:>19.15} {p_8:>19.15} {best_p_8:>19.15}
-                    theta_2: {i_9:>19.15} {p_9:>19.15} {best_p_9:>19.15}
-                    theta_3: {i_10:>19.15} {p_10:>19.15} {best_p_10:>19.15}
-                    theta_4: {i_11:>19.15} {p_11:>19.15} {best_p_11:>19.15}
-                    theta_5: {i_12:>19.15} {p_12:>19.15} {best_p_12:>19.15}
-                    theta_6: {i_13:>19.15} {p_13:>19.15} {best_p_13:>19.15}
-                    theta_7: {i_14:>19.15} {p_14:>19.15} {best_p_14:>19.15}
-                    theta_8: {i_15:>19.15} {p_15:>19.15} {best_p_15:>19.15}
-                    theta_9: {i_16:>19.15} {p_16:>19.15} {best_p_16:>19.15}
-                   theta_10: {i_17:>19.15} {p_17:>19.15} {best_p_17:>19.15}
+                        L_1: {empty:18} - {cost:>20.15} {best_cost:>20.15}
+                          R: {i_0:>20.15} {p_0:>20.15} {best_p_0:>20.15}
+                    omega_0: {i_1:>20.15} {p_1:>20.15} {best_p_1:>20.15}
+                          A: {i_2:>20.15} {p_2:>20.15} {best_p_2:>20.15}
+                      U_sun: {i_3:>20.15} {p_3:>20.15} {best_p_3:>20.15}
+                      V_sun: {i_4:>20.15} {p_4:>20.15} {best_p_4:>20.15}
+                      W_sun: {i_5:>20.15} {p_5:>20.15} {best_p_5:>20.15}
+                    sigma_R: {i_6:>20.15} {p_6:>20.15} {best_p_6:>20.15}
+                sigma_theta: {i_7:>20.15} {p_7:>20.15} {best_p_7:>20.15}
+                    sigma_Z: {i_8:>20.15} {p_8:>20.15} {best_p_8:>20.15}
+                    theta_2: {i_9:>20.15} {p_9:>20.15} {best_p_9:>20.15}
+                    theta_3: {i_10:>20.15} {p_10:>20.15} {best_p_10:>20.15}
+                    theta_4: {i_11:>20.15} {p_11:>20.15} {best_p_11:>20.15}
+                    theta_5: {i_12:>20.15} {p_12:>20.15} {best_p_12:>20.15}
+                    theta_6: {i_13:>20.15} {p_13:>20.15} {best_p_13:>20.15}
+                    theta_7: {i_14:>20.15} {p_14:>20.15} {best_p_14:>20.15}
+                    theta_8: {i_15:>20.15} {p_15:>20.15} {best_p_15:>20.15}
+                    theta_9: {i_16:>20.15} {p_16:>20.15} {best_p_16:>20.15}
+                   theta_10: {i_17:>20.15} {p_17:>20.15} {best_p_17:>20.15}
                 ",
                 empty = "",
                 i_0 = self.params.r_0,
@@ -141,7 +169,8 @@ where
                 best_p_16 = best_p[16],
                 best_p_17 = best_p[17],
             ),
-        )?;
+        )
+        .ok();
         Ok(())
     }
 }

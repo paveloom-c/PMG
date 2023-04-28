@@ -238,7 +238,7 @@ impl<F> Params<F> {
     ///
     /// Note that not all fields are used, but only those needed for fitting
     #[allow(clippy::indexing_slicing)]
-    pub fn to_point(&self, n: usize) -> Vec<F>
+    pub fn to_vec(&self, n: usize) -> Vec<F>
     where
         F: Float + Debug,
     {
@@ -297,6 +297,35 @@ impl<F> Params<F> {
         self.theta_9_ep = new_p[16];
         self.theta_10_ep = new_p[17];
     }
+    /// Put the plus uncertainties into a vector
+    #[allow(clippy::indexing_slicing)]
+    pub fn to_ep_vec(&self, n: usize) -> Vec<F>
+    where
+        F: Float + Debug,
+    {
+        let array = [
+            self.r_0_ep,
+            self.omega_0_ep,
+            self.a_ep,
+            self.u_sun_ep,
+            self.v_sun_ep,
+            self.w_sun_ep,
+            self.sigma_r_g_ep,
+            self.sigma_theta_ep,
+            self.sigma_z_ep,
+            self.theta_2_ep,
+            self.theta_3_ep,
+            self.theta_4_ep,
+            self.theta_5_ep,
+            self.theta_6_ep,
+            self.theta_7_ep,
+            self.theta_8_ep,
+            self.theta_9_ep,
+            self.theta_10_ep,
+        ];
+        let slice = &array[0..=8 + (n - 1)];
+        slice.to_vec()
+    }
     /// Update the minus uncertainties of the parameters
     /// with the values in the provided vector
     ///
@@ -328,6 +357,35 @@ impl<F> Params<F> {
         self.theta_8_em = new_p[15];
         self.theta_9_em = new_p[16];
         self.theta_10_em = new_p[17];
+    }
+    /// Put the minus uncertainties into a vector
+    #[allow(clippy::indexing_slicing)]
+    pub fn to_em_vec(&self, n: usize) -> Vec<F>
+    where
+        F: Float + Debug,
+    {
+        let array = [
+            self.r_0_em,
+            self.omega_0_em,
+            self.a_em,
+            self.u_sun_em,
+            self.v_sun_em,
+            self.w_sun_em,
+            self.sigma_r_g_em,
+            self.sigma_theta_em,
+            self.sigma_z_em,
+            self.theta_2_em,
+            self.theta_3_em,
+            self.theta_4_em,
+            self.theta_5_em,
+            self.theta_6_em,
+            self.theta_7_em,
+            self.theta_8_em,
+            self.theta_9_em,
+            self.theta_10_em,
+        ];
+        let slice = &array[0..=8 + (n - 1)];
+        slice.to_vec()
     }
 }
 
@@ -560,24 +618,24 @@ impl<F> Model<F> {
                       n: {n}
                     L_1: {best_cost}
 
-                      R: {r_0:>19.15} -> {fit_r_0:>19.15} + {fit_r_0_ep:>17.15} - {fit_r_0_em:>17.15}
-                omega_0: {omega_0:>19.15} -> {fit_omega_0:>19.15} + {fit_omega_0_ep:>17.15} - {fit_omega_0_em:>17.15}
-                      A: {a:>19.15} -> {fit_a:>19.15} + {fit_a_ep:>17.15} - {fit_a_em:>17.15}
-                  U_sun: {u_sun:>19.15} -> {fit_u_sun:>19.15} + {fit_u_sun_ep:>17.15} - {fit_u_sun_em:>17.15}
-                  V_sun: {v_sun:>19.15} -> {fit_v_sun:>19.15} + {fit_v_sun_ep:>17.15} - {fit_v_sun_em:>17.15}
-                  W_sun: {w_sun:>19.15} -> {fit_w_sun:>19.15} + {fit_w_sun_ep:>17.15} - {fit_w_sun_em:>17.15}
-                sigma_R: {sigma_r_g:>19.15} -> {fit_sigma_r_g:>19.15} + {fit_sigma_r_g_ep:>17.15} - {fit_sigma_r_g_em:>17.15}
-            sigma_theta: {sigma_theta:>19.15} -> {fit_sigma_theta:>19.15} + {fit_sigma_theta_ep:>17.15} - {fit_sigma_theta_em:>17.15}
-                sigma_Z: {sigma_z:>19.15} -> {fit_sigma_z:>19.15} + {fit_sigma_z_ep:>17.15} - {fit_sigma_z_em:>17.15}
-                theta_2: {theta_2:>19.15} -> {fit_theta_2:>19.15} + {fit_theta_2_ep:>17.15} - {fit_theta_2_em:>17.15}
-                theta_3: {theta_3:>19.15} -> {fit_theta_3:>19.15} + {fit_theta_3_ep:>17.15} - {fit_theta_3_em:>17.15}
-                theta_4: {theta_4:>19.15} -> {fit_theta_4:>19.15} + {fit_theta_4_ep:>17.15} - {fit_theta_4_em:>17.15}
-                theta_5: {theta_5:>19.15} -> {fit_theta_5:>19.15} + {fit_theta_5_ep:>17.15} - {fit_theta_5_em:>17.15}
-                theta_6: {theta_6:>19.15} -> {fit_theta_6:>19.15} + {fit_theta_6_ep:>17.15} - {fit_theta_6_em:>17.15}
-                theta_7: {theta_7:>19.15} -> {fit_theta_7:>19.15} + {fit_theta_7_ep:>17.15} - {fit_theta_7_em:>17.15}
-                theta_8: {theta_8:>19.15} -> {fit_theta_8:>19.15} + {fit_theta_8_ep:>17.15} - {fit_theta_8_em:>17.15}
-                theta_9: {theta_9:>19.15} -> {fit_theta_9:>19.15} + {fit_theta_9_ep:>17.15} - {fit_theta_9_em:>17.15}
-               theta_10: {theta_10:>19.15} -> {fit_theta_10:>19.15} + {fit_theta_10_ep:>17.15} - {fit_theta_10_em:>17.15}
+                      R: {r_0:>20.15} -> {fit_r_0:>20.15} + {fit_r_0_ep:>17.15} - {fit_r_0_em:>17.15}
+                omega_0: {omega_0:>20.15} -> {fit_omega_0:>20.15} + {fit_omega_0_ep:>17.15} - {fit_omega_0_em:>17.15}
+                      A: {a:>20.15} -> {fit_a:>20.15} + {fit_a_ep:>17.15} - {fit_a_em:>17.15}
+                  U_sun: {u_sun:>20.15} -> {fit_u_sun:>20.15} + {fit_u_sun_ep:>17.15} - {fit_u_sun_em:>17.15}
+                  V_sun: {v_sun:>20.15} -> {fit_v_sun:>20.15} + {fit_v_sun_ep:>17.15} - {fit_v_sun_em:>17.15}
+                  W_sun: {w_sun:>20.15} -> {fit_w_sun:>20.15} + {fit_w_sun_ep:>17.15} - {fit_w_sun_em:>17.15}
+                sigma_R: {sigma_r_g:>20.15} -> {fit_sigma_r_g:>20.15} + {fit_sigma_r_g_ep:>17.15} - {fit_sigma_r_g_em:>17.15}
+            sigma_theta: {sigma_theta:>20.15} -> {fit_sigma_theta:>20.15} + {fit_sigma_theta_ep:>17.15} - {fit_sigma_theta_em:>17.15}
+                sigma_Z: {sigma_z:>20.15} -> {fit_sigma_z:>20.15} + {fit_sigma_z_ep:>17.15} - {fit_sigma_z_em:>17.15}
+                theta_2: {theta_2:>20.15} -> {fit_theta_2:>20.15} + {fit_theta_2_ep:>17.15} - {fit_theta_2_em:>17.15}
+                theta_3: {theta_3:>20.15} -> {fit_theta_3:>20.15} + {fit_theta_3_ep:>17.15} - {fit_theta_3_em:>17.15}
+                theta_4: {theta_4:>20.15} -> {fit_theta_4:>20.15} + {fit_theta_4_ep:>17.15} - {fit_theta_4_em:>17.15}
+                theta_5: {theta_5:>20.15} -> {fit_theta_5:>20.15} + {fit_theta_5_ep:>17.15} - {fit_theta_5_em:>17.15}
+                theta_6: {theta_6:>20.15} -> {fit_theta_6:>20.15} + {fit_theta_6_ep:>17.15} - {fit_theta_6_em:>17.15}
+                theta_7: {theta_7:>20.15} -> {fit_theta_7:>20.15} + {fit_theta_7_ep:>17.15} - {fit_theta_7_em:>17.15}
+                theta_8: {theta_8:>20.15} -> {fit_theta_8:>20.15} + {fit_theta_8_ep:>17.15} - {fit_theta_8_em:>17.15}
+                theta_9: {theta_9:>20.15} -> {fit_theta_9:>20.15} + {fit_theta_9_ep:>17.15} - {fit_theta_9_em:>17.15}
+               theta_10: {theta_10:>20.15} -> {fit_theta_10:>20.15} + {fit_theta_10_ep:>17.15} - {fit_theta_10_em:>17.15}
 
             Derived values:
 

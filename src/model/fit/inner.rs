@@ -8,42 +8,49 @@ use core::fmt::Debug;
 use anyhow::Result;
 use argmin::core::CostFunction;
 use num::Float;
-use numeric_literals::replace_float_literals;
+
+/// A triple of the discrepancy
+#[allow(clippy::missing_docs_in_private_items)]
+#[derive(Debug, Default, Clone)]
+pub struct Triple<F> {
+    pub observed: F,
+    pub model: F,
+    pub error: F,
+}
+
+/// Triples of the discrepancies
+pub type Triples<F> = Vec<Triple<F>>;
 
 /// A problem for the inner optimization
 #[allow(clippy::missing_docs_in_private_items)]
-pub(super) struct InnerOptimizationProblem<'a, F> {
-    pub(super) l: F,
-    pub(super) b: F,
-    pub(super) v_sun: F,
-    pub(super) v_r_sun: F,
-    pub(super) v_r: F,
-    pub(super) d_v_r: F,
-    pub(super) mu_l_cos_b: F,
-    pub(super) d_mu_l_cos_b: F,
-    pub(super) mu_b: F,
-    pub(super) d_mu_b: F,
-    pub(super) par: F,
-    pub(super) d_par: F,
-    pub(super) fit_params: &'a Params<F>,
+#[allow(clippy::module_name_repetitions)]
+#[derive(Clone)]
+pub struct InnerOptimizationProblem<'a, F> {
+    pub l: F,
+    pub b: F,
+    pub v_sun: F,
+    pub v_r_sun: F,
+    pub v_r: F,
+    pub v_r_error: F,
+    pub mu_l_cos_b: F,
+    pub mu_l_cos_b_error: F,
+    pub mu_b: F,
+    pub mu_b_error: F,
+    pub par: F,
+    pub par_e: F,
+    pub fit_params: &'a Params<F>,
 }
 
-impl<'a, F> CostFunction for InnerOptimizationProblem<'a, F>
-where
-    F: Float + Debug + Default,
-{
-    type Param = F;
-    type Output = F;
-
-    // Find the reduced parallax
+impl<'a, F> InnerOptimizationProblem<'a, F> {
+    /// Compute the discrepancies
     #[allow(clippy::indexing_slicing)]
     #[allow(clippy::many_single_char_names)]
     #[allow(clippy::similar_names)]
-    #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
-    #[replace_float_literals(F::from(literal).unwrap())]
-    fn cost(&self, p: &Self::Param) -> Result<Self::Output> {
-        let par_r = *p;
+    pub fn compute_triples(&self, par_r: F) -> Triples<F>
+    where
+        F: Float + Debug + Default,
+    {
         // Unpack the problem
         let Self {
             l,
@@ -51,13 +58,13 @@ where
             v_sun,
             v_r_sun,
             v_r,
-            d_v_r,
+            v_r_error,
             mu_l_cos_b,
-            d_mu_l_cos_b,
+            mu_l_cos_b_error,
             mu_b,
-            d_mu_b,
+            mu_b_error,
             par,
-            d_par,
+            par_e,
             fit_params,
         } = *self;
         // Create an object for the reduced values
@@ -103,12 +110,49 @@ where
         let mu_b_rot = -rot_curve_series * r_0 / r_g_r / r_h_r * sin_l * sin_b;
         let mu_b_sun = (u_sun * cos_l * sin_b + v_sun * sin_l * sin_b - w_sun * cos_b) / r_h_r;
         let mu_b_mod = (mu_b_rot + mu_b_sun) / k;
-        // Compute the weighted sum of squared differences
-        let sum = (v_r - v_r_mod).powi(2) / d_v_r
-            + (mu_l_cos_b - mu_l_cos_b_mod).powi(2) / d_mu_l_cos_b
-            + (mu_b - mu_b_mod).powi(2) / d_mu_b
-            + (par - par_r).powi(2) / d_par;
-        // Return it as the result
+        // Return the triples
+        vec![
+            Triple {
+                observed: v_r,
+                model: v_r_mod,
+                error: v_r_error,
+            },
+            Triple {
+                observed: mu_l_cos_b,
+                model: mu_l_cos_b_mod,
+                error: mu_l_cos_b_error,
+            },
+            Triple {
+                observed: mu_b,
+                model: mu_b_mod,
+                error: mu_b_error,
+            },
+            Triple {
+                observed: par,
+                model: par_r,
+                error: par_e,
+            },
+        ]
+    }
+}
+
+impl<'a, F> CostFunction for InnerOptimizationProblem<'a, F>
+where
+    F: Float + Debug + Default,
+{
+    type Param = F;
+    type Output = F;
+
+    // Find the reduced parallax
+    fn cost(&self, p: &Self::Param) -> Result<Self::Output> {
+        let par_r = *p;
+        // Compute the discrepancies
+        let triples = self.compute_triples(par_r);
+        // Compute the sum
+        let mut sum = F::zero();
+        for triple in triples {
+            sum = sum + (triple.observed - triple.model).powi(2) / triple.error.powi(2);
+        }
         Ok(sum)
     }
 }

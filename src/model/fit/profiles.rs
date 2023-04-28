@@ -4,7 +4,7 @@ extern crate alloc;
 
 use super::io::output;
 use super::params::{ARMIJO_PARAM, BACKTRACKING_PARAM, LBFGS_M, LBFGS_TOLERANCE};
-use super::{FrozenOuterOptimizationProblem, OuterOptimizationProblem};
+use super::{FrozenOuterOptimizationProblem, OuterOptimizationProblem, Triple};
 use super::{Model, PARAMS_N, PARAMS_NAMES};
 use crate::utils::FiniteDiff;
 
@@ -23,6 +23,7 @@ use argmin_math::{
     ArgminSub, ArgminZeroLike,
 };
 use indoc::formatdoc;
+use itertools::izip;
 use num::Float;
 use numeric_literals::replace_float_literals;
 use serde::Serialize;
@@ -91,12 +92,13 @@ impl<F> Model<F> {
         Vec<F>: FiniteDiff<F>,
     {
         // Get the optimized parameters as arrays
-        let fit_params = self.fit_params.as_ref().unwrap().to_point(n);
+        let fit_params = self.fit_params.as_ref().unwrap().to_vec(n);
         let fit_params_ep = [1.0; PARAMS_N];
         let fit_params_em = [1.0; PARAMS_N];
-        // Prepare storage for the profiles and the reduced parallaxes
+        // Prepare storage
         let mut profiles = Profiles::<F>::with_capacity(PARAMS_N);
-        let par_pairs = Rc::new(RefCell::new(vec![(0., 0., 0.); self.objects.len()]));
+        let triple = vec![Triple::<F>::default(); 4];
+        let triples = Rc::new(RefCell::new(vec![triple; self.objects.borrow().len()]));
 
         // Compute conditional profiles (one parameter is fixed
         // and externally varied, the rest are free)
@@ -105,8 +107,9 @@ impl<F> Model<F> {
             let fit_param_ep = fit_params_ep[index];
             let fit_param_em = fit_params_em[index];
 
-            let start = fit_param - fit_param_em;
-            let end = fit_param + fit_param_ep;
+            let coeff = 1.1;
+            let start = fit_param - fit_param_em * coeff;
+            let end = fit_param + fit_param_ep * coeff;
             let h = (end - start) / F::from(POINTS_N).unwrap();
 
             let mut profile = Vec::<ProfilePoint<F>>::with_capacity(POINTS_N);
@@ -119,9 +122,9 @@ impl<F> Model<F> {
                     param,
                     objects: &self.objects,
                     params: &self.params,
-                    par_pairs: &Rc::clone(&par_pairs),
+                    triples: &Rc::clone(&triples),
                 };
-                let mut init_param = self.params.to_point(n);
+                let mut init_param = self.params.to_vec(n);
                 // Remove the frozen parameter
                 init_param.remove(index);
                 let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;
@@ -153,11 +156,12 @@ impl<F> Model<F> {
     }
     /// Try to compute the frozen profiles
     #[allow(clippy::indexing_slicing)]
+    #[allow(clippy::shadow_unrelated)]
     #[allow(clippy::similar_names)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub fn try_compute_frozen_profiles(&mut self, n: usize) -> Result<()>
+    pub fn try_compute_frozen_profiles(&mut self, n: usize) -> Result<bool>
     where
         F: Float
             + Debug
@@ -188,18 +192,15 @@ impl<F> Model<F> {
         Vec<F>: FiniteDiff<F>,
     {
         // Get the optimized parameters as arrays
-        let fit_params = self.fit_params.as_ref().unwrap().to_point(n);
+        let fit_params = self.fit_params.as_ref().unwrap().to_vec(n);
         let fit_params_ep = [1.0; PARAMS_N];
         let fit_params_em = [1.0; PARAMS_N];
         // Prepare storage for the profiles and the reduced parallaxes
         let mut profiles = Profiles::<F>::with_capacity(PARAMS_N);
-        let par_pairs = Rc::new(RefCell::new(vec![(0., 0., 0.); self.objects.len()]));
+        let triple = vec![Triple::<F>::default(); 4];
+        let triples = Rc::new(RefCell::new(vec![triple; self.objects.borrow().len()]));
 
-        let problem = OuterOptimizationProblem {
-            objects: &self.objects,
-            params: &self.params,
-            par_pairs: &Rc::clone(&par_pairs),
-        };
+        let mut stop = true;
 
         // Compute frozen profiles (all parameters are
         // fixed, but one is externally varied)
@@ -222,8 +223,35 @@ impl<F> Model<F> {
             for j in 0..=POINTS_N {
                 let param = start + F::from(j).unwrap() * h;
 
+                let problem = OuterOptimizationProblem {
+                    objects: &self.objects,
+                    params: &self.params,
+                    triples: &Rc::clone(&triples),
+                };
+
                 p[index] = param;
-                let cost = problem.inner_cost(&p, false)?;
+                let cost = problem.inner_cost(&p, true)?;
+
+                // Go through the final discrepancies and
+                // decide whether some of them are too big
+                for (object, triples) in izip!(
+                    self.objects.borrow_mut().iter_mut(),
+                    triples.borrow().iter()
+                ) {
+                    if !object.blacklisted {
+                        for triple in triples {
+                            let Triple {
+                                ref observed,
+                                ref model,
+                                ref error,
+                            } = *triple;
+                            if (*observed - *model).abs() >= 3. * *error {
+                                object.blacklisted = true;
+                                stop = false;
+                            }
+                        }
+                    }
+                }
 
                 profile.push(ProfilePoint { param, cost });
             }
@@ -236,7 +264,7 @@ impl<F> Model<F> {
 
         self.frozen_profiles = Some(profiles);
 
-        Ok(())
+        Ok(stop)
     }
     /// Serialize the profiles
     #[allow(clippy::indexing_slicing)]

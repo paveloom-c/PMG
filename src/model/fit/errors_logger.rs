@@ -15,8 +15,8 @@ use argmin::core::KV;
 
 /// Errors logger
 #[allow(clippy::missing_docs_in_private_items)]
-pub(super) struct ErrorsLogger {
-    pub(super) writer: Rc<RefCell<BufWriter<File>>>,
+pub struct ErrorsLogger {
+    pub writer: Rc<RefCell<BufWriter<File>>>,
 }
 
 impl<I> Observe<I> for ErrorsLogger

@@ -3,8 +3,8 @@
 extern crate alloc;
 
 use super::outer::{Output, Param};
-use super::OuterOptimizationProblem;
 use super::{Objects, Params};
+use super::{OuterOptimizationProblem, Triples};
 use crate::utils::FiniteDiff;
 use alloc::rc::Rc;
 use core::cell::RefCell;
@@ -24,12 +24,12 @@ use numeric_literals::replace_float_literals;
 /// A problem for the outer optimization, but with a frozen parameter
 #[allow(clippy::missing_docs_in_private_items)]
 #[allow(clippy::type_complexity)]
-pub(super) struct FrozenOuterOptimizationProblem<'a, F> {
-    pub(super) index: usize,
-    pub(super) param: F,
-    pub(super) objects: &'a Objects<F>,
-    pub(super) params: &'a Params<F>,
-    pub(super) par_pairs: &'a Rc<RefCell<Vec<(F, F, F)>>>,
+pub struct FrozenOuterOptimizationProblem<'a, F> {
+    pub index: usize,
+    pub param: F,
+    pub objects: &'a Rc<RefCell<Objects<F>>>,
+    pub params: &'a Params<F>,
+    pub triples: &'a Rc<RefCell<Vec<Triples<F>>>>,
 }
 
 impl<'a, F> CostFunction for FrozenOuterOptimizationProblem<'a, F>
@@ -78,7 +78,7 @@ where
         let outer_problem = OuterOptimizationProblem {
             objects: self.objects,
             params: self.params,
-            par_pairs: self.par_pairs,
+            triples: self.triples,
         };
         // Prepare the parameter vector
         let mut new_p = p.clone();

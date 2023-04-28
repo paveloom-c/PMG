@@ -180,17 +180,18 @@ if isfile(FIT_PARAMS_DATA_PATH)
         fit_param,
         fit_param_p,
         fit_param_m,
+        with_errors=false,
     )
         # Compute the limits
         x_max, x_min = max_min(x)
-        y_max, y_min = max_min(y)
+        y_max, y_min = max_min(y; factor=0.5)
         # Prepare a table
         table = @pgf Table(
             x=x,
             y=y,
         )
         # Create a plot
-        return @pgf Axis(
+        p = @pgf Axis(
             {
                 xlabel = xlabel,
                 ylabel = ylabel,
@@ -198,6 +199,7 @@ if isfile(FIT_PARAMS_DATA_PATH)
                 xmin = x_min,
                 ymax = y_max,
                 ymin = y_min,
+                "restrict_y_to_domain"="$(y_min):$(y_max)",
                 height = 200,
                 width = 200,
                 grid = "both",
@@ -230,7 +232,9 @@ if isfile(FIT_PARAMS_DATA_PATH)
                     (fit_param, y_max - 0.015 * (y_max - y_min)),
                 ]),
             ),
-            Plot(
+        )
+        if with_errors
+            push!(p, @pgf Plot(
                 {
                     dashed,
                     no_marks,
@@ -240,8 +244,8 @@ if isfile(FIT_PARAMS_DATA_PATH)
                     (fit_param_p, y_min + 0.04 * (y_max - y_min)),
                     (fit_param_p, y_max - 0.015 * (y_max - y_min)),
                 ]),
-            ),
-            Plot(
+            ))
+            push!(p, @pgf Plot(
                 {
                     dashed,
                     no_marks,
@@ -251,8 +255,9 @@ if isfile(FIT_PARAMS_DATA_PATH)
                     (fit_param_m, y_min + 0.04 * (y_max - y_min)),
                     (fit_param_m, y_max - 0.015 * (y_max - y_min)),
                 ]),
-            ),
-        )
+            ))
+        end
+        return p
     end
 
     print_lock = ReentrantLock()
@@ -297,7 +302,7 @@ if isfile(FIT_PARAMS_DATA_PATH)
         L"\theta_7",
         L"\theta_8",
         L"\theta_9",
-        L"\theta_10",
+        L"\theta_{10}",
     ]
 
     PARAMS_LATEX_UNITS = [
@@ -318,7 +323,7 @@ if isfile(FIT_PARAMS_DATA_PATH)
         L"\; \mathrm{[km/s/kpc^7]}",
         L"\; \mathrm{[km/s/kpc^8]}",
         L"\; \mathrm{[km/s/kpc^9]}",
-        L"\; \mathrm{[km/s/kpc^10]}",
+        L"\; \mathrm{[km/s/kpc^{10}]}",
     ]
 
     fit_params_vec = map(i -> getfield(fit_params_data, i)[1], 1:fieldcount(ParamsData))
@@ -352,8 +357,9 @@ if isfile(FIT_PARAMS_DATA_PATH)
 
             push!(tasks, @spawn begin
                 lock(print_lock) do
-                    println(pad, pad, "for $(name)...")
+                    println(pad, pad, "$(prefix) for $(name)...")
                 end
+                with_errors = prefix == "conditional"
                 p = scatter(
                     param,
                     cost,
@@ -362,6 +368,7 @@ if isfile(FIT_PARAMS_DATA_PATH)
                     fit_param,
                     fit_param_p,
                     fit_param_m,
+                    with_errors,
                 )
                 pgfsave(
                     joinpath(
@@ -380,7 +387,7 @@ if isfile(FIT_PARAMS_DATA_PATH)
         try
             wait(task)
         catch err
-            throw(err.task.exception)
+            showerror(stdout, err.task.exception)
         end
     end
 

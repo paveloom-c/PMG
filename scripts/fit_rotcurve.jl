@@ -265,6 +265,7 @@ function plot(
             xmin = x_min,
             ymax = y_max,
             ymin = y_min,
+            "restrict_y_to_domain*"="$(y_min):$(y_max)",
             height = 200,
             width = 200,
             grid = "both",
@@ -376,7 +377,7 @@ for task in tasks
     try
         wait(task)
     catch err
-        throw(err.task.exception)
+        showerror(stdout, err.task.exception)
     end
 end
 

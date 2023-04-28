@@ -577,7 +577,7 @@ for task in tasks
     try
         wait(task)
     catch err
-        throw(err.task.exception)
+        showerror(stdout, err.task.exception)
     end
 end
 
