@@ -113,7 +113,13 @@ for i in {1..10}; do
   "${JULIA}" "${PROFILES}" -i "'${R_HMSFRS}/n = $i'" -o "'${R_HMSFRS}/n = $i'"
 done
 
-echo -e "${PAD}Step 7. Zip the results\n"
+echo -e "${PAD}Step 7. Plot the \`n\` plots"
+
+"${JULIA}" "${N}" -i "'${R_ALL}'" -o "'${R_ALL}'"
+"${JULIA}" "${N}" -i "'${R_SOLAR}'" -o "'${R_SOLAR}'"
+"${JULIA}" "${N}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'"
+
+echo -e "${PAD}Step 8. Zip the results\n"
 
 rm -f results.zip
 zip -rq results.zip results

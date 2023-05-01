@@ -12,6 +12,7 @@ use model::{Model, N_MAX};
 
 use alloc::rc::Rc;
 use core::cell::RefCell;
+use indoc::indoc;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 
@@ -21,6 +22,7 @@ use anyhow::{Context, Result};
 #[allow(clippy::indexing_slicing)]
 #[allow(clippy::missing_panics_doc)]
 #[allow(clippy::needless_range_loop)]
+#[allow(clippy::too_many_lines)]
 #[allow(clippy::unwrap_used)]
 pub fn main() -> Result<()> {
     // Parse the arguments
@@ -97,34 +99,44 @@ pub fn main() -> Result<()> {
                 }
             }
 
-            // Choose the best fit
-            let best_i = 0;
-            // let mut best_sigma_theta = f64::INFINITY;
-            // {
-            //     for j in 0..N_MAX {
-            //         if let Some(ref fit_params) = models[j].fit_params {
-            //             let sigma_theta = fit_params.sigma_theta;
-            //             if sigma_theta > 0. && sigma_theta < best_sigma_theta {
-            //                 best_i = j;
-            //                 best_sigma_theta = sigma_theta;
-            //             }
-            //         }
-            //     }
-            // }
-
-            let best_n = best_i + 1;
+            // Serialize the costs and errors in azimuthal velocity
             {
-                let best_model = &mut models[best_i];
+                let l_1_file = File::create(args.output_dir.join("L_1.dat"))?;
+                let mut l_1_writer = BufWriter::new(l_1_file);
+                let sigma_theta_file = File::create(args.output_dir.join("sigma_theta.dat"))?;
+                let mut sigma_theta_writer = BufWriter::new(sigma_theta_file);
 
-                let best_n_file_path = args.output_dir.join("best n");
-                if let Ok(mut best_n_file) = File::create(best_n_file_path) {
-                    writeln!(best_n_file, "{best_n}").ok();
-                }
+                writeln!(
+                    l_1_writer,
+                    indoc!(
+                        "
+                        # Best costs (L_1) as a dependency of the degree
+                        # of the polynomial of the rotation curve
+                        n L_1"
+                    )
+                )?;
 
-                if args.with_errors {
-                    best_model
-                        .try_fit_errors(best_n)
-                        .with_context(|| "Couldn't define the confidence intervals")?;
+                writeln!(
+                    sigma_theta_writer,
+                    indoc!(
+                        "
+                        # Errors in the azimuthal velocity as a dependency of
+                        # the degree of the polynomial of the rotation curve
+                        n sigma_theta"
+                    )
+                )?;
+
+                for (i, model) in models.iter().enumerate() {
+                    if model.fit_params.is_none() {
+                        continue;
+                    };
+
+                    let n = i + 1;
+                    let l_1 = model.best_cost.unwrap();
+                    let sigma_theta = model.fit_params.as_ref().unwrap().sigma_theta;
+
+                    writeln!(l_1_writer, "{n} {l_1}")?;
+                    writeln!(sigma_theta_writer, "{n} {sigma_theta}")?;
                 }
             }
 
@@ -149,10 +161,27 @@ pub fn main() -> Result<()> {
                 }
             }
 
-            let best_model = &mut models[best_i];
+            // Choose a model for extra computations
+            let chosen_i = 0;
+            let chosen_n = chosen_i + 1;
+            let chosen_model = &mut models[chosen_i];
+
+            let chosen_n_file_path = args.output_dir.join("chosen_n");
+            if let Ok(mut chosen_n_file) = File::create(chosen_n_file_path) {
+                writeln!(chosen_n_file, "{chosen_n}").ok();
+            }
+
+            if args.with_errors {
+                chosen_model
+                    .try_fit_errors(chosen_n)
+                    .with_context(|| "Couldn't define the confidence intervals")?;
+                chosen_model
+                    .serialize_to_fit_params()
+                    .with_context(|| "Couldn't write the fitted parameters to a file")?;
+            }
             if args.with_conditional_profiles {
-                best_model
-                    .try_compute_conditional_profiles(best_n)
+                chosen_model
+                    .try_compute_conditional_profiles(chosen_n)
                     .with_context(|| "Couldn't compute the conditional profiles")?;
             }
         }
