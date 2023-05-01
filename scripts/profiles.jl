@@ -355,6 +355,8 @@ if isfile(FIT_PARAMS_DATA_PATH)
             param = profile_data.param
             cost = profile_data.cost
 
+            ylabel = prefix == "conditional" ? L"L_c" : L"L_f"
+
             push!(tasks, @spawn begin
                 lock(print_lock) do
                     println(pad, pad, "$(prefix) for $(name)...")
@@ -364,7 +366,7 @@ if isfile(FIT_PARAMS_DATA_PATH)
                     param,
                     cost,
                     latexstring(latex_name, latex_unit),
-                    latexstring(L"L_p(", latex_name, L")"),
+                    latexstring(ylabel, L"(", latex_name, L")"),
                     fit_param,
                     fit_param_p,
                     fit_param_m,
