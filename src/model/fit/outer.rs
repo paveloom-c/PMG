@@ -4,7 +4,7 @@ extern crate alloc;
 
 use super::{InnerOptimizationProblem, Triples};
 use super::{Objects, Params};
-use crate::utils::FiniteDiff;
+use crate::utils::{self, FiniteDiff};
 
 use alloc::rc::Rc;
 use argmin::solver::brent::BrentOpt;
@@ -47,7 +47,12 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
     /// Compute the parameterized part of the negative log likelihood function of the model
-    pub(super) fn inner_cost(&self, p: &Param<F>, update_triples: bool) -> Result<Output<F>>
+    pub(super) fn inner_cost(
+        &self,
+        p: &Param<F>,
+        update_triples: bool,
+        check_par_vicinities: bool,
+    ) -> Result<Output<F>>
     where
         F: Float
             + Debug
@@ -130,7 +135,7 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 let cos_l_sq = cos_l.powi(2);
                 let cos_b_sq = cos_b.powi(2);
                 // Compute the observed dispersions
-                let d_r = sigma_r_g.powi(2);
+                let d_r_g = sigma_r_g.powi(2);
                 let d_theta = sigma_theta.powi(2);
                 let d_z = sigma_z.powi(2);
                 // Compute the sines and cosines of the Galactocentric longitude
@@ -140,11 +145,13 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 let sin_phi_sq = (sin_lambda * cos_l + cos_lambda * sin_l).powi(2);
                 let cos_phi_sq = (cos_lambda * cos_l - sin_lambda * sin_l).powi(2);
                 // Compute the natural dispersions
-                let d_v_r_natural =
-                    d_r * cos_phi_sq * cos_b_sq + d_theta * sin_phi_sq * cos_l_sq + d_z * sin_b_sq;
-                let d_v_l_natural = d_r * sin_phi_sq + d_theta * cos_phi_sq;
-                let d_v_b_natural =
-                    d_r * cos_phi_sq * sin_b_sq + d_theta * sin_phi_sq * sin_b_sq + d_z * cos_b_sq;
+                let d_v_r_natural = d_r_g * cos_phi_sq * cos_b_sq
+                    + d_theta * sin_phi_sq * cos_l_sq
+                    + d_z * sin_b_sq;
+                let d_v_l_natural = d_r_g * sin_phi_sq + d_theta * cos_phi_sq;
+                let d_v_b_natural = d_r_g * cos_phi_sq * sin_b_sq
+                    + d_theta * sin_phi_sq * sin_b_sq
+                    + d_z * cos_b_sq;
                 let delim = k.powi(2) * r_h.powi(2);
                 let d_mu_l_cos_b_natural = d_v_l_natural / delim;
                 let d_mu_b_natural = d_v_b_natural / delim;
@@ -176,14 +183,47 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 let init_param = par;
                 let solver =
                     BrentOpt::new(F::max(F::epsilon(), par - 3. * par_e), par + 3. * par_e)
-                        .set_tolerance(F::sqrt(F::epsilon()), 1e-8);
+                        .set_tolerance(F::sqrt(F::epsilon()), 1e-15);
                 // Find the local minimum in the inner optimization
                 let res = Executor::new(problem.clone(), solver)
-                    .configure(|state| state.param(init_param).max_iters(200))
+                    .configure(|state| state.param(init_param).max_iters(1000))
                     .run()
                     .with_context(|| "Couldn't solve the inner optimization problem")?;
-                let &best_point = res.state().get_best_param().unwrap();
+                let &par_r = res.state().get_best_param().unwrap();
                 let best_cost = res.state().get_best_cost();
+
+                if check_par_vicinities {
+                    let n_points = 100;
+                    let start = F::max(F::epsilon(), par - 3. * par_e);
+                    let end = par + 3. * par_e;
+                    let h = (end - start) / F::from(n_points).unwrap();
+
+                    let mut extrema_count = 0;
+                    let epsilon = F::sqrt(F::epsilon());
+                    let start_diff =
+                        utils::central_diff(start, &|x| problem.cost(&x).unwrap(), epsilon);
+                    let mut current_signum = start_diff.signum();
+                    for j in 0..=n_points {
+                        let par_test = start + F::from(j).unwrap() * h;
+
+                        let diff = utils::central_diff(
+                            par_test,
+                            &|x| problem.cost(&x).unwrap(),
+                            F::sqrt(F::epsilon()),
+                        );
+                        let diff_signum = diff.signum();
+
+                        if diff_signum * current_signum < 0. {
+                            current_signum = diff_signum;
+                            extrema_count += 1;
+                        }
+                    }
+
+                    if extrema_count != 1 {
+                        object.blacklisted = true;
+                    }
+                }
+
                 // Compute the final sum for this object
                 *cost = F::ln(v_r_error)
                     + F::ln(mu_l_cos_b_error)
@@ -191,7 +231,7 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                     + 0.5 * best_cost;
                 // Save the results
                 if update_triples {
-                    *triple = problem.compute_triples(best_point);
+                    *triple = problem.compute_triples(par_r);
                 }
                 Ok(())
             })?;
@@ -245,7 +285,7 @@ where
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
     fn cost(&self, p: &Self::Param) -> Result<Self::Output> {
-        self.inner_cost(p, true)
+        self.inner_cost(p, true, false)
     }
 }
 
@@ -287,7 +327,7 @@ where
     #[replace_float_literals(F::from(literal).unwrap())]
     fn gradient(&self, p: &Self::Param) -> Result<Self::Gradient> {
         Ok((*p).central_diff(
-            &|x| self.inner_cost(x, false).unwrap(),
+            &|x| self.inner_cost(x, false, false).unwrap(),
             F::sqrt(F::epsilon()),
         ))
     }

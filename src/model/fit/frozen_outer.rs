@@ -84,7 +84,7 @@ where
         let mut new_p = p.clone();
         new_p.insert(self.index, self.param);
         // Compute the cost
-        outer_problem.inner_cost(&new_p, false)
+        outer_problem.inner_cost(&new_p, false, false)
     }
 }
 

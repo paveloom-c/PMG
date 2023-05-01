@@ -417,6 +417,19 @@ where
 }
 
 impl<F> Model<F> {
+    /// Count the number of the objects not blacklisted
+    pub fn count_not_blacklisted(&self) -> usize {
+        self.objects.borrow().iter().fold(
+            0,
+            |acc, object| {
+                if object.blacklisted {
+                    acc
+                } else {
+                    acc + 1
+                }
+            },
+        )
+    }
     /// Try to load data from the path
     pub fn try_load_data_from(&mut self, path: &Path) -> Result<()>
     where

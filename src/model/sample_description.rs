@@ -8,7 +8,6 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use indoc::formatdoc;
-use num::Float;
 
 impl<F> Model<F> {
     /// Read the sample description from the input file
@@ -48,17 +47,7 @@ impl<F> Model<F> {
     /// Get the sample description as a formatted string
     pub fn format_sample_description(&self) -> String {
         let total_count = self.objects.borrow().len();
-        let nonblacklisted_count =
-            self.objects.borrow().iter().fold(
-                0,
-                |acc, object| {
-                    if object.blacklisted {
-                        acc
-                    } else {
-                        acc + 1
-                    }
-                },
-            );
+        let nonblacklisted_count = self.count_not_blacklisted();
         match self.sample_description {
             Some(ref sample_description) => formatdoc!(
                 "

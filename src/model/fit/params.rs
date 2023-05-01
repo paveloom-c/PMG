@@ -33,7 +33,7 @@ pub const ARMIJO_PARAM: f64 = 1e-4;
 pub const BACKTRACKING_PARAM: f64 = 0.9;
 
 /// Memory length of the L-BFGS algorithm
-pub const LBFGS_M: usize = 30;
+pub const LBFGS_M: usize = 300;
 
 /// Tolerance of the L-BFGS algorithm
 pub const LBFGS_TOLERANCE: f64 = 1e-15;
@@ -79,11 +79,12 @@ where
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub(in crate::model) fn try_fit_params(
+    pub fn try_fit_params(
         &mut self,
         n: usize,
         sample_iteration: usize,
         fit_log_writer: &Rc<RefCell<BufWriter<File>>>,
+        check_par_vicinities: bool,
     ) -> Result<()> {
         // Compute some of the values that don't
         // depend on the parameters being optimized
@@ -124,6 +125,15 @@ where
 
         let best_cost = res.state().get_best_cost();
         let best_point = res.state().get_best_param().unwrap().clone();
+
+        if check_par_vicinities {
+            let problem = OuterOptimizationProblem {
+                objects: &self.objects,
+                params: &self.params,
+                triples: &Rc::clone(&self.triples),
+            };
+            problem.inner_cost(&best_point, false, true)?;
+        }
 
         // Prepare storage for the new parameters
         let mut fit_params = self.params.clone();

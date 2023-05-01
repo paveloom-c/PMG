@@ -59,18 +59,40 @@ pub fn main() -> Result<()> {
 
                 let mut sample_iteration = 0;
 
-                loop {
-                    // Try to fit a model with the specified degree
-                    model
-                        .try_fit(n, sample_iteration, &fit_log_writer)
-                        .with_context(|| "Couldn't fit the model")?;
-                    // Check the vicinity of the found minimum, make sure there are no jumps
-                    let stop = model
-                        .try_compute_frozen_profiles(n)
-                        .with_context(|| "Couldn't compute the frozen profiles")?;
-                    if stop {
-                        break;
+                let mut current_nonblacklisted_count = model.objects.borrow().len();
+                'outer: loop {
+                    'inner: loop {
+                        // Try to fit a model with the specified degree
+                        model
+                            .try_fit(n, sample_iteration, &fit_log_writer)
+                            .with_context(|| "Couldn't fit the model")?;
+
+                        // Check the vicinity of the found minimum,
+                        // make sure there are no big discrepancies
+                        model
+                            .try_compute_frozen_profiles(n)
+                            .with_context(|| "Couldn't compute the frozen profiles")?;
+
+                        let nonblacklisted_count = model.count_not_blacklisted();
+                        if nonblacklisted_count == current_nonblacklisted_count {
+                            break 'inner;
+                        }
+
+                        current_nonblacklisted_count = nonblacklisted_count;
+                        sample_iteration += 1;
                     }
+
+                    // Check if the vicinities of the reduced parallaxes are smooth
+                    model
+                        .try_fit_params(n, sample_iteration, &fit_log_writer, true)
+                        .with_context(|| "Couldn't fit the model")?;
+
+                    let nonblacklisted_count = model.count_not_blacklisted();
+                    if nonblacklisted_count == current_nonblacklisted_count {
+                        break 'outer;
+                    }
+
+                    current_nonblacklisted_count = nonblacklisted_count;
                     sample_iteration += 1;
                 }
             }

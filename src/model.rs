@@ -2,7 +2,7 @@
 
 extern crate alloc;
 
-mod fit;
+pub mod fit;
 mod io;
 mod objects;
 mod params;
@@ -112,7 +112,7 @@ impl<F> Model<F> {
         Vec<F>: FiniteDiff<F>,
     {
         // Try to fit the model
-        self.try_fit_params(n, sample_iteration, fit_log_writer)
+        self.try_fit_params(n, sample_iteration, fit_log_writer, false)
             .with_context(|| "Couldn't fit the model")?;
         // Perform per-object computations
         // with the optimized parameters

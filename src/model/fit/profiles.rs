@@ -161,7 +161,7 @@ impl<F> Model<F> {
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub fn try_compute_frozen_profiles(&mut self, n: usize) -> Result<bool>
+    pub fn try_compute_frozen_profiles(&mut self, n: usize) -> Result<()>
     where
         F: Float
             + Debug
@@ -200,7 +200,9 @@ impl<F> Model<F> {
         let triple = vec![Triple::<F>::default(); 4];
         let triples = Rc::new(RefCell::new(vec![triple; self.objects.borrow().len()]));
 
-        let mut stop = true;
+        // Prepare a copy of the objects, so there are not affected by
+        // the newly blacklisted ones in other points
+        let objects = Rc::new(RefCell::new(self.objects.borrow().clone()));
 
         // Compute frozen profiles (all parameters are
         // fixed, but one is externally varied)
@@ -224,13 +226,13 @@ impl<F> Model<F> {
                 let param = start + F::from(j).unwrap() * h;
 
                 let problem = OuterOptimizationProblem {
-                    objects: &self.objects,
+                    objects: &objects,
                     params: &self.params,
                     triples: &Rc::clone(&triples),
                 };
 
                 p[index] = param;
-                let cost = problem.inner_cost(&p, true)?;
+                let cost = problem.inner_cost(&p, true, false)?;
 
                 // Go through the final discrepancies and
                 // decide whether some of them are too big
@@ -239,15 +241,15 @@ impl<F> Model<F> {
                     triples.borrow().iter()
                 ) {
                     if !object.blacklisted {
-                        for triple in triples {
+                        let coeffs = [5., 5., 5.];
+                        for (triple, coeff) in izip!(&triples[0..3], coeffs) {
                             let Triple {
                                 ref observed,
                                 ref model,
                                 ref error,
                             } = *triple;
-                            if (*observed - *model).abs() >= 3. * *error {
+                            if (*observed - *model).abs() >= coeff * *error {
                                 object.blacklisted = true;
-                                stop = false;
                             }
                         }
                     }
@@ -264,7 +266,7 @@ impl<F> Model<F> {
 
         self.frozen_profiles = Some(profiles);
 
-        Ok(stop)
+        Ok(())
     }
     /// Serialize the profiles
     #[allow(clippy::indexing_slicing)]
