@@ -590,7 +590,16 @@ impl<F> Model<F> {
             v_sun_standard = params.v_sun_standard,
             w_sun_standard = params.w_sun_standard,
         );
-        let records = &self.objects.borrow();
-        output::serialize_to(&self.output_dir, name, &header, records)
+
+        // Serialize only non-blacklisted objects
+        let records: Vec<Object<F>> = self
+            .objects
+            .borrow()
+            .iter()
+            .cloned()
+            .filter(|object| !object.blacklisted)
+            .collect();
+
+        output::serialize_to(&self.output_dir, name, &header, &records)
     }
 }
