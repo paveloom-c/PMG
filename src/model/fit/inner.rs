@@ -151,8 +151,18 @@ where
         // Compute the sum
         let mut sum = F::zero();
         for triple in triples {
+            // We don't use the function below here because there is a slight difference in the
+            // squared values, which sometimes leads to huge difference in the results
             sum = sum + (triple.observed - triple.model).powi(2) / triple.error.powi(2);
         }
         Ok(sum)
     }
+}
+
+/// Compute the relative discrepancy from a triplet
+pub fn compute_relative_discrepancy<F>(triple: &Triple<F>) -> F
+where
+    F: Float + Debug,
+{
+    (triple.observed - triple.model).abs() / triple.error
 }

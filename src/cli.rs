@@ -216,6 +216,9 @@ pub struct Args {
     /// Try to compute conditional profiles (fit goal only)
     #[arg(long = "with-conditional-profiles")]
     pub with_conditional_profiles: bool,
+    /// Output extra information about the blacklisted objects (fit goal only)
+    #[arg(long = "with-blacklisted")]
+    pub with_blacklisted: bool,
     /// Galactocentric distance to the Sun (kpc)
     ///
     /// Sources: Reid et al. (2019); Gromov, Nikiforov (2021)

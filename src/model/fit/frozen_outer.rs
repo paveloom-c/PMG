@@ -11,6 +11,7 @@ use core::cell::RefCell;
 
 use core::fmt::{Debug, Display};
 use core::iter::Sum;
+use std::path::PathBuf;
 
 use anyhow::Result;
 use argmin::core::{ArgminFloat, CostFunction, Gradient};
@@ -30,6 +31,7 @@ pub struct FrozenOuterOptimizationProblem<'a, F> {
     pub objects: &'a Rc<RefCell<Objects<F>>>,
     pub params: &'a Params<F>,
     pub triples: &'a Rc<RefCell<Vec<Triples<F>>>>,
+    pub output_dir: &'a PathBuf,
 }
 
 impl<'a, F> CostFunction for FrozenOuterOptimizationProblem<'a, F>
@@ -79,12 +81,13 @@ where
             objects: self.objects,
             params: self.params,
             triples: self.triples,
+            output_dir: self.output_dir,
         };
         // Prepare the parameter vector
         let mut new_p = p.clone();
         new_p.insert(self.index, self.param);
         // Compute the cost
-        outer_problem.inner_cost(&new_p, false, false)
+        outer_problem.inner_cost(&new_p, false, false, false)
     }
 }
 

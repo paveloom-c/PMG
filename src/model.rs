@@ -112,7 +112,7 @@ impl<F> Model<F> {
         Vec<F>: FiniteDiff<F>,
     {
         // Try to fit the model
-        self.try_fit_params(n, sample_iteration, fit_log_writer, false)
+        self.try_fit_params(n, sample_iteration, fit_log_writer)
             .with_context(|| "Couldn't fit the model")?;
         // Perform per-object computations
         // with the optimized parameters

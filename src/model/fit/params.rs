@@ -84,7 +84,6 @@ where
         n: usize,
         sample_iteration: usize,
         fit_log_writer: &Rc<RefCell<BufWriter<File>>>,
-        check_par_vicinities: bool,
     ) -> Result<()> {
         // Compute some of the values that don't
         // depend on the parameters being optimized
@@ -100,6 +99,7 @@ where
             objects: &self.objects,
             params: &self.params,
             triples: &Rc::clone(&self.triples),
+            output_dir: &self.output_dir,
         };
         // Find the local minimum in the outer optimization
         let init_param = self.params.to_vec(n);
@@ -125,15 +125,6 @@ where
 
         let best_cost = res.state().get_best_cost();
         let best_point = res.state().get_best_param().unwrap().clone();
-
-        if check_par_vicinities {
-            let problem = OuterOptimizationProblem {
-                objects: &self.objects,
-                params: &self.params,
-                triples: &Rc::clone(&self.triples),
-            };
-            problem.inner_cost(&best_point, false, true)?;
-        }
 
         // Prepare storage for the new parameters
         let mut fit_params = self.params.clone();

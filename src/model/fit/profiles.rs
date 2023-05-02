@@ -4,7 +4,9 @@ extern crate alloc;
 
 use super::io::output;
 use super::params::{ARMIJO_PARAM, BACKTRACKING_PARAM, LBFGS_M, LBFGS_TOLERANCE};
-use super::{FrozenOuterOptimizationProblem, OuterOptimizationProblem, Triple};
+use super::{
+    compute_relative_discrepancy, FrozenOuterOptimizationProblem, OuterOptimizationProblem, Triple,
+};
 use super::{Model, PARAMS_N, PARAMS_NAMES};
 use crate::utils::FiniteDiff;
 
@@ -123,6 +125,7 @@ impl<F> Model<F> {
                     objects: &self.objects,
                     params: &self.params,
                     triples: &Rc::clone(&triples),
+                    output_dir: &self.output_dir,
                 };
                 let mut init_param = self.params.to_vec(n);
                 // Remove the frozen parameter
@@ -229,10 +232,11 @@ impl<F> Model<F> {
                     objects: &objects,
                     params: &self.params,
                     triples: &Rc::clone(&triples),
+                    output_dir: &self.output_dir,
                 };
 
                 p[index] = param;
-                let cost = problem.inner_cost(&p, true, false)?;
+                let cost = problem.inner_cost(&p, true, false, false)?;
 
                 // Go through the final discrepancies and
                 // decide whether some of them are too big
@@ -243,12 +247,7 @@ impl<F> Model<F> {
                     if !object.blacklisted {
                         let coeffs = [5., 5., 5.];
                         for (triple, coeff) in izip!(&triples[0..3], coeffs) {
-                            let Triple {
-                                ref observed,
-                                ref model,
-                                ref error,
-                            } = *triple;
-                            if (*observed - *model).abs() >= coeff * *error {
+                            if compute_relative_discrepancy(triple) >= coeff {
                                 object.blacklisted = true;
                             }
                         }

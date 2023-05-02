@@ -8,6 +8,7 @@ mod model;
 mod utils;
 
 use cli::Goal;
+use model::fit::OuterOptimizationProblem;
 use model::{Model, N_MAX};
 
 use alloc::rc::Rc;
@@ -60,7 +61,6 @@ pub fn main() -> Result<()> {
                 let fit_log_writer = Rc::new(RefCell::new(BufWriter::new(fit_log_file)));
 
                 let mut sample_iteration = 0;
-
                 let mut current_nonblacklisted_count = model.objects.borrow().len();
                 'outer: loop {
                     'inner: loop {
@@ -85,9 +85,14 @@ pub fn main() -> Result<()> {
                     }
 
                     // Check if the vicinities of the reduced parallaxes are smooth
-                    model
-                        .try_fit_params(n, sample_iteration, &fit_log_writer, true)
-                        .with_context(|| "Couldn't fit the model")?;
+                    let problem = OuterOptimizationProblem {
+                        objects: &model.objects,
+                        params: &model.params,
+                        triples: &Rc::clone(&model.triples),
+                        output_dir: &model.output_dir,
+                    };
+                    let best_point = model.fit_params.as_ref().unwrap().to_vec(n);
+                    problem.inner_cost(&best_point, false, true, false)?;
 
                     let nonblacklisted_count = model.count_not_blacklisted();
                     if nonblacklisted_count == current_nonblacklisted_count {
@@ -96,6 +101,18 @@ pub fn main() -> Result<()> {
 
                     current_nonblacklisted_count = nonblacklisted_count;
                     sample_iteration += 1;
+                }
+
+                // Output extra information for the blacklisted objects
+                if n == 4 && args.with_blacklisted {
+                    let problem = OuterOptimizationProblem {
+                        objects: &model.objects,
+                        params: &model.params,
+                        triples: &Rc::clone(&model.triples),
+                        output_dir: &model.output_dir,
+                    };
+                    let best_point = model.fit_params.as_ref().unwrap().to_vec(n);
+                    problem.inner_cost(&best_point, false, false, true)?;
                 }
             }
 

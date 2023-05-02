@@ -13,6 +13,7 @@ use core::fmt::{Debug, Display};
 use core::iter::Sum;
 use std::fs::File;
 use std::io::{BufWriter, Write};
+use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 use argmin::core::observers::ObserverMode;
@@ -31,13 +32,14 @@ use numeric_literals::replace_float_literals;
 
 #[allow(clippy::missing_docs_in_private_items)]
 #[allow(clippy::type_complexity)]
-pub(super) struct ConfidenceIntervalProblem<'a, F> {
-    pub(super) n: usize,
-    pub(super) index: usize,
-    pub(super) best_outer_cost: F,
-    pub(super) objects: &'a Rc<RefCell<Objects<F>>>,
-    pub(super) params: &'a Params<F>,
-    pub(super) triples: &'a Rc<RefCell<Vec<Triples<F>>>>,
+pub struct ConfidenceIntervalProblem<'a, F> {
+    pub n: usize,
+    pub index: usize,
+    pub best_outer_cost: F,
+    pub objects: &'a Rc<RefCell<Objects<F>>>,
+    pub params: &'a Params<F>,
+    pub triples: &'a Rc<RefCell<Vec<Triples<F>>>>,
+    pub output_dir: &'a PathBuf,
 }
 
 impl<'a, F> CostFunction for ConfidenceIntervalProblem<'a, F>
@@ -85,6 +87,7 @@ where
             objects: self.objects,
             params: self.params,
             triples: self.triples,
+            output_dir: self.output_dir,
         };
         let mut init_param = self.params.to_vec(self.n);
         // Remove the frozen parameter
@@ -185,6 +188,7 @@ where
                         objects: &self.objects,
                         params: &self.params,
                         triples: &Rc::clone(&triples),
+                        output_dir: &self.output_dir,
                     };
                     let mut init_param = self.params.to_vec(n);
                     // Remove the frozen parameter
@@ -220,6 +224,7 @@ where
                         objects: &self.objects,
                         params: &self.params,
                         triples: &Rc::clone(&triples),
+                        output_dir: &self.output_dir,
                     };
 
                     let min = param;
@@ -263,6 +268,7 @@ where
                         objects: &self.objects,
                         params: &self.params,
                         triples: &Rc::clone(&triples),
+                        output_dir: &self.output_dir,
                     };
 
                     let min = param - left_interval_widths[index];
