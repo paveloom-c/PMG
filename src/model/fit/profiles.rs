@@ -4,9 +4,7 @@ extern crate alloc;
 
 use super::io::output;
 use super::params::{ARMIJO_PARAM, BACKTRACKING_PARAM, LBFGS_M, LBFGS_TOLERANCE};
-use super::{
-    compute_relative_discrepancy, FrozenOuterOptimizationProblem, OuterOptimizationProblem, Triple,
-};
+use super::{FrozenOuterOptimizationProblem, OuterOptimizationProblem, Triple};
 use super::{Model, PARAMS_N, PARAMS_NAMES};
 use crate::utils::FiniteDiff;
 
@@ -25,7 +23,6 @@ use argmin_math::{
     ArgminSub, ArgminZeroLike,
 };
 use indoc::formatdoc;
-use itertools::izip;
 use num::Float;
 use numeric_literals::replace_float_literals;
 use serde::Serialize;
@@ -236,23 +233,7 @@ impl<F> Model<F> {
                 };
 
                 p[index] = param;
-                let cost = problem.inner_cost(&p, true, false, false)?;
-
-                // Go through the final discrepancies and
-                // decide whether some of them are too big
-                for (object, triples) in izip!(
-                    self.objects.borrow_mut().iter_mut(),
-                    triples.borrow().iter()
-                ) {
-                    if !object.blacklisted {
-                        let coeffs = [5., 5., 5.];
-                        for (triple, coeff) in izip!(&triples[0..3], coeffs) {
-                            if compute_relative_discrepancy(triple) >= coeff {
-                                object.blacklisted = true;
-                            }
-                        }
-                    }
-                }
+                let cost = problem.inner_cost(&p, true)?;
 
                 profile.push(ProfilePoint { param, cost });
             }

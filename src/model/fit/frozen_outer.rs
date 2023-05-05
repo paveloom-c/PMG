@@ -28,7 +28,7 @@ use numeric_literals::replace_float_literals;
 pub struct FrozenOuterOptimizationProblem<'a, F> {
     pub index: usize,
     pub param: F,
-    pub objects: &'a Rc<RefCell<Objects<F>>>,
+    pub objects: &'a Objects<F>,
     pub params: &'a Params<F>,
     pub triples: &'a Rc<RefCell<Vec<Triples<F>>>>,
     pub output_dir: &'a PathBuf,
@@ -87,7 +87,7 @@ where
         let mut new_p = p.clone();
         new_p.insert(self.index, self.param);
         // Compute the cost
-        outer_problem.inner_cost(&new_p, false, false, false)
+        outer_problem.inner_cost(&new_p, false)
     }
 }
 

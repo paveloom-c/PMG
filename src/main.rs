@@ -7,17 +7,17 @@ mod cli;
 mod model;
 mod utils;
 
-use cli::Goal;
-use model::fit::OuterOptimizationProblem;
+use cli::{Args, Goal};
 use model::{Model, N_MAX};
 
 use alloc::rc::Rc;
 use core::cell::RefCell;
-use indoc::indoc;
+use core::fmt::Display;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 
 use anyhow::{Context, Result};
+use indoc::indoc;
 
 /// Run the program
 #[allow(clippy::indexing_slicing)]
@@ -26,8 +26,8 @@ use anyhow::{Context, Result};
 #[allow(clippy::too_many_lines)]
 #[allow(clippy::unwrap_used)]
 pub fn main() -> Result<()> {
-    // Parse the arguments
     let args = cli::parse();
+
     match args.goal {
         Goal::Objects => {
             let output_dir = args.output_dir.join("objects");
@@ -41,152 +41,100 @@ pub fn main() -> Result<()> {
         Goal::Fit => {
             // Prepare several models
             let mut models = Vec::with_capacity(N_MAX);
+            let mut fit_log_writers = Vec::with_capacity(N_MAX);
             for i in 0..N_MAX {
                 let n = i + 1;
                 let output_dir = args.output_dir.join(format!("n = {n}"));
+
                 let model = Model::<f64>::try_from(&args, output_dir)
                     .with_context(|| "Couldn't load the data from the input files")?;
-                models.push(model);
-            }
 
-            // For each model
-            for i in 0..N_MAX {
-                let model = &mut models[i];
-                let n = i + 1;
-
-                // Prepare the fit log file
                 let fit_log_path = model.output_dir.join("fit.log");
                 let fit_log_file = File::create(fit_log_path)
                     .with_context(|| "Couldn't create the `fit.log` file")?;
                 let fit_log_writer = Rc::new(RefCell::new(BufWriter::new(fit_log_file)));
 
-                let mut sample_iteration = 0;
-                let mut current_nonblacklisted_count = model.objects.borrow().len();
-                'outer: loop {
-                    'inner: loop {
-                        // Try to fit a model with the specified degree
-                        model
-                            .try_fit(n, sample_iteration, &fit_log_writer)
-                            .with_context(|| "Couldn't fit the model")?;
-
-                        // Check the vicinity of the found minimum,
-                        // make sure there are no big discrepancies
-                        model
-                            .try_compute_frozen_profiles(n)
-                            .with_context(|| "Couldn't compute the frozen profiles")?;
-
-                        let nonblacklisted_count = model.count_not_blacklisted();
-                        if nonblacklisted_count == current_nonblacklisted_count {
-                            break 'inner;
-                        }
-
-                        current_nonblacklisted_count = nonblacklisted_count;
-                        sample_iteration += 1;
-                    }
-
-                    // Check if the vicinities of the reduced parallaxes are smooth
-                    let problem = OuterOptimizationProblem {
-                        objects: &model.objects,
-                        params: &model.params,
-                        triples: &Rc::clone(&model.triples),
-                        output_dir: &model.output_dir,
-                    };
-                    let best_point = model.fit_params.as_ref().unwrap().to_vec(n);
-                    problem.inner_cost(&best_point, false, true, false)?;
-
-                    let nonblacklisted_count = model.count_not_blacklisted();
-                    if nonblacklisted_count == current_nonblacklisted_count {
-                        break 'outer;
-                    }
-
-                    current_nonblacklisted_count = nonblacklisted_count;
-                    sample_iteration += 1;
-                }
-
-                // Output extra information for the blacklisted objects
-                if n == 4 && args.with_blacklisted {
-                    let problem = OuterOptimizationProblem {
-                        objects: &model.objects,
-                        params: &model.params,
-                        triples: &Rc::clone(&model.triples),
-                        output_dir: &model.output_dir,
-                    };
-                    let best_point = model.fit_params.as_ref().unwrap().to_vec(n);
-                    problem.inner_cost(&best_point, false, false, true)?;
-                }
+                models.push(model);
+                fit_log_writers.push(fit_log_writer);
             }
 
-            // Serialize the costs and errors in azimuthal velocity
-            {
-                let l_1_file = File::create(args.output_dir.join("L_1.dat"))?;
-                let mut l_1_writer = BufWriter::new(l_1_file);
-                let sigma_theta_file = File::create(args.output_dir.join("sigma_theta.dat"))?;
-                let mut sigma_theta_writer = BufWriter::new(sigma_theta_file);
-
-                writeln!(
-                    l_1_writer,
-                    indoc!(
-                        "
-                        # Best costs (L_1) as a dependency of the degree
-                        # of the polynomial of the rotation curve
-                        n L_1"
-                    )
-                )?;
-
-                writeln!(
-                    sigma_theta_writer,
-                    indoc!(
-                        "
-                        # Errors in the azimuthal velocity as a dependency of
-                        # the degree of the polynomial of the rotation curve
-                        n sigma_theta"
-                    )
-                )?;
-
-                for (i, model) in models.iter().enumerate() {
-                    if model.fit_params.is_none() {
-                        continue;
-                    };
-
+            let mut sample_iteration = 0;
+            'samples: loop {
+                // Fit the parameters for each model
+                for i in 0..N_MAX {
                     let n = i + 1;
-                    let l_1 = model.best_cost.unwrap();
-                    let sigma_theta = model.fit_params.as_ref().unwrap().sigma_theta;
 
-                    writeln!(l_1_writer, "{n} {l_1}")?;
-                    writeln!(sigma_theta_writer, "{n} {sigma_theta}")?;
+                    let model = &mut models[i];
+                    let fit_log_writer = &fit_log_writers[i];
+
+                    // Try to fit a model with the specified degree
+                    model
+                        .try_fit_params(n, sample_iteration, fit_log_writer)
+                        .with_context(|| "Couldn't fit the model")?;
                 }
+
+                // Choose the best model so far
+                let mut best_i = 0;
+                let mut best_cost = f64::INFINITY;
+                for (i, model) in models.iter().enumerate() {
+                    if let Some(cost) = model.best_cost {
+                        if cost < best_cost {
+                            best_i = i;
+                            best_cost = cost;
+                        }
+                    }
+                }
+
+                // Check the discrepancies of the best model
+                {
+                    let best_model = &mut models[best_i];
+
+                    let before_nonoutliers_count = best_model.count_non_outliers();
+                    best_model
+                        .check_discrepancies()
+                        .with_context(|| "Couldn't check the discrepancies")?;
+                    let after_nonoutliers_count = best_model.count_non_outliers();
+
+                    if before_nonoutliers_count == after_nonoutliers_count {
+                        break 'samples;
+                    }
+                }
+
+                // Update the outliers
+                let outliers_mask = models[best_i].get_outliers_mask();
+                for i in 0..models.len() {
+                    if i != best_i {
+                        let model = &mut models[i];
+                        model.apply_outliers_mask(&outliers_mask);
+                    }
+                }
+
+                sample_iteration += 1;
             }
 
-            for model in &models {
-                std::fs::create_dir_all(&model.output_dir).with_context(|| {
-                    format!(
-                        "Couldn't create the output directory {:?}",
-                        model.output_dir
-                    )
-                })?;
+            serialize_n_results(&args, &models)
+                .with_context(|| "Couldn't serialize the `n` results")?;
 
-                if let Some(ref fit_params) = model.fit_params {
-                    model
-                        .serialize_to_objects("fit_objects", fit_params)
-                        .with_context(|| "Couldn't write the objects to a file")?;
-                    model
-                        .serialize_to_fit_params()
-                        .with_context(|| "Couldn't write the fitted parameters to a file")?;
-                    model
-                        .serialize_to_fit_rotcurve()
-                        .with_context(|| "Couldn't write the fitted rotation curve to a file")?;
+            for i in 0..N_MAX {
+                let n = i + 1;
+
+                let model = &mut models[i];
+                if model.fit_params.is_none() {
+                    continue;
                 }
+
+                model
+                    .try_compute_frozen_profiles(n)
+                    .with_context(|| "Couldn't compute frozen profiles")?;
+
+                model.post_fit();
+                model.write_fit_data()?;
             }
 
             // Choose a model for extra computations
             let chosen_i = 0;
             let chosen_n = chosen_i + 1;
             let chosen_model = &mut models[chosen_i];
-
-            let chosen_n_file_path = args.output_dir.join("chosen_n");
-            if let Ok(mut chosen_n_file) = File::create(chosen_n_file_path) {
-                writeln!(chosen_n_file, "{chosen_n}").ok();
-            }
 
             if args.with_errors {
                 chosen_model
@@ -203,5 +151,53 @@ pub fn main() -> Result<()> {
             }
         }
     }
+    Ok(())
+}
+
+/// Serialize the costs and errors in azimuthal velocity
+#[allow(clippy::unwrap_in_result)]
+#[allow(clippy::unwrap_used)]
+fn serialize_n_results<F>(args: &Args, models: &[Model<F>]) -> Result<()>
+where
+    F: Display,
+{
+    let l_1_file = File::create(args.output_dir.join("L_1.dat"))?;
+    let mut l_1_writer = BufWriter::new(l_1_file);
+    let sigma_theta_file = File::create(args.output_dir.join("sigma_theta.dat"))?;
+    let mut sigma_theta_writer = BufWriter::new(sigma_theta_file);
+
+    writeln!(
+        l_1_writer,
+        indoc!(
+            "
+            # Best costs (L_1) as a dependency of the degree
+            # of the polynomial of the rotation curve
+            n L_1"
+        )
+    )?;
+
+    writeln!(
+        sigma_theta_writer,
+        indoc!(
+            "
+            # Errors in the azimuthal velocity as a dependency of
+            # the degree of the polynomial of the rotation curve
+            n sigma_theta"
+        )
+    )?;
+
+    for (i, model) in models.iter().enumerate() {
+        if model.fit_params.is_none() {
+            continue;
+        };
+
+        let n = i + 1;
+        let l_1 = model.best_cost.as_ref().unwrap();
+        let sigma_theta = &model.fit_params.as_ref().unwrap().sigma_theta;
+
+        writeln!(l_1_writer, "{n} {l_1}")?;
+        writeln!(sigma_theta_writer, "{n} {sigma_theta}")?;
+    }
+
     Ok(())
 }

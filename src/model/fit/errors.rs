@@ -36,7 +36,7 @@ pub struct ConfidenceIntervalProblem<'a, F> {
     pub n: usize,
     pub index: usize,
     pub best_outer_cost: F,
-    pub objects: &'a Rc<RefCell<Objects<F>>>,
+    pub objects: &'a Objects<F>,
     pub params: &'a Params<F>,
     pub triples: &'a Rc<RefCell<Vec<Triples<F>>>>,
     pub output_dir: &'a PathBuf,

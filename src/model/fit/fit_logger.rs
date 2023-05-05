@@ -22,7 +22,7 @@ use num::Float;
 #[allow(clippy::missing_docs_in_private_items)]
 pub struct FitLogger<F> {
     pub sample_iteration: usize,
-    pub objects: Rc<RefCell<Objects<F>>>,
+    pub objects: Objects<F>,
     pub params: Params<F>,
     pub triples: Rc<RefCell<Vec<Triples<F>>>>,
     pub writer: Rc<RefCell<BufWriter<File>>>,
@@ -69,10 +69,10 @@ where
                 error: par_e,
             } = triples[3];
             // Log the values
-            if object.blacklisted {
+            if object.outlier {
                 writeln!(
                     self.writer.borrow_mut(),
-                    "{}: par: {par} \u{b1} {par_e} -> BLACKLISTED",
+                    "{}: par: {par} \u{b1} {par_e} -> OUTLIER",
                     i + 1
                 )
                 .ok();

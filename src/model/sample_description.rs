@@ -46,14 +46,14 @@ impl<F> Model<F> {
     }
     /// Get the sample description as a formatted string
     pub fn format_sample_description(&self) -> String {
-        let before_count = self.objects.borrow().len();
-        let after_count = self.count_not_blacklisted();
+        let total_count = self.objects.borrow().len();
+        let nonoutliers_count = self.count_non_outliers();
         match self.sample_description {
             Some(ref sample_description) => formatdoc!(
                 "
                 {sample_description}
-                # Number of the objects before the optimization: {before_count}.
-                # Number of the objects after the optimization: {after_count}.
+                # Total number of the objects: {total_count}.
+                # Number of the objects without outliers: {nonoutliers_count}.
                 #",
             ),
             None => String::from("#"),

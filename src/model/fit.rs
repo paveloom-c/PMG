@@ -2,6 +2,7 @@
 
 #![allow(clippy::module_name_repetitions)]
 
+mod discrepancies;
 mod errors;
 mod errors_logger;
 mod fit_logger;

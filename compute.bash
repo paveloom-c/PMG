@@ -33,8 +33,7 @@ echo -e "${PAD}> Fit near the solar circle (with errors and profiles)..."
 "${PMG}" -i "${I_SOLAR}" -o "${R_SOLAR}" --goal fit \
   --with-conditional-profiles --with-errors
 echo -e "${PAD}> Fit HMSFRs..."
-"${PMG}" -i "${I_HMSFRS}" -o "${R_HMSFRS}" --goal fit \
-  --with-blacklisted
+"${PMG}" -i "${I_HMSFRS}" -o "${R_HMSFRS}" --goal fit
 
 echo -e "
 ${PAD}Step 3. Plot the comparison charts for the objects that are
@@ -120,11 +119,7 @@ echo -e "${PAD}Step 7. Plot the \`n\` plots"
 "${JULIA}" "${N}" -i "'${R_SOLAR}'" -o "'${R_SOLAR}'"
 "${JULIA}" "${N}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'"
 
-echo -e "${PAD}Step 8. Create the blacklisted objects plots"
-
-"${JULIA}" "${BLACKLISTED}" -i "'${R_HMSFRS}/n = 4'" -o "'${R_HMSFRS}/n = 4'"
-
-echo -e "${PAD}Step 9. Zip the results\n"
+echo -e "${PAD}Step 8. Zip the results\n"
 
 rm -f results.zip
 zip -rq results.zip results

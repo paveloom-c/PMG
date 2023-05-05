@@ -26,6 +26,7 @@ impl<F> Object<F> {
     /// Convert the galactic heliocentric spherical coordinates
     /// to Galactic heliocentric Cartesian coordinates (nominal
     /// values only)
+    #[cfg(test)]
     pub fn compute_x_y_z_nominal(&mut self)
     where
         F: Float + Debug,

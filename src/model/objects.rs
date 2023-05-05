@@ -22,12 +22,13 @@ use std::path::Path;
 use anyhow::{Context, Result};
 use csv::ReaderBuilder;
 use indoc::formatdoc;
+use itertools::izip;
 use num::Float;
 use numeric_literals::replace_float_literals;
 use serde::{de::DeserializeOwned, Serialize, Serializer};
 
 /// Data objects
-pub type Objects<F> = Vec<Object<F>>;
+pub type Objects<F> = Rc<RefCell<Vec<Object<F>>>>;
 
 /// Serialize the value of an option only if it's a `Some` variant
 #[allow(clippy::unwrap_used)]
@@ -46,10 +47,10 @@ where
 #[derive(Clone, Debug, Default, Serialize)]
 #[serde(bound = "F: Serialize")]
 pub struct Object<F> {
-    /// Is this object blacklisted? (one of the
+    /// Is this object an outlier? (one of the
     /// discrepancies turned out to be too big)
     #[serde(skip)]
-    pub blacklisted: bool,
+    pub outlier: bool,
     /// Name of the object
     #[serde(serialize_with = "serialize_option")]
     pub name: Option<String>,
@@ -417,18 +418,32 @@ where
 }
 
 impl<F> Model<F> {
-    /// Count the number of the objects not blacklisted
-    pub fn count_not_blacklisted(&self) -> usize {
+    /// Count the number of non-outliers
+    pub fn count_non_outliers(&self) -> usize {
         self.objects.borrow().iter().fold(
             0,
             |acc, object| {
-                if object.blacklisted {
+                if object.outlier {
                     acc
                 } else {
                     acc + 1
                 }
             },
         )
+    }
+    /// Get the mask with the outliers
+    pub fn get_outliers_mask(&self) -> Vec<bool> {
+        self.objects
+            .borrow()
+            .iter()
+            .map(|object| object.outlier)
+            .collect()
+    }
+    /// Apply the outliers mask
+    pub fn apply_outliers_mask(&self, mask: &[bool]) {
+        for (object, &bool) in izip!(self.objects.borrow_mut().iter_mut(), mask) {
+            object.outlier = bool;
+        }
     }
     /// Try to load data from the path
     pub fn try_load_data_from(&mut self, path: &Path) -> Result<()>
@@ -591,13 +606,13 @@ impl<F> Model<F> {
             w_sun_standard = params.w_sun_standard,
         );
 
-        // Serialize only non-blacklisted objects
+        // Serialize only non-outliers
         let records: Vec<Object<F>> = self
             .objects
             .borrow()
             .iter()
             .cloned()
-            .filter(|object| !object.blacklisted)
+            .filter(|object| !object.outlier)
             .collect();
 
         output::serialize_to(&self.output_dir, name, &header, &records)

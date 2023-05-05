@@ -38,36 +38,7 @@ pub const LBFGS_M: usize = 300;
 /// Tolerance of the L-BFGS algorithm
 pub const LBFGS_TOLERANCE: f64 = 1e-15;
 
-impl<F> Model<F>
-where
-    F: Float
-        + Debug
-        + Default
-        + Display
-        + Sync
-        + Send
-        + Sum
-        + ArgminFloat
-        + ArgminL2Norm<F>
-        + ArgminSub<F, F>
-        + ArgminAdd<F, F>
-        + ArgminDot<F, F>
-        + ArgminMul<F, F>
-        + ArgminZeroLike
-        + ArgminMul<Vec<F>, Vec<F>>,
-    Vec<F>: ArgminSub<Vec<F>, Vec<F>>,
-    Vec<F>: ArgminSub<F, Vec<F>>,
-    Vec<F>: ArgminAdd<Vec<F>, Vec<F>>,
-    Vec<F>: ArgminAdd<F, Vec<F>>,
-    Vec<F>: ArgminMul<F, Vec<F>>,
-    Vec<F>: ArgminMul<Vec<F>, Vec<F>>,
-    Vec<F>: ArgminL1Norm<F>,
-    Vec<F>: ArgminSignum,
-    Vec<F>: ArgminMinMax,
-    Vec<F>: ArgminDot<Vec<F>, F>,
-    Vec<F>: ArgminL2Norm<F>,
-    Vec<F>: FiniteDiff<F>,
-{
+impl<F> Model<F> {
     /// Try to fit the model of the Galaxy to the data
     #[allow(clippy::as_conversions)]
     #[allow(clippy::indexing_slicing)]
@@ -84,7 +55,36 @@ where
         n: usize,
         sample_iteration: usize,
         fit_log_writer: &Rc<RefCell<BufWriter<File>>>,
-    ) -> Result<()> {
+    ) -> Result<()>
+    where
+        F: Float
+            + Debug
+            + Default
+            + Display
+            + Sync
+            + Send
+            + Sum
+            + ArgminFloat
+            + ArgminL2Norm<F>
+            + ArgminSub<F, F>
+            + ArgminAdd<F, F>
+            + ArgminDot<F, F>
+            + ArgminMul<F, F>
+            + ArgminZeroLike
+            + ArgminMul<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminSub<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminSub<F, Vec<F>>,
+        Vec<F>: ArgminAdd<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminAdd<F, Vec<F>>,
+        Vec<F>: ArgminMul<F, Vec<F>>,
+        Vec<F>: ArgminMul<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminL1Norm<F>,
+        Vec<F>: ArgminSignum,
+        Vec<F>: ArgminMinMax,
+        Vec<F>: ArgminDot<Vec<F>, F>,
+        Vec<F>: ArgminL2Norm<F>,
+        Vec<F>: FiniteDiff<F>,
+    {
         // Compute some of the values that don't
         // depend on the parameters being optimized
         self.objects.borrow_mut().iter_mut().for_each(|object| {

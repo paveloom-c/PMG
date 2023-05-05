@@ -9,7 +9,7 @@ mod params;
 mod sample_description;
 
 use crate::cli::Args;
-use crate::utils::{self, FiniteDiff};
+use crate::utils;
 pub use fit::{ProfileType, Profiles, RotationCurve, Triple, Triples};
 pub use objects::{Object, Objects};
 pub use params::{Params, N_MAX, PARAMS_N, PARAMS_NAMES};
@@ -17,20 +17,12 @@ pub use params::{Params, N_MAX, PARAMS_N, PARAMS_NAMES};
 use alloc::rc::Rc;
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
-use core::iter::Sum;
 use core::str::FromStr;
 use std::error::Error;
 use std::fs;
-use std::fs::File;
-use std::io::BufWriter;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
-use argmin::core::ArgminFloat;
-use argmin_math::{
-    ArgminAdd, ArgminDot, ArgminL1Norm, ArgminL2Norm, ArgminMinMax, ArgminMul, ArgminSignum,
-    ArgminSub, ArgminZeroLike,
-};
 use num::Float;
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -40,7 +32,7 @@ pub struct Model<F> {
     /// Initial model parameters
     pub params: Params<F>,
     /// Data objects
-    pub objects: Rc<RefCell<Objects<F>>>,
+    pub objects: Objects<F>,
 
     /// The degree of the polynomial of the rotation curve
     pub n: Option<usize>,
@@ -73,56 +65,18 @@ impl<F> Model<F> {
             object.compute(&self.params);
         }
     }
-    /// Fit the model with the specified degree of the polynomial
-    #[allow(clippy::unwrap_in_result)]
+    /// Run the post-fit computations
     #[allow(clippy::unwrap_used)]
-    pub fn try_fit(
-        &mut self,
-        n: usize,
-        sample_iteration: usize,
-        fit_log_writer: &Rc<RefCell<BufWriter<File>>>,
-    ) -> Result<()>
+    pub fn post_fit(&mut self)
     where
-        F: Float
-            + Debug
-            + Default
-            + Display
-            + Sync
-            + Send
-            + Sum
-            + ArgminFloat
-            + ArgminL2Norm<F>
-            + ArgminSub<F, F>
-            + ArgminAdd<F, F>
-            + ArgminDot<F, F>
-            + ArgminMul<F, F>
-            + ArgminZeroLike
-            + ArgminMul<Vec<F>, Vec<F>>,
-        Vec<F>: ArgminSub<Vec<F>, Vec<F>>,
-        Vec<F>: ArgminSub<F, Vec<F>>,
-        Vec<F>: ArgminAdd<Vec<F>, Vec<F>>,
-        Vec<F>: ArgminAdd<F, Vec<F>>,
-        Vec<F>: ArgminMul<F, Vec<F>>,
-        Vec<F>: ArgminMul<Vec<F>, Vec<F>>,
-        Vec<F>: ArgminL1Norm<F>,
-        Vec<F>: ArgminSignum,
-        Vec<F>: ArgminMinMax,
-        Vec<F>: ArgminDot<Vec<F>, F>,
-        Vec<F>: ArgminL2Norm<F>,
-        Vec<F>: FiniteDiff<F>,
+        F: Float + Debug + Default,
     {
-        // Try to fit the model
-        self.try_fit_params(n, sample_iteration, fit_log_writer)
-            .with_context(|| "Couldn't fit the model")?;
-        // Perform per-object computations
-        // with the optimized parameters
+        self.compute_fit_rotcurve();
+
         let fit_params = self.fit_params.as_ref().unwrap();
         for object in self.objects.borrow_mut().iter_mut() {
             object.compute(fit_params);
         }
-        // Compute the rotation curve based on the fitted parameters
-        self.compute_fit_rotcurve();
-        Ok(())
     }
     /// Write the objects data
     #[allow(clippy::unwrap_in_result)]
@@ -133,14 +87,28 @@ impl<F> Model<F> {
     {
         let params = &self.params;
 
-        fs::create_dir_all(&self.output_dir).with_context(|| {
-            format!("Couldn't create the output directory {:?}", self.output_dir)
-        })?;
-
         self.serialize_to_objects("objects", params)
             .with_context(|| "Couldn't write the objects to a file")?;
         self.serialize_to_params()
             .with_context(|| "Couldn't write the initial parameters to a file")?;
+
+        Ok(())
+    }
+    /// Write the fit data
+    #[allow(clippy::unwrap_in_result)]
+    #[allow(clippy::unwrap_used)]
+    pub fn write_fit_data(&self) -> Result<()>
+    where
+        F: Float + Debug + Display + Serialize,
+    {
+        let fit_params = &self.fit_params.as_ref().unwrap();
+
+        self.serialize_to_objects("fit_objects", fit_params)
+            .with_context(|| "Couldn't write the objects to a file")?;
+        self.serialize_to_fit_params()
+            .with_context(|| "Couldn't write the fitted parameters to a file")?;
+        self.serialize_to_fit_rotcurve()
+            .with_context(|| "Couldn't write the fitted rotation curve to a file")?;
 
         Ok(())
     }

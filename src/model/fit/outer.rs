@@ -2,36 +2,33 @@
 
 extern crate alloc;
 
-use super::{compute_relative_discrepancy, InnerOptimizationProblem, Triple, Triples};
+use super::{InnerOptimizationProblem, Triples};
 use super::{Object, Objects, Params};
 use crate::utils::{self, FiniteDiff};
 
 use alloc::rc::Rc;
-use argmin::solver::brent::BrentOpt;
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
 use core::iter::Sum;
-use std::fs::File;
-use std::io::{BufWriter, Write};
+use itertools::izip;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 use argmin::core::{ArgminFloat, CostFunction, Executor, Gradient, State};
+use argmin::solver::brent::BrentOpt;
 use argmin_math::{
     ArgminAdd, ArgminDot, ArgminL1Norm, ArgminL2Norm, ArgminMinMax, ArgminMul, ArgminSignum,
     ArgminSub, ArgminZeroLike,
 };
 use num::Float;
 use numeric_literals::replace_float_literals;
-use rayon::iter::{
-    IndexedParallelIterator, IntoParallelRefIterator, IntoParallelRefMutIterator, ParallelIterator,
-};
+use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
 
 /// A problem for the outer optimization
 #[allow(clippy::missing_docs_in_private_items)]
 #[allow(clippy::type_complexity)]
 pub struct OuterOptimizationProblem<'a, F> {
-    pub objects: &'a Rc<RefCell<Objects<F>>>,
+    pub objects: &'a Objects<F>,
     pub params: &'a Params<F>,
     pub triples: &'a Rc<RefCell<Vec<Triples<F>>>>,
     pub output_dir: &'a PathBuf,
@@ -135,19 +132,14 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
     #[allow(clippy::indexing_slicing)]
     #[allow(clippy::many_single_char_names)]
     #[allow(clippy::pattern_type_mismatch)]
+    #[allow(clippy::semicolon_outside_block)]
     #[allow(clippy::similar_names)]
     #[allow(clippy::too_many_lines)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
     /// Compute the parameterized part of the negative log likelihood function of the model
-    pub fn inner_cost(
-        &self,
-        p: &Param<F>,
-        update_triples: bool,
-        check_par_vicinities: bool,
-        with_blacklisted: bool,
-    ) -> Result<Output<F>>
+    pub fn inner_cost(&self, p: &Param<F>, update_triples: bool) -> Result<Output<F>>
     where
         F: Float
             + Debug
@@ -190,8 +182,8 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
             .zip(costs.par_iter_mut())
             .zip(self.triples.borrow_mut().par_iter_mut())
             .try_for_each(|((object, cost), triple)| -> Result<()> {
-                // Skip if the object has been blacklisted
-                if object.blacklisted {
+                // Skip if the object is an outlier
+                if object.outlier {
                     return Ok(());
                 };
 
@@ -202,198 +194,142 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 let par_e = object.par_e.unwrap();
                 // Define a problem of the inner optimization
                 let problem = prepare_inner_problem(object, &fit_params);
-                let init_param = par;
-                let solver =
-                    BrentOpt::new(F::max(F::epsilon(), par - 3. * par_e), par + 3. * par_e)
-                        .set_tolerance(F::sqrt(F::epsilon()), 1e-15);
-                // Find the local minimum in the inner optimization
-                let res = Executor::new(problem.clone(), solver)
-                    .configure(|state| state.param(init_param).max_iters(1000))
-                    .run()
-                    .with_context(|| "Couldn't solve the inner optimization problem")?;
-                let &par_r = res.state().get_best_param().unwrap();
-                let best_cost = res.state().get_best_cost();
 
-                if check_par_vicinities {
-                    let n_points = 100;
-                    let start = F::max(F::epsilon(), par - 3. * par_e);
-                    let end = par + 3. * par_e;
-                    let h = (end - start) / F::from(n_points).unwrap();
+                // Scan the vicinity of the observed parallax via subintervals
 
-                    let mut extrema_count = 0;
-                    let epsilon = F::sqrt(F::epsilon());
-                    let start_diff =
-                        utils::central_diff(start, &|x| problem.cost(&x).unwrap(), epsilon);
-                    let mut current_signum = start_diff.signum();
-                    for j in 0..=n_points {
-                        let par_test = start + F::from(j).unwrap() * h;
+                let mut pars = Vec::with_capacity(5);
+                let mut sums = Vec::with_capacity(5);
 
-                        let diff = utils::central_diff(
-                            par_test,
-                            &|x| problem.cost(&x).unwrap(),
-                            F::sqrt(F::epsilon()),
-                        );
-                        let diff_signum = diff.signum();
-
-                        if diff_signum * current_signum < 0. {
-                            current_signum = diff_signum;
-                            extrema_count += 1;
-                        }
-                    }
-
-                    if extrema_count != 1 {
-                        object.blacklisted = true;
+                let n_subintervals = 100;
+                for coeff in [1., 2., 3.] {
+                    find_minima(
+                        &problem,
+                        &mut pars,
+                        &mut sums,
+                        par + (coeff - 1.) * 3. * par_e,
+                        par + coeff * 3. * par_e,
+                        n_subintervals,
+                    )?;
+                    find_minima(
+                        &problem,
+                        &mut pars,
+                        &mut sums,
+                        F::max(F::epsilon(), par - coeff * 3. * par_e),
+                        par - (coeff - 1.) * 3. * par_e,
+                        n_subintervals,
+                    )?;
+                    if !pars.is_empty() {
+                        break;
                     }
                 }
 
-                // Compute the final sum for this object
+                // Find the result closest to the observed parallax
+                //
+                // The default values are like this because of
+                // the initialization stage of the executor
+                let mut best_par_r = par;
+                let mut best_sum = problem.cost(&best_par_r)?;
+                for (par_r, sum) in izip!(&pars, &sums) {
+                    if *sum < best_sum {
+                        best_par_r = *par_r;
+                        best_sum = *sum;
+                    }
+                }
+
                 *cost = F::ln(problem.v_r_error)
                     + F::ln(problem.mu_l_cos_b_error)
                     + F::ln(problem.mu_b_error)
-                    + 0.5 * best_cost;
-                // Save the results
+                    + 0.5 * best_sum;
+
                 if update_triples {
-                    *triple = problem.compute_triples(par_r);
+                    *triple = problem.compute_triples(best_par_r);
                 }
+
                 Ok(())
             })?;
         // We do the summing sequentially because
         // floating-point arithmetic is not associative
         let cost = costs.iter().copied().sum();
-
-        if with_blacklisted {
-            let blacklisted_objects: Vec<(usize, Object<F>)> = self
-                .objects
-                .borrow()
-                .iter()
-                .cloned()
-                .enumerate()
-                .filter(|(_, object)| object.blacklisted)
-                .collect();
-
-            let triple = vec![Triple::<F>::default(); 4];
-            let mut observed_triples_vec = vec![triple; blacklisted_objects.len()];
-            let mut reduced_triples_vec = observed_triples_vec.clone();
-
-            let blacklisted_objects_path = self.output_dir.join("Blacklisted objects");
-            std::fs::create_dir_all(blacklisted_objects_path.clone())?;
-
-            blacklisted_objects
-                .par_iter()
-                .zip(observed_triples_vec.par_iter_mut())
-                .zip(reduced_triples_vec.par_iter_mut())
-                .try_for_each(
-                    |(((i, object), observed_triples), reduced_triples)| -> Result<()> {
-                        // Unpack the data
-                        let par = object.par.unwrap();
-                        let par_e = object.par_e.unwrap();
-                        // Define a problem of the inner optimization
-                        let problem = prepare_inner_problem(object, &fit_params);
-                        let init_param = par;
-                        let solver =
-                            BrentOpt::new(F::max(F::epsilon(), par - 3. * par_e), par + 3. * par_e)
-                                .set_tolerance(F::sqrt(F::epsilon()), 1e-15);
-                        // Find the local minimum in the inner optimization
-                        let res = Executor::new(problem.clone(), solver)
-                            .configure(|state| state.param(init_param).max_iters(1000))
-                            .run()
-                            .with_context(|| "Couldn't solve the inner optimization problem")?;
-                        let &par_r = res.state().get_best_param().unwrap();
-
-                        let n_points = 1000;
-                        let start = F::max(F::epsilon(), par - 3. * par_e);
-                        let end = par + 3. * par_e;
-                        let h = (end - start) / F::from(n_points).unwrap();
-
-                        // Prepare an output directory
-                        let inner_profiles_path = blacklisted_objects_path.join("Inner profiles");
-                        std::fs::create_dir_all(inner_profiles_path.clone())?;
-
-                        let inner_profile_path = inner_profiles_path.join(format!("{}.dat", i + 1));
-                        let inner_profile_file = File::create(inner_profile_path)?;
-                        let mut inner_profile_writer = BufWriter::new(inner_profile_file);
-
-                        writeln!(inner_profile_writer, "par_r sum")?;
-
-                        // Compute the inner profiles
-                        for j in 0..=n_points {
-                            let par_test = start + F::from(j).unwrap() * h;
-                            let sum = problem.cost(&par_test)?;
-
-                            writeln!(inner_profile_writer, "{par_test} {sum}")?;
-                        }
-
-                        // Compute the discrepancies for the observed and reduced parallaxes
-                        *reduced_triples = problem.compute_triples(par_r);
-                        *observed_triples = problem.compute_triples(par);
-
-                        Ok(())
-                    },
-                )?;
-
-            let discrepancies_path = blacklisted_objects_path.join("discrepancies.plain");
-            let discrepancies_file = File::create(discrepancies_path)?;
-            let mut discrepancies_writer = BufWriter::new(discrepancies_file);
-
-            writeln!(
-                discrepancies_writer,
-                "{s:>2}i{s:>9}v_r(par_r){s:>7}mu_l'(par_r){s:>8}mu_b(par_r){s:>14}par_r{s:>11}v_r(par){s:>9}mu_l'(par){s:>10}mu_b(par)",
-                s = " "
-            )?;
-
-            let coords_path = blacklisted_objects_path.join("coords.dat");
-            let coords_file = File::create(coords_path)?;
-            let mut coords_writer = BufWriter::new(coords_file);
-
-            writeln!(coords_writer, "X X_p X_m Y Y_p Y_m X_r Y_r")?;
-
-            for (((i, object), reduced_triples), observed_triples) in blacklisted_objects
-                .iter()
-                .zip(reduced_triples_vec.iter())
-                .zip(observed_triples_vec.iter())
-            {
-                writeln!(
-                    discrepancies_writer,
-                    "{:>3} {:>18.15} {:>18.15} {:>18.15} {:>18.15} {:>18.15} {:>18.15} {:>18.15}",
-                    i + 1,
-                    compute_relative_discrepancy(&reduced_triples[0]),
-                    compute_relative_discrepancy(&reduced_triples[1]),
-                    compute_relative_discrepancy(&reduced_triples[2]),
-                    compute_relative_discrepancy(&reduced_triples[3]),
-                    compute_relative_discrepancy(&observed_triples[0]),
-                    compute_relative_discrepancy(&observed_triples[1]),
-                    compute_relative_discrepancy(&observed_triples[2]),
-                )?;
-
-                let l = object.l.unwrap();
-                let b = object.b.unwrap();
-                let par_r = reduced_triples[3].model;
-
-                let mut object_r = Object {
-                    l: Some(l),
-                    b: Some(b),
-                    par: Some(par_r),
-                    ..Default::default()
-                };
-                object_r.compute_r_h_nominal();
-                object_r.compute_x_y_z_nominal();
-
-                let x = object.x.unwrap();
-                let x_p = object.x_p.unwrap();
-                let x_m = object.x_m.unwrap();
-                let y = object.y.unwrap();
-                let y_p = object.y_p.unwrap();
-                let y_m = object.y_m.unwrap();
-                let x_r = object_r.x.unwrap();
-                let y_r = object_r.y.unwrap();
-
-                writeln!(coords_writer, "{x} {x_p} {x_m} {y} {y_p} {y_m} {x_r} {y_r}")?;
-            }
-        }
-
-        // Return the value
         Ok(cost)
     }
+}
+
+/// Find minima in the interval
+#[allow(clippy::unwrap_used)]
+#[replace_float_literals(F::from(literal).unwrap())]
+fn find_minima<F>(
+    problem: &InnerOptimizationProblem<'_, F>,
+    pars: &mut Vec<F>,
+    sums: &mut Vec<F>,
+    start: F,
+    end: F,
+    n_subintervals: usize,
+) -> Result<()>
+where
+    F: Float
+        + Debug
+        + Default
+        + Display
+        + Sum
+        + Sync
+        + Send
+        + ArgminFloat
+        + ArgminL2Norm<F>
+        + ArgminSub<F, F>
+        + ArgminAdd<F, F>
+        + ArgminDot<F, F>
+        + ArgminMul<F, F>
+        + ArgminZeroLike
+        + ArgminMul<Vec<F>, Vec<F>>,
+    Vec<F>: ArgminSub<Vec<F>, Vec<F>>,
+    Vec<F>: ArgminSub<F, Vec<F>>,
+    Vec<F>: ArgminAdd<Vec<F>, Vec<F>>,
+    Vec<F>: ArgminAdd<F, Vec<F>>,
+    Vec<F>: ArgminMul<F, Vec<F>>,
+    Vec<F>: ArgminMul<Vec<F>, Vec<F>>,
+    Vec<F>: ArgminL1Norm<F>,
+    Vec<F>: ArgminSignum,
+    Vec<F>: ArgminMinMax,
+    Vec<F>: ArgminDot<Vec<F>, F>,
+    Vec<F>: ArgminL2Norm<F>,
+    Vec<F>: FiniteDiff<F>,
+{
+    let h_subintervals = (end - start) / F::from(n_subintervals).unwrap();
+
+    let diff_epsilon = F::sqrt(F::epsilon());
+    let mut subinterval_start_diff =
+        utils::central_diff(start, &|x| problem.cost(&x).unwrap(), diff_epsilon);
+
+    for j in 0..=n_subintervals {
+        let subinterval_start = start + F::from(j).unwrap() * h_subintervals;
+        let subinterval_end = subinterval_start + h_subintervals;
+
+        let subinterval_end_diff = utils::central_diff(
+            subinterval_end,
+            &|x| problem.cost(&x).unwrap(),
+            diff_epsilon,
+        );
+
+        if subinterval_start_diff < 0. && subinterval_end_diff > 0. {
+            let init_param = (subinterval_end - subinterval_start) / 2.;
+            let solver = BrentOpt::new(subinterval_start, subinterval_end)
+                .set_tolerance(F::sqrt(F::epsilon()), 1e-15);
+            let res = Executor::new(problem.clone(), solver)
+                .configure(|state| state.param(init_param).max_iters(100))
+                .run()
+                .with_context(|| "Couldn't solve the inner optimization problem")?;
+
+            let &par_r = res.state().get_best_param().unwrap();
+            let sum = res.state().get_best_cost();
+
+            pars.push(par_r);
+            sums.push(sum);
+        }
+
+        subinterval_start_diff = subinterval_end_diff;
+    }
+
+    Ok(())
 }
 
 impl<'a, F> CostFunction for OuterOptimizationProblem<'a, F>
@@ -438,7 +374,7 @@ where
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
     fn cost(&self, p: &Self::Param) -> Result<Self::Output> {
-        self.inner_cost(p, true, false, false)
+        self.inner_cost(p, true)
     }
 }
 
@@ -480,7 +416,7 @@ where
     #[replace_float_literals(F::from(literal).unwrap())]
     fn gradient(&self, p: &Self::Param) -> Result<Self::Gradient> {
         Ok((*p).central_diff(
-            &|x| self.inner_cost(x, false, false, false).unwrap(),
+            &|x| self.inner_cost(x, false).unwrap(),
             F::sqrt(F::epsilon()),
         ))
     }
