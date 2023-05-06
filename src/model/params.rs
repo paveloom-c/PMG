@@ -13,11 +13,11 @@ use num::Float;
 use serde::Serialize;
 
 /// Number of the optimized parameters
-pub const PARAMS_N: usize = 18;
+pub const PARAMS_N: usize = 16;
 
 /// Maximum degree of the polynomial
 /// of the rotation curve supported
-pub const N_MAX: usize = 10;
+pub const N_MAX: usize = 8;
 
 /// Names of the optimized parameters
 pub const PARAMS_NAMES: [&str; PARAMS_N] = [
@@ -37,8 +37,6 @@ pub const PARAMS_NAMES: [&str; PARAMS_N] = [
     "theta_6",
     "theta_7",
     "theta_8",
-    "theta_9",
-    "theta_10",
 ];
 
 /// Model parameters
@@ -161,18 +159,6 @@ pub struct Params<F> {
     pub theta_8_ep: F,
     /// Minus uncertainty in `theta_8`
     pub theta_8_em: F,
-    /// The 9th derivative of the linear rotation velocity (km/s/kpc^9)
-    pub theta_9: F,
-    /// Plus uncertainty in `theta_9`
-    pub theta_9_ep: F,
-    /// Minus uncertainty in `theta_9`
-    pub theta_9_em: F,
-    /// The 10th derivative of the linear rotation velocity (km/s/kpc^10)
-    pub theta_10: F,
-    /// Plus uncertainty in `theta_10`
-    pub theta_10_ep: F,
-    /// Minus uncertainty in `theta_10`
-    pub theta_10_em: F,
     /// The constant term of the rotation curve (km/s)
     pub theta_0: F,
     /// The first derivative of the linear rotation velocity (km/s/kpc)
@@ -231,8 +217,6 @@ impl<F> Params<F> {
         self.theta_6 = new_p[13];
         self.theta_7 = new_p[14];
         self.theta_8 = new_p[15];
-        self.theta_9 = new_p[16];
-        self.theta_10 = new_p[17];
     }
     /// Construct a point in the parameter space from the parameters
     ///
@@ -259,8 +243,6 @@ impl<F> Params<F> {
             self.theta_6,
             self.theta_7,
             self.theta_8,
-            self.theta_9,
-            self.theta_10,
         ];
         let slice = &array[0..=8 + (n - 1)];
         slice.to_vec()
@@ -294,8 +276,6 @@ impl<F> Params<F> {
         self.theta_6_ep = new_p[13];
         self.theta_7_ep = new_p[14];
         self.theta_8_ep = new_p[15];
-        self.theta_9_ep = new_p[16];
-        self.theta_10_ep = new_p[17];
     }
     /// Put the plus uncertainties into a vector
     #[allow(clippy::indexing_slicing)]
@@ -320,8 +300,6 @@ impl<F> Params<F> {
             self.theta_6_ep,
             self.theta_7_ep,
             self.theta_8_ep,
-            self.theta_9_ep,
-            self.theta_10_ep,
         ];
         let slice = &array[0..=8 + (n - 1)];
         slice.to_vec()
@@ -355,8 +333,6 @@ impl<F> Params<F> {
         self.theta_6_em = new_p[13];
         self.theta_7_em = new_p[14];
         self.theta_8_em = new_p[15];
-        self.theta_9_em = new_p[16];
-        self.theta_10_em = new_p[17];
     }
     /// Put the minus uncertainties into a vector
     #[allow(clippy::indexing_slicing)]
@@ -381,8 +357,6 @@ impl<F> Params<F> {
             self.theta_6_em,
             self.theta_7_em,
             self.theta_8_em,
-            self.theta_9_em,
-            self.theta_10_em,
         ];
         let slice = &array[0..=8 + (n - 1)];
         slice.to_vec()
@@ -440,15 +414,9 @@ const DESCRIPTIONS: &str = indoc!(
     # 46 theta_8: The 8th derivative of the linear rotation velocity [km/s/kpc^8]
     # 47 theta_8_ep: Plus uncertainty in `theta_8` [km/s/kpc^8]
     # 48 theta_8_em: Minus uncertainty in `theta_8` [km/s/kpc^8]
-    # 49 theta_9: The 9th derivative of the linear rotation velocity [km/s/kpc^9]
-    # 50 theta_9_ep: Plus uncertainty in `theta_9` [km/s/kpc^9]
-    # 51 theta_9_em: Minus uncertainty in `theta_9` [km/s/kpc^9]
-    # 52 theta_10: The 10th derivative of the linear rotation velocity [km/s/kpc^10]
-    # 53 theta_10_ep: Plus uncertainty in `theta_10` [km/s/kpc^10]
-    # 54 theta_10_em: Minus uncertainty in `theta_10` [km/s/kpc^10]
-    # 55 theta_0: The constant term of the rotation curve [km/s]
-    # 56 theta_1: The first derivative of the linear rotation velocity [km/s/kpc]
-    # 57 theta_sun: Linear rotation velocity of the Sun [km/s]"
+    # 49 theta_0: The constant term of the rotation curve [km/s]
+    # 50 theta_1: The first derivative of the linear rotation velocity [km/s/kpc]
+    # 51 theta_sun: Linear rotation velocity of the Sun [km/s]"
 );
 
 impl<F> Model<F> {
@@ -634,8 +602,6 @@ impl<F> Model<F> {
                 theta_6: {theta_6:>21.15} -> {fit_theta_6:>21.15} + {fit_theta_6_ep:>17.15} - {fit_theta_6_em:>17.15}
                 theta_7: {theta_7:>21.15} -> {fit_theta_7:>21.15} + {fit_theta_7_ep:>17.15} - {fit_theta_7_em:>17.15}
                 theta_8: {theta_8:>21.15} -> {fit_theta_8:>21.15} + {fit_theta_8_ep:>17.15} - {fit_theta_8_em:>17.15}
-                theta_9: {theta_9:>21.15} -> {fit_theta_9:>21.15} + {fit_theta_9_ep:>17.15} - {fit_theta_9_em:>17.15}
-               theta_10: {theta_10:>21.15} -> {fit_theta_10:>21.15} + {fit_theta_10_ep:>17.15} - {fit_theta_10_em:>17.15}
 
             Derived values:
 
@@ -685,8 +651,6 @@ impl<F> Model<F> {
                 theta_6 = params.theta_6,
                 theta_7 = params.theta_7,
                 theta_8 = params.theta_8,
-                theta_9 = params.theta_9,
-                theta_10 = params.theta_10,
                 theta_0 = params.theta_0,
                 theta_1 = params.theta_1,
                 theta_sun = params.theta_sun,
@@ -724,8 +688,6 @@ impl<F> Model<F> {
                 fit_theta_6 = fit_params.theta_6,
                 fit_theta_7 = fit_params.theta_7,
                 fit_theta_8 = fit_params.theta_8,
-                fit_theta_9 = fit_params.theta_9,
-                fit_theta_10 = fit_params.theta_10,
                 fit_theta_2_ep = fit_params.theta_2_ep,
                 fit_theta_3_ep = fit_params.theta_3_ep,
                 fit_theta_4_ep = fit_params.theta_4_ep,
@@ -733,8 +695,6 @@ impl<F> Model<F> {
                 fit_theta_6_ep = fit_params.theta_6_ep,
                 fit_theta_7_ep = fit_params.theta_7_ep,
                 fit_theta_8_ep = fit_params.theta_8_ep,
-                fit_theta_9_ep = fit_params.theta_9_ep,
-                fit_theta_10_ep = fit_params.theta_10_ep,
                 fit_theta_2_em = fit_params.theta_2_em,
                 fit_theta_3_em = fit_params.theta_3_em,
                 fit_theta_4_em = fit_params.theta_4_em,
@@ -742,8 +702,6 @@ impl<F> Model<F> {
                 fit_theta_6_em = fit_params.theta_6_em,
                 fit_theta_7_em = fit_params.theta_7_em,
                 fit_theta_8_em = fit_params.theta_8_em,
-                fit_theta_9_em = fit_params.theta_9_em,
-                fit_theta_10_em = fit_params.theta_10_em,
                 fit_theta_0 = fit_params.theta_0,
                 fit_theta_1 = fit_params.theta_1,
                 fit_theta_sun = fit_params.theta_sun,

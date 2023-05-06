@@ -116,8 +116,6 @@ where
         theta_6,
         theta_7,
         theta_8,
-        theta_9,
-        theta_10,
         ..
     } = *fit_params;
 
@@ -129,6 +127,4 @@ where
         + theta_6 / 720. * (delta_r_g).powi(6)
         + theta_7 / 5040. * (delta_r_g).powi(7)
         + theta_8 / 40320. * (delta_r_g).powi(8)
-        + theta_9 / 362_880. * (delta_r_g).powi(9)
-        + theta_10 / 3_628_800. * (delta_r_g).powi(10)
 }

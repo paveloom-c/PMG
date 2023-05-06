@@ -136,12 +136,6 @@ module Types
         θ_8::Vector{F}
         θ_8_ep::Vector{F}
         θ_8_em::Vector{F}
-        θ_9::Vector{F}
-        θ_9_ep::Vector{F}
-        θ_9_em::Vector{F}
-        θ_10::Vector{F}
-        θ_10_ep::Vector{F}
-        θ_10_em::Vector{F}
         θ_0::Vector{F}
         θ_1::Vector{F}
         θ_sun::Vector{F}

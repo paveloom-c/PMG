@@ -110,8 +110,6 @@ where
                     theta_6: {i_13:>21.15} {p_13:>21.15} {best_p_13:>21.15}
                     theta_7: {i_14:>21.15} {p_14:>21.15} {best_p_14:>21.15}
                     theta_8: {i_15:>21.15} {p_15:>21.15} {best_p_15:>21.15}
-                    theta_9: {i_16:>21.15} {p_16:>21.15} {best_p_16:>21.15}
-                   theta_10: {i_17:>21.15} {p_17:>21.15} {best_p_17:>21.15}
                 ",
                 empty = "",
                 i_0 = self.params.r_0,
@@ -130,8 +128,6 @@ where
                 i_13 = self.params.theta_6,
                 i_14 = self.params.theta_7,
                 i_15 = self.params.theta_8,
-                i_16 = self.params.theta_9,
-                i_17 = self.params.theta_10,
                 p_0 = p[0],
                 p_1 = p[1],
                 p_2 = p[2],
@@ -148,8 +144,6 @@ where
                 p_13 = p[13],
                 p_14 = p[14],
                 p_15 = p[15],
-                p_16 = p[16],
-                p_17 = p[17],
                 best_p_0 = best_p[0],
                 best_p_1 = best_p[1],
                 best_p_2 = best_p[2],
@@ -166,8 +160,6 @@ where
                 best_p_13 = best_p[13],
                 best_p_14 = best_p[14],
                 best_p_15 = best_p[15],
-                best_p_16 = best_p[16],
-                best_p_17 = best_p[17],
             ),
         )
         .ok();

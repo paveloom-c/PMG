@@ -280,8 +280,6 @@ if isfile(FIT_PARAMS_DATA_PATH)
         "theta_6",
         "theta_7",
         "theta_8",
-        "theta_9",
-        "theta_10",
     ]
 
     PARAMS_LATEX_NAMES = [
@@ -301,8 +299,6 @@ if isfile(FIT_PARAMS_DATA_PATH)
         L"\theta_6",
         L"\theta_7",
         L"\theta_8",
-        L"\theta_9",
-        L"\theta_{10}",
     ]
 
     PARAMS_LATEX_UNITS = [
@@ -322,8 +318,6 @@ if isfile(FIT_PARAMS_DATA_PATH)
         L"\; \mathrm{[km/s/kpc^6]}",
         L"\; \mathrm{[km/s/kpc^7]}",
         L"\; \mathrm{[km/s/kpc^8]}",
-        L"\; \mathrm{[km/s/kpc^9]}",
-        L"\; \mathrm{[km/s/kpc^{10}]}",
     ]
 
     fit_params_vec = map(i -> getfield(fit_params_data, i)[1], 1:fieldcount(ParamsData))

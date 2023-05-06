@@ -73,17 +73,8 @@ pub fn main() -> Result<()> {
                         .with_context(|| "Couldn't fit the model")?;
                 }
 
-                // Choose the best model so far
-                let mut best_i = 0;
-                let mut best_cost = f64::INFINITY;
-                for (i, model) in models.iter().enumerate() {
-                    if let Some(cost) = model.best_cost {
-                        if cost < best_cost {
-                            best_i = i;
-                            best_cost = cost;
-                        }
-                    }
-                }
+                // Choose the best model
+                let best_i = 4;
 
                 // Check the discrepancies of the best model
                 {
@@ -127,6 +118,12 @@ pub fn main() -> Result<()> {
                     .try_compute_frozen_profiles(n)
                     .with_context(|| "Couldn't compute frozen profiles")?;
 
+                if args.with_errors {
+                    model
+                        .try_fit_errors(n)
+                        .with_context(|| "Couldn't define the confidence intervals")?;
+                }
+
                 model.post_fit();
                 model.write_fit_data()?;
             }
@@ -136,14 +133,6 @@ pub fn main() -> Result<()> {
             let chosen_n = chosen_i + 1;
             let chosen_model = &mut models[chosen_i];
 
-            if args.with_errors {
-                chosen_model
-                    .try_fit_errors(chosen_n)
-                    .with_context(|| "Couldn't define the confidence intervals")?;
-                chosen_model
-                    .serialize_to_fit_params()
-                    .with_context(|| "Couldn't write the fitted parameters to a file")?;
-            }
             if args.with_conditional_profiles {
                 chosen_model
                     .try_compute_conditional_profiles(chosen_n)
