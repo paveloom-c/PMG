@@ -3,6 +3,7 @@
 
 module Types
     struct ObjectsData{F}
+        outlier::Vector{Bool}
         name::Vector{String}
         type::Vector{String}
         source::Vector{String}

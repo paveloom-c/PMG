@@ -179,6 +179,7 @@ keys = unique(group)
 counts = Dict([(k, count(==(k), group)) for k in keys])
 I = sortperm(group, by=k -> counts[k], rev=true)
 group = group[I]
+outliers = objects_data.outlier[I]
 R = objects_data.R[I]
 R_p = objects_data.R_p[I]
 R_m = objects_data.R_m[I]
@@ -194,9 +195,11 @@ R_0 = fit_params_data.R_0[1]
 θ_sun = fit_params_data.θ_sun[1]
 
 # Prepare labels
-markers = ["a", "b", "c", "d", "e", "g"]
+markers = ["a", "b", "c", "d", "e"]
+outliers_markers = ["f", "g", "h", "i", "j"]
 dictionary = Dict([(k, markers[i]) for (i, k) in enumerate(keys)])
-label = [dictionary[k] for k in group]
+outliers_dictionary = Dict([(k, outliers_markers[i]) for (i, k) in enumerate(keys)])
+label = [o ? outliers_dictionary[k] : dictionary[k] for (k, o) in zip(group, outliers)]
 
 println(pad, "> Plotting the fitted rotation curves...")
 
@@ -297,6 +300,11 @@ function plot(
                 c = {mark = "asterisk", color = colors[4]},
                 d = {mark = "star", color = colors[5]},
                 e = {mark = "10-pointed star", color = colors[6]},
+                f = {mark = "o", color = colors[2]},
+                g = {mark = "o", color = colors[3]},
+                h = {mark = "o", color = colors[4]},
+                i = {mark = "o", color = colors[5]},
+                j = {mark = "o", color = colors[6]},
             },
         },
         Plot(

@@ -49,7 +49,6 @@ where
 pub struct Object<F> {
     /// Is this object an outlier? (one of the
     /// discrepancies turned out to be too big)
-    #[serde(skip)]
     pub outlier: bool,
     /// Name of the object
     #[serde(serialize_with = "serialize_option")]
@@ -479,83 +478,84 @@ impl<F> Model<F> {
             {sample_description}
             # Descriptions:
             #
-            # 01 name: Name of the object
-            # 02 type: Type of the object
-            # 03 source: Source of the data
-            # 04 alpha: Right ascension [radians]
-            # 05 delta: Declination [radians]
-            # 06 par: Parallax [mas]
-            # 07 par_e: Uncertainty in `par` [mas]
-            # 08 par_p: Plus value of `par` [mas]
-            # 09 par_m: Minus value of `par` [mas]
-            # 10 V_lsr: Local Standard of Rest velocity [km/s]
-            # 11 V_lsr_e: Uncertainty in `V_lsr` [km/s]
-            # 12 mu_x: Eastward proper motion [mas/yr]
-            # 13 mu_x_e: Uncertainty in `mu_x` [mas/yr]
-            # 14 mu_y: Northward proper motion [mas/yr]
-            # 15 mu_y_e: Uncertainty in `mu_y` [mas/yr]
-            # 16 r: Heliocentric distance [kpc]
-            # 17 r_ep: Plus uncertainty in `r` [kpc]
-            # 18 r_em: Minus uncertainty in `r` [kpc]
-            # 19 r_p: Plus value of `r` [kpc]
-            # 20 r_m: Minus value of `r` [kpc]
-            # 21 l: Longitude [radians]
-            # 22 b: Latitude [radians]
-            # 23 mu_l_cos_b: Proper motion in longitude [mas/yr]
-            # 24 mu_b: Proper motion in latitude [mas/yr]
-            # 25 R: Galactocentric distance [kpc]
-            # 26 R_ep: Plus uncertainty in `R` [kpc]
-            # 27 R_em: Minus uncertainty in `R` [kpc]
-            # 28 R_p: Plus value of `R` [kpc]
-            # 29 R_m: Minus value of `R` [kpc]
-            # 30 X: X coordinate [kpc]
-            # 31 X_ep: Plus uncertainty in `X` [kpc]
-            # 32 X_em: Minus uncertainty in `X` [kpc]
-            # 33 X_p: Plus value of `X` [kpc]
-            # 34 X_m: Minus value of `X` [kpc]
-            # 35 Y: Y coordinate [kpc]
-            # 36 Y_ep: Plus uncertainty in `Y` [kpc]
-            # 37 Y_em: Minus uncertainty in `Y` [kpc]
-            # 38 Y_p: Plus value of `Y` [kpc]
-            # 39 Y_m: Minus value of `Y` [kpc]
-            # 40 Z: Z coordinate [kpc]
-            # 41 Z_ep: Plus uncertainty in `Z` [kpc]
-            # 42 Z_em: Minus uncertainty in `Z` [kpc]
-            # 43 Z_p: Plus value of `Z` [kpc]
-            # 44 Z_m: Minus value of `Z` [kpc]
-            # 45 theta: Azimuthal velocity [km/s]
-            # 46 theta_ep: Plus uncertainty in `theta` [km/s]
-            # 47 theta_em: Minus uncertainty in `theta` [km/s]
-            # 48 theta_p: Plus value of `theta` [km/s]
-            # 49 theta_m: Minus value of `theta` [km/s]
-            # 50 theta_evel: Velocity uncertainty in `theta` [km/s]
-            # 51 V_r: Heliocentric velocity in distance [km/s]
-            # 52 V_r_e: Uncertainty in `V_r` [km/s]
-            # 53 V_l: Heliocentric velocity in longitude [km/s]
-            # 54 V_l_ep: Plus uncertainty in `V_l` [km/s]
-            # 55 V_l_em: Minus uncertainty in `V_l` [km/s]
-            # 56 V_l_p: Plus value of `V_l` [km/s]
-            # 57 V_l_m: Minus value of `V_l` [km/s]
-            # 58 V_b: Heliocentric velocity in latitude [km/s]
-            # 59 V_b_ep: Plus uncertainty in `V_b` [km/s]
-            # 60 V_b_em: Minus uncertainty in `V_b` [km/s]
-            # 61 V_b_p: Plus value of `V_b` [km/s]
-            # 62 V_b_m: Minus value of `V_b` [km/s]
-            # 63 U: U coordinate [km/s]
-            # 64 U_ep: Plus uncertainty in `U` [km/s]
-            # 65 U_em: Minus uncertainty in `U` [km/s]
-            # 66 U_p: Plus value of `U` [km/s]
-            # 67 U_m: Minus value of `U` [km/s]
-            # 68 V: V coordinate [km/s]
-            # 69 V_ep: Plus uncertainty in `V` [km/s]
-            # 70 V_em: Minus uncertainty in `V` [km/s]
-            # 71 V_p: Plus value of `V` [km/s]
-            # 72 V_m: Minus value of `V` [km/s]
-            # 73 W: W coordinate [km/s]
-            # 74 W_ep: Plus uncertainty in `W` [km/s]
-            # 75 W_em: Minus uncertainty in `W` [km/s]
-            # 76 W_p: Plus value of `W` [km/s]
-            # 77 W_m: Minus value of `W` [km/s]
+            # 01 outlier: Is this object an outlier?
+            # 02 name: Name of the object
+            # 03 type: Type of the object
+            # 04 source: Source of the data
+            # 05 alpha: Right ascension [radians]
+            # 06 delta: Declination [radians]
+            # 07 par: Parallax [mas]
+            # 08 par_e: Uncertainty in `par` [mas]
+            # 09 par_p: Plus value of `par` [mas]
+            # 10 par_m: Minus value of `par` [mas]
+            # 11 V_lsr: Local Standard of Rest velocity [km/s]
+            # 12 V_lsr_e: Uncertainty in `V_lsr` [km/s]
+            # 13 mu_x: Eastward proper motion [mas/yr]
+            # 14 mu_x_e: Uncertainty in `mu_x` [mas/yr]
+            # 15 mu_y: Northward proper motion [mas/yr]
+            # 16 mu_y_e: Uncertainty in `mu_y` [mas/yr]
+            # 17 r: Heliocentric distance [kpc]
+            # 18 r_ep: Plus uncertainty in `r` [kpc]
+            # 19 r_em: Minus uncertainty in `r` [kpc]
+            # 20 r_p: Plus value of `r` [kpc]
+            # 21 r_m: Minus value of `r` [kpc]
+            # 22 l: Longitude [radians]
+            # 23 b: Latitude [radians]
+            # 24 mu_l_cos_b: Proper motion in longitude [mas/yr]
+            # 25 mu_b: Proper motion in latitude [mas/yr]
+            # 26 R: Galactocentric distance [kpc]
+            # 27 R_ep: Plus uncertainty in `R` [kpc]
+            # 28 R_em: Minus uncertainty in `R` [kpc]
+            # 29 R_p: Plus value of `R` [kpc]
+            # 30 R_m: Minus value of `R` [kpc]
+            # 31 X: X coordinate [kpc]
+            # 32 X_ep: Plus uncertainty in `X` [kpc]
+            # 33 X_em: Minus uncertainty in `X` [kpc]
+            # 34 X_p: Plus value of `X` [kpc]
+            # 35 X_m: Minus value of `X` [kpc]
+            # 36 Y: Y coordinate [kpc]
+            # 37 Y_ep: Plus uncertainty in `Y` [kpc]
+            # 38 Y_em: Minus uncertainty in `Y` [kpc]
+            # 39 Y_p: Plus value of `Y` [kpc]
+            # 40 Y_m: Minus value of `Y` [kpc]
+            # 41 Z: Z coordinate [kpc]
+            # 42 Z_ep: Plus uncertainty in `Z` [kpc]
+            # 43 Z_em: Minus uncertainty in `Z` [kpc]
+            # 44 Z_p: Plus value of `Z` [kpc]
+            # 45 Z_m: Minus value of `Z` [kpc]
+            # 46 theta: Azimuthal velocity [km/s]
+            # 47 theta_ep: Plus uncertainty in `theta` [km/s]
+            # 48 theta_em: Minus uncertainty in `theta` [km/s]
+            # 49 theta_p: Plus value of `theta` [km/s]
+            # 50 theta_m: Minus value of `theta` [km/s]
+            # 51 theta_evel: Velocity uncertainty in `theta` [km/s]
+            # 52 V_r: Heliocentric velocity in distance [km/s]
+            # 53 V_r_e: Uncertainty in `V_r` [km/s]
+            # 54 V_l: Heliocentric velocity in longitude [km/s]
+            # 55 V_l_ep: Plus uncertainty in `V_l` [km/s]
+            # 56 V_l_em: Minus uncertainty in `V_l` [km/s]
+            # 57 V_l_p: Plus value of `V_l` [km/s]
+            # 58 V_l_m: Minus value of `V_l` [km/s]
+            # 59 V_b: Heliocentric velocity in latitude [km/s]
+            # 60 V_b_ep: Plus uncertainty in `V_b` [km/s]
+            # 61 V_b_em: Minus uncertainty in `V_b` [km/s]
+            # 62 V_b_p: Plus value of `V_b` [km/s]
+            # 63 V_b_m: Minus value of `V_b` [km/s]
+            # 64 U: U coordinate [km/s]
+            # 65 U_ep: Plus uncertainty in `U` [km/s]
+            # 66 U_em: Minus uncertainty in `U` [km/s]
+            # 67 U_p: Plus value of `U` [km/s]
+            # 68 U_m: Minus value of `U` [km/s]
+            # 69 V: V coordinate [km/s]
+            # 70 V_ep: Plus uncertainty in `V` [km/s]
+            # 71 V_em: Minus uncertainty in `V` [km/s]
+            # 72 V_p: Plus value of `V` [km/s]
+            # 73 V_m: Minus value of `V` [km/s]
+            # 74 W: W coordinate [km/s]
+            # 75 W_ep: Plus uncertainty in `W` [km/s]
+            # 76 W_em: Minus uncertainty in `W` [km/s]
+            # 77 W_p: Plus value of `W` [km/s]
+            # 78 W_m: Minus value of `W` [km/s]
             #
             # Uncertainties come from assuming maximum and minimum values of the parallax.
             # Note that they are not independent from each other and can be negative here.
@@ -606,15 +606,8 @@ impl<F> Model<F> {
             w_sun_standard = params.w_sun_standard,
         );
 
-        // Serialize only non-outliers
-        let records: Vec<Object<F>> = self
-            .objects
-            .borrow()
-            .iter()
-            .cloned()
-            .filter(|object| !object.outlier)
-            .collect();
+        let records = &self.objects.borrow();
 
-        output::serialize_to(&self.output_dir, name, &header, &records)
+        output::serialize_to(&self.output_dir, name, &header, records)
     }
 }
