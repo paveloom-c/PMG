@@ -73,10 +73,11 @@ where
     /// Check the estimates of the parameters for discrepancies
     #[allow(clippy::indexing_slicing)]
     #[allow(clippy::pattern_type_mismatch)]
+    #[allow(clippy::type_complexity)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub fn check_discrepancies(&mut self) -> Result<()> {
+    pub fn check_discrepancies(&mut self) -> Result<(Vec<(usize, usize, F)>, F, F)> {
         // Find the appropriate coefficient
         let k_1 = {
             let problem = DiscrepanciesProblem {
@@ -109,6 +110,7 @@ where
         // Use this coefficient to check the discrepancies
         let n_nonblacklisted = self.count_non_outliers();
         let mut rel_discrepancies = Vec::with_capacity(n_nonblacklisted);
+        let mut all_outliers = Vec::new();
         for m in 0..4 {
             // Compute the discrepancies
             for (i, (object, triples)) in
@@ -147,14 +149,18 @@ where
 
                 // Mark the rest as outliers
                 let mut objects = self.objects.borrow_mut();
-                for (i, _) in &outliers {
+                for (i, rel_discrepancy) in &outliers {
                     objects[*i].outlier = true;
+
+                    // Save the outliers for logging
+                    all_outliers.push((m, *i, *rel_discrepancy));
                 }
             }
 
             rel_discrepancies.clear();
         }
 
-        Ok(())
+        // Return all outliers for logging
+        Ok(((all_outliers), k_1, k_005))
     }
 }
