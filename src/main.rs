@@ -12,12 +12,13 @@ use model::{Model, N_MAX};
 
 use alloc::rc::Rc;
 use core::cell::RefCell;
-use core::fmt::Display;
+use core::fmt::{Debug, Display};
 use std::fs::File;
 use std::io::{BufWriter, Write};
 
 use anyhow::{Context, Result};
 use indoc::indoc;
+use num::Float;
 
 /// Run the program
 #[allow(clippy::indexing_slicing)]
@@ -128,6 +129,11 @@ pub fn main() -> Result<()> {
                 model.write_fit_data()?;
             }
 
+            write_fit_params_to_plain(&args, &models)
+                .with_context(|| "Couldn't write to the `fit_params.plain` file")?;
+            write_fit_rotcurve_to_plain(&args, &models)
+                .with_context(|| "Couldn't write to the `fit_rotcurve.plain` file")?;
+
             // Choose a model for extra computations
             let chosen_i = 0;
             let chosen_n = chosen_i + 1;
@@ -186,6 +192,47 @@ where
 
         writeln!(l_1_writer, "{n} {l_1}")?;
         writeln!(sigma_theta_writer, "{n} {sigma_theta}")?;
+    }
+
+    Ok(())
+}
+
+/// Write all fitted parameters to a `plain` file
+#[allow(clippy::indexing_slicing)]
+fn write_fit_params_to_plain<F>(args: &Args, models: &[Model<F>]) -> Result<()>
+where
+    F: Float + Debug + Display,
+{
+    let plain_path = &args.output_dir.join("fit_params.plain");
+    let plain_file = File::create(plain_path)
+        .with_context(|| format!("Couldn't open the file {plain_path:?} in write-only mode",))?;
+    let mut plain_writer = BufWriter::new(plain_file);
+
+    models[0].write_fit_params_header_to_plain(&mut plain_writer)?;
+    for (i, model) in models.iter().enumerate() {
+        let n = i + 1;
+        model.write_fit_params_to_plain(&mut plain_writer, n)?;
+    }
+    models[0].write_fit_params_footer_to_plain(&mut plain_writer)?;
+
+    Ok(())
+}
+
+/// Write all rotation curves to a `plain` file
+#[allow(clippy::indexing_slicing)]
+fn write_fit_rotcurve_to_plain<F>(args: &Args, models: &[Model<F>]) -> Result<()>
+where
+    F: Float + Debug + Display,
+{
+    let plain_path = &args.output_dir.join("fit_rotcurve.plain");
+    let plain_file = File::create(plain_path)
+        .with_context(|| format!("Couldn't open the file {plain_path:?} in write-only mode",))?;
+    let mut plain_writer = BufWriter::new(plain_file);
+
+    models[0].write_fit_rotcurve_header_to_plain(&mut plain_writer)?;
+    for (i, model) in models.iter().enumerate() {
+        let n = i + 1;
+        model.write_fit_rotcurve_to_plain(&mut plain_writer, n)?;
     }
 
     Ok(())

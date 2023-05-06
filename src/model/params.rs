@@ -4,10 +4,10 @@ use super::io::output;
 use super::Model;
 
 use core::fmt::{Debug, Display};
-use std::fs::File;
 use std::io::Write;
+use std::{fs::File, io::BufWriter};
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use indoc::{formatdoc, indoc};
 use num::Float;
 use serde::Serialize;
@@ -571,43 +571,41 @@ impl<F> Model<F> {
         let name = "fit_params";
         let records = vec![fit_params];
         output::serialize_to(&self.output_dir, name, &header, &records)?;
-        // Represent in a plain view, too
-        let plain_path = &self.output_dir.join(format!("{name}.plain"));
-        let mut plain_file = File::create(plain_path)
-            .with_context(|| format!("Couldn't open the file {plain_path:?} in write-only mode"))?;
+        Ok(())
+    }
+    /// Write the header to the plain file
+    pub fn write_fit_params_header_to_plain(&self, plain_writer: &mut BufWriter<File>) -> Result<()>
+    where
+        F: Display,
+    {
         write!(
-            &mut plain_file,
+            plain_writer,
             "{}",
-            formatdoc!("
-            Fit of the model (parameters)
+            formatdoc!(
+                "
+            Fits of the models (parameters)
             {sample_description}
             Optimization results:
-
-                      n: {n}
-                    L_1: {best_cost}
-
-                      R: {r_0:>21.15} -> {fit_r_0:>21.15} + {fit_r_0_ep:>17.15} - {fit_r_0_em:>17.15}
-                omega_0: {omega_0:>21.15} -> {fit_omega_0:>21.15} + {fit_omega_0_ep:>17.15} - {fit_omega_0_em:>17.15}
-                      A: {a:>21.15} -> {fit_a:>21.15} + {fit_a_ep:>17.15} - {fit_a_em:>17.15}
-                  U_sun: {u_sun:>21.15} -> {fit_u_sun:>21.15} + {fit_u_sun_ep:>17.15} - {fit_u_sun_em:>17.15}
-                  V_sun: {v_sun:>21.15} -> {fit_v_sun:>21.15} + {fit_v_sun_ep:>17.15} - {fit_v_sun_em:>17.15}
-                  W_sun: {w_sun:>21.15} -> {fit_w_sun:>21.15} + {fit_w_sun_ep:>17.15} - {fit_w_sun_em:>17.15}
-                sigma_R: {sigma_r_g:>21.15} -> {fit_sigma_r_g:>21.15} + {fit_sigma_r_g_ep:>17.15} - {fit_sigma_r_g_em:>17.15}
-            sigma_theta: {sigma_theta:>21.15} -> {fit_sigma_theta:>21.15} + {fit_sigma_theta_ep:>17.15} - {fit_sigma_theta_em:>17.15}
-                sigma_Z: {sigma_z:>21.15} -> {fit_sigma_z:>21.15} + {fit_sigma_z_ep:>17.15} - {fit_sigma_z_em:>17.15}
-                theta_2: {theta_2:>21.15} -> {fit_theta_2:>21.15} + {fit_theta_2_ep:>17.15} - {fit_theta_2_em:>17.15}
-                theta_3: {theta_3:>21.15} -> {fit_theta_3:>21.15} + {fit_theta_3_ep:>17.15} - {fit_theta_3_em:>17.15}
-                theta_4: {theta_4:>21.15} -> {fit_theta_4:>21.15} + {fit_theta_4_ep:>17.15} - {fit_theta_4_em:>17.15}
-                theta_5: {theta_5:>21.15} -> {fit_theta_5:>21.15} + {fit_theta_5_ep:>17.15} - {fit_theta_5_em:>17.15}
-                theta_6: {theta_6:>21.15} -> {fit_theta_6:>21.15} + {fit_theta_6_ep:>17.15} - {fit_theta_6_em:>17.15}
-                theta_7: {theta_7:>21.15} -> {fit_theta_7:>21.15} + {fit_theta_7_ep:>17.15} - {fit_theta_7_em:>17.15}
-                theta_8: {theta_8:>21.15} -> {fit_theta_8:>21.15} + {fit_theta_8_ep:>17.15} - {fit_theta_8_em:>17.15}
-
-            Derived values:
-
-                theta_0: {theta_0:>19.15} -> {fit_theta_0:>19.15}
-                theta_1: {theta_1:>19.15} -> {fit_theta_1:>19.15}
-              theta_sun: {theta_sun:>19.15} -> {fit_theta_sun:>19.15}
+            ",
+                sample_description = self
+                    .format_sample_description()
+                    .replace("# ", "")
+                    .replace('#', ""),
+            )
+        )?;
+        Ok(())
+    }
+    /// Write the footer to the plain file
+    pub fn write_fit_params_footer_to_plain(&self, plain_writer: &mut BufWriter<File>) -> Result<()>
+    where
+        F: Display,
+    {
+        let params = &self.params;
+        write!(
+            plain_writer,
+            "{}",
+            formatdoc!(
+                "
 
             Constant parameters used:
 
@@ -632,9 +630,57 @@ impl<F> Model<F> {
             Standard Solar Motion toward NGP [km/s]
             W_SUN_STANDARD: {w_sun_standard}
             ",
-                sample_description = self.format_sample_description().replace("# ", "").replace('#', ""),
+                alpha_ngp = params.alpha_ngp,
+                delta_ngp = params.delta_ngp,
+                l_ncp = params.l_ncp,
+                k = params.k,
+                u_sun_standard = params.u_sun_standard,
+                v_sun_standard = params.v_sun_standard,
+                w_sun_standard = params.w_sun_standard,
+            )
+        )?;
+        Ok(())
+    }
+    /// Represent the fitted parameters in a plain view
+    #[allow(clippy::indexing_slicing)]
+    #[allow(clippy::similar_names)]
+    #[allow(clippy::too_many_lines)]
+    #[allow(clippy::unwrap_in_result)]
+    #[allow(clippy::unwrap_used)]
+    pub fn write_fit_params_to_plain(
+        &self,
+        plain_writer: &mut BufWriter<File>,
+        n: usize,
+    ) -> Result<()>
+    where
+        F: Float + Debug + Display,
+    {
+        let params = &self.params;
+        let params_vec = params.to_vec(n);
+        let fit_params = self.fit_params.as_ref().unwrap();
+        let fit_params_vec = fit_params.to_vec(n);
+        let fit_ep_vec = fit_params.to_ep_vec(n);
+        let fit_em_vec = fit_params.to_em_vec(n);
+        write!(
+            plain_writer,
+            "{}",
+            formatdoc!("
+
+                      n: {n}
+                    L_1: {best_cost}
+
+                      R: {r_0:>21.15} -> {fit_r_0:>21.15} + {fit_r_0_ep:>17.15} - {fit_r_0_em:>17.15}
+                omega_0: {omega_0:>21.15} -> {fit_omega_0:>21.15} + {fit_omega_0_ep:>17.15} - {fit_omega_0_em:>17.15}
+                      A: {a:>21.15} -> {fit_a:>21.15} + {fit_a_ep:>17.15} - {fit_a_em:>17.15}
+                  U_sun: {u_sun:>21.15} -> {fit_u_sun:>21.15} + {fit_u_sun_ep:>17.15} - {fit_u_sun_em:>17.15}
+                  V_sun: {v_sun:>21.15} -> {fit_v_sun:>21.15} + {fit_v_sun_ep:>17.15} - {fit_v_sun_em:>17.15}
+                  W_sun: {w_sun:>21.15} -> {fit_w_sun:>21.15} + {fit_w_sun_ep:>17.15} - {fit_w_sun_em:>17.15}
+                sigma_R: {sigma_r_g:>21.15} -> {fit_sigma_r_g:>21.15} + {fit_sigma_r_g_ep:>17.15} - {fit_sigma_r_g_em:>17.15}
+            sigma_theta: {sigma_theta:>21.15} -> {fit_sigma_theta:>21.15} + {fit_sigma_theta_ep:>17.15} - {fit_sigma_theta_em:>17.15}
+                sigma_Z: {sigma_z:>21.15} -> {fit_sigma_z:>21.15} + {fit_sigma_z_ep:>17.15} - {fit_sigma_z_em:>17.15}
+            ",
                 n = self.n.unwrap(),
-                best_cost = self.best_cost.unwrap(),
+                best_cost = self.best_cost.as_ref().unwrap(),
                 r_0 = params.r_0,
                 omega_0 = params.omega_0,
                 a = params.a,
@@ -644,16 +690,6 @@ impl<F> Model<F> {
                 sigma_r_g = params.sigma_r_g,
                 sigma_theta = params.sigma_theta,
                 sigma_z = params.sigma_z,
-                theta_2 = params.theta_2,
-                theta_3 = params.theta_3,
-                theta_4 = params.theta_4,
-                theta_5 = params.theta_5,
-                theta_6 = params.theta_6,
-                theta_7 = params.theta_7,
-                theta_8 = params.theta_8,
-                theta_0 = params.theta_0,
-                theta_1 = params.theta_1,
-                theta_sun = params.theta_sun,
                 fit_r_0 = fit_params.r_0,
                 fit_omega_0 = fit_params.omega_0,
                 fit_a = fit_params.a,
@@ -681,40 +717,40 @@ impl<F> Model<F> {
                 fit_sigma_r_g_em = fit_params.sigma_r_g_em,
                 fit_sigma_theta_em = fit_params.sigma_theta_em,
                 fit_sigma_z_em = fit_params.sigma_z_em,
-                fit_theta_2 = fit_params.theta_2,
-                fit_theta_3 = fit_params.theta_3,
-                fit_theta_4 = fit_params.theta_4,
-                fit_theta_5 = fit_params.theta_5,
-                fit_theta_6 = fit_params.theta_6,
-                fit_theta_7 = fit_params.theta_7,
-                fit_theta_8 = fit_params.theta_8,
-                fit_theta_2_ep = fit_params.theta_2_ep,
-                fit_theta_3_ep = fit_params.theta_3_ep,
-                fit_theta_4_ep = fit_params.theta_4_ep,
-                fit_theta_5_ep = fit_params.theta_5_ep,
-                fit_theta_6_ep = fit_params.theta_6_ep,
-                fit_theta_7_ep = fit_params.theta_7_ep,
-                fit_theta_8_ep = fit_params.theta_8_ep,
-                fit_theta_2_em = fit_params.theta_2_em,
-                fit_theta_3_em = fit_params.theta_3_em,
-                fit_theta_4_em = fit_params.theta_4_em,
-                fit_theta_5_em = fit_params.theta_5_em,
-                fit_theta_6_em = fit_params.theta_6_em,
-                fit_theta_7_em = fit_params.theta_7_em,
-                fit_theta_8_em = fit_params.theta_8_em,
+        ))?;
+
+        for i in 9..=(8 + (n - 1)) {
+            writeln!(
+                plain_writer,
+                "{s:4}theta_{n}: {initial:>21.15} -> {fit:>21.15} + {fit_ep:>17.15} - {fit_em:>17.15}",
+                s = "",
+                n = i - 7,
+                initial = params_vec[i],
+                fit = fit_params_vec[i],
+                fit_ep = fit_ep_vec[i],
+                fit_em = fit_em_vec[i],
+            )?;
+        }
+
+        write!(
+            plain_writer,
+            "{}",
+            formatdoc!(
+                "
+
+            {s:4}theta_0: {theta_0:>21.15} -> {fit_theta_0:>21.15}
+            {s:4}theta_1: {theta_1:>21.15} -> {fit_theta_1:>21.15}
+            {s:2}theta_sun: {theta_sun:>21.15} -> {fit_theta_sun:>21.15}
+            ",
+                s = " ",
+                theta_0 = params.theta_0,
+                theta_1 = params.theta_1,
+                theta_sun = params.theta_sun,
                 fit_theta_0 = fit_params.theta_0,
                 fit_theta_1 = fit_params.theta_1,
                 fit_theta_sun = fit_params.theta_sun,
-                alpha_ngp = params.alpha_ngp,
-                delta_ngp = params.delta_ngp,
-                l_ncp = params.l_ncp,
-                k = params.k,
-                u_sun_standard = params.u_sun_standard,
-                v_sun_standard = params.v_sun_standard,
-                w_sun_standard = params.w_sun_standard,
             )
-        )
-        .with_context(|| format!("Couldn't write to {plain_path:?}"))?;
+        )?;
         Ok(())
     }
 }
