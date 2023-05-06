@@ -200,7 +200,7 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 let mut pars = Vec::with_capacity(5);
                 let mut sums = Vec::with_capacity(5);
 
-                let n_subintervals = 100;
+                let n_subintervals = 50;
                 for coeff in [1., 2., 3.] {
                     find_minima(
                         &problem,
@@ -227,8 +227,8 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 //
                 // The default values are like this because of
                 // the initialization stage of the executor
-                let mut best_par_r = par;
-                let mut best_sum = problem.cost(&best_par_r)?;
+                let mut best_par_r = 0.;
+                let mut best_sum = if pars.is_empty() { 0. } else { F::infinity() };
                 for (par_r, sum) in izip!(&pars, &sums) {
                     if *sum < best_sum {
                         best_par_r = *par_r;
