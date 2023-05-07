@@ -94,7 +94,7 @@ where
 
                              {empty:11} initial {empty:11} current {empty:14} best
                         L_1: {empty:19} - {cost:>21.15} {best_cost:>21.15}
-                          R: {i_0:>21.15} {p_0:>21.15} {best_p_0:>21.15}
+                        R_0: {i_0:>21.15} {p_0:>21.15} {best_p_0:>21.15}
                     omega_0: {i_1:>21.15} {p_1:>21.15} {best_p_1:>21.15}
                           A: {i_2:>21.15} {p_2:>21.15} {best_p_2:>21.15}
                       U_sun: {i_3:>21.15} {p_3:>21.15} {best_p_3:>21.15}

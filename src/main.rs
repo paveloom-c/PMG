@@ -8,7 +8,7 @@ mod model;
 mod utils;
 
 use cli::{Args, Goal};
-use model::{Model, N_MAX};
+use model::Model;
 
 use alloc::rc::Rc;
 use core::cell::RefCell;
@@ -24,8 +24,10 @@ use num::Float;
 #[allow(clippy::indexing_slicing)]
 #[allow(clippy::missing_panics_doc)]
 #[allow(clippy::needless_range_loop)]
+#[allow(clippy::print_stderr)]
 #[allow(clippy::too_many_lines)]
 #[allow(clippy::unwrap_used)]
+#[allow(clippy::use_debug)]
 pub fn main() -> Result<()> {
     let args = cli::parse();
 
@@ -41,9 +43,9 @@ pub fn main() -> Result<()> {
         }
         Goal::Fit => {
             // Prepare several models
-            let mut models = Vec::with_capacity(N_MAX);
-            let mut fit_log_writers = Vec::with_capacity(N_MAX);
-            for i in 0..N_MAX {
+            let mut models = Vec::with_capacity(args.n);
+            let mut fit_log_writers = Vec::with_capacity(args.n);
+            for i in 0..args.n {
                 let n = i + 1;
                 let output_dir = args.output_dir.join(format!("n = {n}"));
 
@@ -64,6 +66,11 @@ pub fn main() -> Result<()> {
                 .with_context(|| "Couldn't create the `discrepancies.log` file")?;
             let mut discrepancies_log_writer = BufWriter::new(discrepancies_log_file);
 
+            let errors_log_path = &args.output_dir.join("errors.log");
+            let errors_log_file = File::create(errors_log_path)
+                .with_context(|| "Couldn't create the `errors.log` file")?;
+            let errors_log_writer = Rc::new(RefCell::new(BufWriter::new(errors_log_file)));
+
             writeln!(
                 discrepancies_log_writer,
                 "{}",
@@ -78,7 +85,7 @@ pub fn main() -> Result<()> {
             let mut sample_iteration = 0;
             'samples: loop {
                 // Fit the parameters for each model
-                for i in 0..N_MAX {
+                for i in 0..args.n {
                     let n = i + 1;
 
                     let model = &mut models[i];
@@ -92,7 +99,7 @@ pub fn main() -> Result<()> {
 
                 // Choose the best model
                 let best_i = 4;
-                let best_n = 5;
+                let best_n = best_i + 1;
 
                 // Check the discrepancies of the best model
                 {
@@ -144,10 +151,15 @@ pub fn main() -> Result<()> {
                 sample_iteration += 1;
             }
 
+            discrepancies_log_writer.flush()?;
+            for fit_log_writer in fit_log_writers {
+                fit_log_writer.borrow_mut().flush()?;
+            }
+
             serialize_n_results(&args, &models)
                 .with_context(|| "Couldn't serialize the `n` results")?;
 
-            for i in 0..N_MAX {
+            for i in 0..args.n {
                 let n = i + 1;
 
                 let model = &mut models[i];
@@ -159,20 +171,31 @@ pub fn main() -> Result<()> {
                     .try_compute_frozen_profiles(n)
                     .with_context(|| "Couldn't compute frozen profiles")?;
 
-                if args.with_errors {
-                    model
-                        .try_fit_errors(n)
-                        .with_context(|| "Couldn't define the confidence intervals")?;
-                }
-
                 model.post_fit();
                 model.write_fit_data()?;
-            }
 
-            write_fit_params_to_plain(&args, &models)
-                .with_context(|| "Couldn't write to the `fit_params.plain` file")?;
-            write_fit_rotcurve_to_plain(&args, &models)
-                .with_context(|| "Couldn't write to the `fit_rotcurve.plain` file")?;
+                if args.with_errors {
+                    writeln!(errors_log_writer.borrow_mut(), "n: {n}\n")?;
+                    let res = model
+                        .try_fit_errors(n, &errors_log_writer)
+                        .with_context(|| "Couldn't compute the errors");
+                    match res {
+                        Ok(_) => {
+                            model.serialize_to_fit_params().with_context(|| {
+                                "Couldn't write the fitted parameters to a file"
+                            })?;
+                        }
+                        Err(ref err) => {
+                            eprintln!("{err:?}");
+                        }
+                    }
+                }
+
+                write_fit_params_to_plain(&args, &models)
+                    .with_context(|| "Couldn't write to the `fit_params.plain` file")?;
+                write_fit_rotcurve_to_plain(&args, &models)
+                    .with_context(|| "Couldn't write to the `fit_rotcurve.plain` file")?;
+            }
 
             // Choose a model for extra computations
             let chosen_i = 0;
@@ -180,9 +203,12 @@ pub fn main() -> Result<()> {
             let chosen_model = &mut models[chosen_i];
 
             if args.with_conditional_profiles {
-                chosen_model
+                let res = chosen_model
                     .try_compute_conditional_profiles(chosen_n)
-                    .with_context(|| "Couldn't compute the conditional profiles")?;
+                    .with_context(|| "Couldn't compute the conditional profiles");
+                if let Err(ref err) = res {
+                    eprintln!("{err:?}");
+                }
             }
         }
     }

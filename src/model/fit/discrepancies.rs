@@ -88,6 +88,7 @@ where
             let solver = BrentRoot::new(2., 5., 1e-15);
             let res = Executor::new(problem, solver)
                 .configure(|state| state.param(init_param).max_iters(1000))
+                .timer(false)
                 .run()
                 .with_context(|| "Couldn't solve the discrepancies problem")?;
             *res.state().get_best_param().unwrap()
@@ -102,6 +103,7 @@ where
             let solver = BrentRoot::new(2., 5., 1e-15);
             let res = Executor::new(problem, solver)
                 .configure(|state| state.param(init_param).max_iters(1000))
+                .timer(false)
                 .run()
                 .with_context(|| "Couldn't solve the discrepancies problem")?;
             *res.state().get_best_param().unwrap()

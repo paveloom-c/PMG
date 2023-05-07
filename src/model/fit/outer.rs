@@ -316,6 +316,7 @@ where
                 .set_tolerance(F::sqrt(F::epsilon()), 1e-15);
             let res = Executor::new(problem.clone(), solver)
                 .configure(|state| state.param(init_param).max_iters(100))
+                .timer(false)
                 .run()
                 .with_context(|| "Couldn't solve the inner optimization problem")?;
 

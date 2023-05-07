@@ -3,7 +3,7 @@
 extern crate alloc;
 
 use super::io::output;
-use super::params::{ARMIJO_PARAM, BACKTRACKING_PARAM, LBFGS_M, LBFGS_TOLERANCE};
+use super::params::{ARMIJO_PARAM, BACKTRACKING_PARAM, LBFGS_M, LBFGS_TOLERANCE, MAX_ITERS};
 use super::{FrozenOuterOptimizationProblem, OuterOptimizationProblem, Triple};
 use super::{Model, PARAMS_N, PARAMS_NAMES};
 use crate::utils::FiniteDiff;
@@ -134,7 +134,8 @@ impl<F> Model<F> {
                     .with_tolerance_cost(F::from(LBFGS_TOLERANCE).unwrap())?;
                 // Find the local minimum in the outer optimization
                 let res = Executor::new(problem, solver)
-                    .configure(|state| state.param(init_param))
+                    .configure(|state| state.param(init_param).max_iters(MAX_ITERS))
+                    .timer(false)
                     .run()
                     .with_context(|| {
                         "Couldn't solve the outer optimization problem with a frozen parameter"

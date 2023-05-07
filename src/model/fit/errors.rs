@@ -2,7 +2,7 @@
 
 extern crate alloc;
 
-use super::params::{ARMIJO_PARAM, BACKTRACKING_PARAM, LBFGS_M, LBFGS_TOLERANCE};
+use super::params::{ARMIJO_PARAM, BACKTRACKING_PARAM, LBFGS_M, LBFGS_TOLERANCE_ERRORS, MAX_ITERS};
 use super::{ErrorsLogger, FrozenOuterOptimizationProblem, Triple, Triples};
 use super::{Model, Objects, Params};
 use crate::utils::FiniteDiff;
@@ -96,10 +96,11 @@ where
         let linesearch =
             BacktrackingLineSearch::new(cond).rho(F::from(BACKTRACKING_PARAM).unwrap())?;
         let solver = LBFGS::new(linesearch, LBFGS_M)
-            .with_tolerance_cost(F::from(LBFGS_TOLERANCE).unwrap())?;
+            .with_tolerance_cost(F::from(LBFGS_TOLERANCE_ERRORS).unwrap())?;
         // Find the local minimum in the outer optimization
         let res = Executor::new(problem, solver)
-            .configure(|state| state.param(init_param))
+            .configure(|state| state.param(init_param).max_iters(MAX_ITERS))
+            .timer(false)
             .run()
             .with_context(|| {
                 "Couldn't solve the outer optimization problem with a frozen parameter"
@@ -141,20 +142,21 @@ where
 {
     /// Try to define the confidence intervals
     #[allow(clippy::indexing_slicing)]
+    #[allow(clippy::print_stderr)]
     #[allow(clippy::similar_names)]
     #[allow(clippy::too_many_lines)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
+    #[allow(clippy::use_debug)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub fn try_fit_errors(&mut self, n: usize) -> Result<()> {
+    pub fn try_fit_errors(
+        &mut self,
+        n: usize,
+        errors_log_writer: &Rc<RefCell<BufWriter<File>>>,
+    ) -> Result<()> {
         // Make sure the fitting happened before this call
         let fit_params = self.fit_params.as_mut().unwrap();
         let best_point = fit_params.to_vec(n);
-        // Prepare the errors log file
-        let errors_log_path = self.output_dir.join("errors.log");
-        let errors_log_file = File::create(errors_log_path)
-            .with_context(|| "Couldn't create the `errors.log` file")?;
-        let errors_log_writer = Rc::new(RefCell::new(BufWriter::new(errors_log_file)));
         // Prepare arrays for the confidence intervals
         let triple = vec![Triple::<F>::default(); 4];
         let triples = Rc::new(RefCell::new(vec![triple; self.objects.borrow().len()]));
@@ -163,8 +165,6 @@ where
         let mut fit_params_ep = vec![F::zero(); len];
         let mut fit_params_em = vec![F::zero(); len];
 
-        let right_interval_widths = vec![3.0; len];
-        let left_interval_widths = vec![3.0; len];
         let tolerance = F::sqrt(F::epsilon());
         let max_iters = 100;
 
@@ -176,7 +176,8 @@ where
 
                 writeln!(
                     errors_log_writer.borrow_mut(),
-                    "index: {index}, init_param: {param}"
+                    "index: {}, init_param: {param}",
+                    index + 1,
                 )?;
 
                 // We compute the best value again since the
@@ -197,10 +198,11 @@ where
                     let linesearch = BacktrackingLineSearch::new(cond)
                         .rho(F::from(BACKTRACKING_PARAM).unwrap())?;
                     let solver = LBFGS::new(linesearch, LBFGS_M)
-                        .with_tolerance_cost(F::from(LBFGS_TOLERANCE).unwrap())?;
+                        .with_tolerance_cost(F::from(LBFGS_TOLERANCE_ERRORS).unwrap())?;
                     // Find the local minimum in the outer optimization
                     let res = Executor::new(problem, solver)
                         .configure(|state| state.param(init_param))
+                        .timer(false)
                         .run()
                         .with_context(|| {
                             "Couldn't solve the outer optimization problem with a frozen parameter"
@@ -214,7 +216,7 @@ where
                 )?;
 
                 // Find a root to the right
-                {
+                'right: {
                     writeln!(errors_log_writer.borrow_mut(), "\nto the right:")?;
 
                     let problem = ConfidenceIntervalProblem {
@@ -228,9 +230,14 @@ where
                     };
 
                     let min = param;
-                    let max = param + right_interval_widths[index];
+                    let mut max = param + 3.;
                     let cost_min = problem.cost(&min)?;
-                    let cost_max = problem.cost(&max)?;
+                    let mut cost_max = problem.cost(&max)?;
+
+                    if cost_min * cost_max > 0. {
+                        max = max + 3.;
+                        cost_max = problem.cost(&max)?;
+                    }
 
                     writeln!(
                         errors_log_writer.borrow_mut(),
@@ -241,16 +248,21 @@ where
 
                     let res = Executor::new(problem, solver)
                         .configure(|state| state.param(param).max_iters(max_iters))
+                        .timer(false)
                         .add_observer(
                             ErrorsLogger {
-                                writer: Rc::clone(&errors_log_writer),
+                                writer: Rc::clone(errors_log_writer),
                             },
                             ObserverMode::Always,
                         )
                         .run()
-                        .with_context(|| "Couldn't find a root to the right")?;
+                        .with_context(|| "Couldn't find a root to the right");
+                    if let Err(ref err) = res {
+                        eprintln!("{err:?}");
+                        break 'right;
+                    }
 
-                    let param_p = *res.state().get_best_param().unwrap();
+                    let param_p = *res.unwrap().state().get_best_param().unwrap();
                     let diff_p = param_p - param;
                     *fit_param_ep = diff_p;
 
@@ -258,7 +270,7 @@ where
                 };
 
                 // Find a root to the left
-                {
+                'left: {
                     writeln!(errors_log_writer.borrow_mut(), "\nto the left:")?;
 
                     let problem = ConfidenceIntervalProblem {
@@ -271,10 +283,15 @@ where
                         output_dir: &self.output_dir,
                     };
 
-                    let min = param - left_interval_widths[index];
+                    let mut min = param - 3.;
                     let max = param;
-                    let cost_min = problem.cost(&min)?;
+                    let mut cost_min = problem.cost(&min)?;
                     let cost_max = problem.cost(&max)?;
+
+                    if cost_min * cost_max > 0. {
+                        min = min - 3.;
+                        cost_min = problem.cost(&min)?;
+                    }
 
                     writeln!(
                         errors_log_writer.borrow_mut(),
@@ -285,16 +302,21 @@ where
 
                     let res = Executor::new(problem, solver)
                         .configure(|state| state.param(param).max_iters(max_iters))
+                        .timer(false)
                         .add_observer(
                             ErrorsLogger {
-                                writer: Rc::clone(&errors_log_writer),
+                                writer: Rc::clone(errors_log_writer),
                             },
                             ObserverMode::Always,
                         )
                         .run()
-                        .with_context(|| "Couldn't find a root to the left")?;
+                        .with_context(|| "Couldn't find a root to the left");
+                    if let Err(ref err) = res {
+                        eprintln!("{err:?}");
+                        break 'left;
+                    }
 
-                    let param_l = *res.state().get_best_param().unwrap();
+                    let param_l = *res.unwrap().state().get_best_param().unwrap();
                     let diff_l = param - param_l;
                     *fit_param_em = diff_l;
 
@@ -306,9 +328,12 @@ where
                 Ok(())
             })
             .with_context(|| "Couldn't define the confidence intervals")?;
-        // Save the results
+
+        errors_log_writer.borrow_mut().flush()?;
+
         fit_params.update_ep_with(&fit_params_ep);
         fit_params.update_em_with(&fit_params_em);
+
         Ok(())
     }
 }

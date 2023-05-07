@@ -34,10 +34,10 @@ where
         let best_cost = state.get_best_cost();
         let param = state.get_param().unwrap();
         let best_param = state.get_best_param().unwrap();
-        // Writer the state
+        // Write the state
         writeln!(
             self.writer.borrow_mut(),
-            "iter: {iter:>3}, cost: {cost:>18.15}, best_cost: {best_cost:>18.15}, param: {param:>18.15}, best_param: {best_param:>18.15}",
+            "iter: {iter:>3}, cost: {cost:>19.15}, best_cost: {best_cost:>19.15}, param: {param:>18.15}, best_param: {best_param:>18.15}",
         )?;
         Ok(())
     }

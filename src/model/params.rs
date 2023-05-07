@@ -15,10 +15,6 @@ use serde::Serialize;
 /// Number of the optimized parameters
 pub const PARAMS_N: usize = 16;
 
-/// Maximum degree of the polynomial
-/// of the rotation curve supported
-pub const N_MAX: usize = 8;
-
 /// Names of the optimized parameters
 pub const PARAMS_NAMES: [&str; PARAMS_N] = [
     "R_0",
@@ -655,6 +651,10 @@ impl<F> Model<F> {
     where
         F: Float + Debug + Display,
     {
+        if self.fit_params.is_none() {
+            return Ok(());
+        }
+
         let params = &self.params;
         let params_vec = params.to_vec(n);
         let fit_params = self.fit_params.as_ref().unwrap();
@@ -669,7 +669,7 @@ impl<F> Model<F> {
                       n: {n}
                     L_1: {best_cost}
 
-                      R: {r_0:>21.15} -> {fit_r_0:>21.15} + {fit_r_0_ep:>17.15} - {fit_r_0_em:>17.15}
+                    R_0: {r_0:>21.15} -> {fit_r_0:>21.15} + {fit_r_0_ep:>17.15} - {fit_r_0_em:>17.15}
                 omega_0: {omega_0:>21.15} -> {fit_omega_0:>21.15} + {fit_omega_0_ep:>17.15} - {fit_omega_0_em:>17.15}
                       A: {a:>21.15} -> {fit_a:>21.15} + {fit_a_ep:>17.15} - {fit_a_em:>17.15}
                   U_sun: {u_sun:>21.15} -> {fit_u_sun:>21.15} + {fit_u_sun_ep:>17.15} - {fit_u_sun_em:>17.15}

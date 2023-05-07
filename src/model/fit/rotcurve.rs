@@ -132,6 +132,10 @@ impl<F> Model<F> {
     where
         F: Display,
     {
+        if self.fit_rotcurve.is_none() {
+            return Ok(());
+        }
+
         let fit_rotcurve = self.fit_rotcurve.as_ref().unwrap();
         writeln!(plain_writer, "\nn i{s:4}R{s:18}theta", s = " ")?;
         for (i, point) in fit_rotcurve.iter().enumerate() {

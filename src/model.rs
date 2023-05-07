@@ -12,7 +12,7 @@ use crate::cli::Args;
 use crate::utils;
 pub use fit::{ProfileType, Profiles, RotationCurve, Triple, Triples};
 pub use objects::{Object, Objects};
-pub use params::{Params, N_MAX, PARAMS_N, PARAMS_NAMES};
+pub use params::{Params, PARAMS_N, PARAMS_NAMES};
 
 use alloc::rc::Rc;
 use core::cell::RefCell;

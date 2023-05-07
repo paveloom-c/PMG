@@ -38,6 +38,12 @@ pub const LBFGS_M: usize = 300;
 /// Tolerance of the L-BFGS algorithm
 pub const LBFGS_TOLERANCE: f64 = 1e-15;
 
+/// Tolerance of the L-BFGS algorithm for the errors
+pub const LBFGS_TOLERANCE_ERRORS: f64 = 1e-11;
+
+/// Maximum number of iterations
+pub const MAX_ITERS: u64 = 500;
+
 impl<F> Model<F> {
     /// Try to fit the model of the Galaxy to the data
     #[allow(clippy::as_conversions)]
@@ -109,7 +115,8 @@ impl<F> Model<F> {
         let solver = LBFGS::new(linesearch, LBFGS_M)
             .with_tolerance_cost(F::from(LBFGS_TOLERANCE).unwrap())?;
         let res = Executor::new(problem, solver)
-            .configure(|state| state.param(init_param))
+            .configure(|state| state.param(init_param).max_iters(MAX_ITERS))
+            .timer(false)
             .add_observer(
                 FitLogger {
                     sample_iteration,
