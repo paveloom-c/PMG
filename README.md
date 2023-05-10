@@ -1,4 +1,4 @@
-### To reproduce the results
+### To get the results
 
 1. Check out this repository.
 
@@ -11,6 +11,8 @@
 3. Allow `direnv` to load the environment by executing `direnv allow`.
 
 4. While in the environment, run the `compute.bash` script.
+
+Alternatively, you can download the results [here](https://drive.google.com/drive/folders/1L1lBVWZ8CMjjaifdMDBWdDOBWnpum_8D?usp=sharing) or [here](https://drive.google.com/drive/folders/1JsSwkPIN456PfPQSLpdbH9Gq_FcpahEo?usp=sharing).
 
 ### Notices
 
