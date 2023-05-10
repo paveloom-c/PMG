@@ -5,8 +5,9 @@
 result
 
 # Artifacts
+*.log
+*.zip
+diploma/*.pdf
 public
 results
 target
-*.log
-*.zip
