@@ -61,10 +61,10 @@ pub fn main() -> Result<()> {
                 fit_log_writers.push(fit_log_writer);
             }
 
-            let discrepancies_log_path = &args.output_dir.join("discrepancies.log");
-            let discrepancies_log_file = File::create(discrepancies_log_path)
-                .with_context(|| "Couldn't create the `discrepancies.log` file")?;
-            let mut discrepancies_log_writer = BufWriter::new(discrepancies_log_file);
+            let outliers_log_path = &args.output_dir.join("outliers.log");
+            let outliers_log_file = File::create(outliers_log_path)
+                .with_context(|| "Couldn't create the `outliers.log` file")?;
+            let mut outliers_log_writer = BufWriter::new(outliers_log_file);
 
             let errors_log_path = &args.output_dir.join("errors.log");
             let errors_log_file = File::create(errors_log_path)
@@ -72,13 +72,14 @@ pub fn main() -> Result<()> {
             let errors_log_writer = Rc::new(RefCell::new(BufWriter::new(errors_log_file)));
 
             writeln!(
-                discrepancies_log_writer,
+                outliers_log_writer,
                 "{}",
                 indoc!(
                     "
-                Discrepancies
+                Outliers
 
-                `m` is the index of the discrepancy (starting from 1), as in the array [V_r, mu_l', mu_b, par_r]."
+                L' = 1. `m` is the index of the discrepancy (starting from 1),
+                as in the array [V_r, mu_l', mu_b, par_r]."
                 ),
             )?;
 
@@ -103,40 +104,42 @@ pub fn main() -> Result<()> {
                 let best_i = 4;
                 let best_n = best_i + 1;
 
-                // Check the discrepancies of the best model
+                // Check for the outliers via the best model
                 {
                     let best_model = &mut models[best_i];
                     let before_nonoutliers_count = best_model.count_non_outliers();
 
                     writeln!(
-                        discrepancies_log_writer,
+                        outliers_log_writer,
                         "\nsample_iteration: {sample_iteration}",
                     )?;
                     writeln!(
-                        discrepancies_log_writer,
+                        outliers_log_writer,
                         "before_nonoutliers_count: {before_nonoutliers_count}"
                     )?;
-                    writeln!(discrepancies_log_writer, "best_n: {best_n}")?;
+                    writeln!(outliers_log_writer, "best_n: {best_n}")?;
 
                     let (all_outliers, k_1, k_005) = best_model
-                        .check_discrepancies()
-                        .with_context(|| "Couldn't check the discrepancies")?;
+                        .find_outliers()
+                        .with_context(|| "Couldn't check for outliers")?;
 
                     if all_outliers.is_empty() {
                         break 'samples;
                     }
 
                     writeln!(
-                        discrepancies_log_writer,
-                        "\nm i{s:3}rel_discrepancy{s:3}k_1{s:15}k_005",
+                        outliers_log_writer,
+                        "\nm{s:1}rel_discrepancy{s:3}kappa{s:13}k_005{s:13}i{s:3}name",
                         s = " "
                     )?;
+                    let objects = best_model.objects.borrow();
                     for &(m, i, rel_discrepancy) in &all_outliers {
                         writeln!(
-                            discrepancies_log_writer,
-                            "{} {:<3} {rel_discrepancy:<17.15} {k_1:<17.15} {k_005:<17.15}",
+                            outliers_log_writer,
+                            "{} {rel_discrepancy:<17.15} {k_1:<17.15} {k_005:<17.15} {:<3} {}",
                             m + 1,
                             i + 1,
+                            objects[i].name.as_ref().unwrap(),
                         )?;
                     }
                 }
@@ -153,7 +156,7 @@ pub fn main() -> Result<()> {
                 sample_iteration += 1;
             }
 
-            discrepancies_log_writer.flush()?;
+            outliers_log_writer.flush()?;
             for fit_log_writer in fit_log_writers {
                 fit_log_writer.borrow_mut().flush()?;
             }

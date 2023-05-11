@@ -1,4 +1,4 @@
-//! Discrepancies
+//! Outliers
 
 use super::compute_relative_discrepancy;
 use super::Model;
@@ -16,15 +16,15 @@ use itertools::izip;
 use num::Float;
 use numeric_literals::replace_float_literals;
 
-/// Discrepancies problem
-struct DiscrepanciesProblem<F> {
+/// A problem for computing appropriate `k`
+struct KProblem<F> {
     /// Number of the objects
     n: F,
     /// Significance level
     alpha: F,
 }
 
-impl<F> CostFunction for DiscrepanciesProblem<F>
+impl<F> CostFunction for KProblem<F>
 where
     F: Float + Debug + Default,
 {
@@ -77,10 +77,10 @@ where
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub fn check_discrepancies(&mut self) -> Result<(Vec<(usize, usize, F)>, F, F)> {
+    pub fn find_outliers(&mut self) -> Result<(Vec<(usize, usize, F)>, F, F)> {
         // Find the appropriate coefficient
-        let k_1 = {
-            let problem = DiscrepanciesProblem {
+        let kappa = {
+            let problem = KProblem {
                 n: F::from(self.count_non_outliers()).unwrap(),
                 alpha: 1.,
             };
@@ -95,7 +95,7 @@ where
         };
 
         let k_005 = {
-            let problem = DiscrepanciesProblem {
+            let problem = KProblem {
                 n: F::from(self.count_non_outliers()).unwrap(),
                 alpha: 0.05,
             };
@@ -128,7 +128,7 @@ where
             // Find the outliers
             let mut outliers: Vec<&(usize, F)> = rel_discrepancies
                 .iter()
-                .filter(|(_, rel_discrepancy)| *rel_discrepancy > k_1)
+                .filter(|(_, rel_discrepancy)| *rel_discrepancy > kappa)
                 .collect();
 
             if !outliers.is_empty() {
@@ -163,6 +163,6 @@ where
         }
 
         // Return all outliers for logging
-        Ok(((all_outliers), k_1, k_005))
+        Ok(((all_outliers), kappa, k_005))
     }
 }

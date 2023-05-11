@@ -2,13 +2,13 @@
 
 #![allow(clippy::module_name_repetitions)]
 
-mod discrepancies;
 mod errors;
 mod errors_logger;
 mod fit_logger;
 mod frozen_outer;
 mod inner;
 mod outer;
+mod outliers;
 pub mod params;
 mod profiles;
 pub mod rotcurve;
