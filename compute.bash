@@ -27,9 +27,6 @@ echo -e "\n${PAD}> Compute per-object data..."
 "${PMG}" -i "${I_HMSFRS_TEST}" -o "${R_HMSFRS_TEST}" --goal objects \
   --u-sun 11 --theta-sun 255 --r-0 8.34
 
-echo -e "${PAD}> Fit all (with errors)..."
-"${PMG}" -i "${I_ALL}" -o "${R_ALL}" --goal fit \
-  -n "${N_ALL}" --with-errors
 echo -e "${PAD}> Fit near the solar circle (with errors and profiles)..."
 "${PMG}" -i "${I_SOLAR}" -o "${R_SOLAR}" --goal fit \
   -n "${N_SOLAR}" --with-conditional-profiles --with-errors
@@ -60,18 +57,10 @@ echo "${PAD}Step 5. Plot the rotation curves"
 echo -e "\n${PAD}All by type:"
 
 "${JULIA}" "${ROTCURVE}" -i "'${R_ALL}/objects'" -o "'${R_ALL}/objects/Plots by type'"
-for i in $(seq 1 "${N_ALL}"); do
-  echo -e "${PAD}n = $i"
-  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_ALL}/n = $i'" -o "'${R_ALL}/n = $i/Plots by type'"
-done
 
 echo -e "${PAD}All by source:"
 
 "${JULIA}" "${ROTCURVE}" -i "'${R_ALL}/objects'" -o "'${R_ALL}/objects/Plots by source'" -s
-for i in $(seq 1 "${N_ALL}"); do
-  echo -e "${PAD}n = $i"
-  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_ALL}/n = $i'" -o "'${R_ALL}/n = $i/Plots by source'" -s
-done
 
 echo -e "${PAD}Near the solar circle:"
 
@@ -94,13 +83,6 @@ echo -e "${PAD}HMSFRs (test):"
 
 echo "${PAD}Step 6. Plot the profiles"
 
-echo -e "\n${PAD}All:\n"
-
-for i in $(seq 1 "${N_ALL}"); do
-  echo -e "${PAD}n = $i"
-  "${JULIA}" "${PROFILES}" -i "'${R_ALL}/n = $i'" -o "'${R_ALL}/n = $i'"
-done
-
 echo -e "${PAD}Near the solar circle:\n"
 
 for i in $(seq 1 "${N_SOLAR}"); do
@@ -117,7 +99,6 @@ done
 
 echo -e "${PAD}Step 7. Plot the \`n\` plots"
 
-"${JULIA}" "${N}" -i "'${R_ALL}'" -o "'${R_ALL}'"
 "${JULIA}" "${N}" -i "'${R_SOLAR}'" -o "'${R_SOLAR}'"
 "${JULIA}" "${N}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'"
 
