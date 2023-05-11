@@ -50,6 +50,9 @@ pub struct Object<F> {
     /// Is this object an outlier? (one of the
     /// discrepancies turned out to be too big)
     pub outlier: bool,
+    /// Is this object from a Reid catalogue?
+    #[serde(skip)]
+    pub from_reid: Option<bool>,
     /// Name of the object
     #[serde(serialize_with = "serialize_option")]
     pub name: Option<String>,
@@ -374,6 +377,7 @@ where
         object.try_parse_delta(&record)?;
         object.name = Some(record.name);
         object.obj_type = Some(record.obj_type);
+        object.from_reid = Some(record.source == "Reid");
         object.source = Some(record.source);
         object.par = Some(record.par);
         object.par_e = Some(record.par_e);
