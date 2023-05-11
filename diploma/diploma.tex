@@ -18,6 +18,8 @@
 ]{cmunrm}
 \usepackage{unicode-math}
 
+\usepackage{gensymb}
+
 \usepackage{tocloft}
 
 \usepackage[bookmarks=false,hidelinks]{hyperref}
@@ -52,6 +54,9 @@
 }
 
 \usepackage{indentfirst}
+
+\usepackage{enumitem}
+\setlist{nosep}
 
 \newcommand{\su}{\vspace{-0.5em}}
 \newcommand{\npar}{\par\vspace{\baselineskip}}
@@ -101,9 +106,7 @@
       Научный руководитель:\\
       кандидат физико-математических наук,\\
       доцент кафедры небесной механики\\
-      Никифоров И. И.\par
-
-      \vspace{\baselineskip}
+      Никифоров И. И.\npar
 
       Рецензент:\\
       доктор физико-математических наук,\\
@@ -155,9 +158,7 @@
       Scientific supervisor:\\
       Candidate of Sciences in Physical and Mathematical Sciences,\\
       Associate Professor of the Chair of Celestial Mechanics\\
-      I. Nikiforov\par
-
-      \vspace{\baselineskip}
+      I. Nikiforov\npar
 
       Reviewer:\\
       Doctor of Sciences in Physical and Mathematical Sciences,\\
@@ -204,11 +205,116 @@
 
 \newpage
 
-\setcounter{secnumdepth}{2}
+\setcounter{secnumdepth}{3}
 
-\hyperlink{TOC}{\section{Section}}
+\hyperlink{TOC}{\section{Теория}}
 
-\hyperlink{TOC}{\subsection{Subsection}}
+\hyperlink{TOC}{\subsection{Основные предположения и определения}}
+
+Использование кинематического метода определения $ R_0 $ и других параметров предполагает составление модели подсистемы Галактики. С этим связана проблема зависимости результата от модельных и оптимизационных предположений. Некоторые из предположений делаются ради упрощения модели.\npar
+
+\paragraph{Предположения:}
+\begin{enumerate}
+\item Дифференциальное вращение Галактики является осесимметричным.
+\item Остаточное движение Солнца может быть найдено в процессе оптимизации.
+\item Глобальное расширение/сжатие Галактики не влияет на оценку $ R_0 $.
+\item Влияние спиральной структуры Галактики \cite{B.O.1978} пренебрежимо.
+\item К-член (член Кемпбелла, эмпирическая постоянная добавка в уравнениях для лучевой скорости) \cite{K.1978} полагается равным нулю.
+\item Влияние эллиптической дисторсии галактического диска \cite{M.C.S.1998} пренебрежимо.
+\item Оптимальный порядок $ n $ аппроксимирующего закон вращения полинома Тейлора может быть найден в ходе решения.
+\end{enumerate}
+
+\paragraph{Определения:}
+\begin{enumerate}
+\item Модельная скорость заданного объекта --- скорость центроида объектов
+данного типа, вычисленная для положения этого объекта.
+\item Стандарт покоя подсистемы (СПП) --- гелиоцентрическая система отсчета, по отношению к которой среднее азимутальное движение объектов подсистемы, находящихся сейчас в области солнечного кольца (в окрестности солнечного круга $ R = R_0 $), равно нулю, а также равны нулю среднее движение вдоль координаты X и среднее вертикальное движение всех объектов подсистемы (рассматриваемой выборки). Иными словами, СПП в данную эпоху проходит через местоположение Солнца с азимутальной скоростью, равной средней азимутальной скорости объектов из области солнечного кольца, и с X- и Z-компонентами скорости, равными средним X- и Z-скоростям объектов всей выборки.
+\end{enumerate}
+
+\hyperlink{TOC}{\subsection{Выражения для модельных величин наблюдаемых компонент 3D-скоростей}}
+
+\hyperlink{TOC}{\subsubsection{Лучевые скорости}}
+
+В предположении чисто кругового вращения модельная величина гелиоцентрической лучевой скорости данного объекта, $ V_{r,\text{mod}} $, в общем случае определяется выражениями
+
+\su\su
+\begin{align}
+  V_{r,\text{mod}} &= V_{r,rot} + V_{r,\odot},\\
+  \label{eq:v_r_rot}
+  V_{r,\text{rot}} &= (\omega - \omega_0) R_0 \sin{l} \cos{b},\\
+  V_{r,\odot} &= -u_\odot \cos{l} \cos{b} - v_\odot \sin{l} \cos{b} - w_\odot \sin{b},
+\end{align}
+
+\noindent где $ V_{r,\text{rot}} $ и $ V_{r,\odot} $ --- влияние на модельную лучевую скорость объекта вращения подсистемы и движения Солнца относительно СПП, соответственно; $ ω $ --- угловая скорость вращения подсистемы для точки, где находится рассматриваемый объект; $ ω_0 $ --- угловая скорость СПП; $ u_\odot $, $ v_\odot $, $ w_\odot $ --- компоненты остаточной скорости Солнца, т.е. компоненты движения Солнца относительно СПП в направлениях $ (l, b) = (0\degree, 0\degree) $, $ (l, b) = (90\degree, 0\degree) $ и $ b = 90\degree $, соответственно; $ l $ и $ b $ --- галактические координаты объекта.
+
+В случае плоской подсистемы линейная скорость вращения центроидов $ \theta = \theta(R) $. Используем для представления $ \theta = \theta(R) $ модельный полином в виде многочлена Тейлора:
+
+\su
+\begin{equation}
+  \label{eq:model}
+  \Theta_n(R) = \sum_{i=0}^n \frac{\theta_i}{i!} (\Delta R)^i, \quad n \ge 1, \quad \theta_i = \left. \frac{d^i \theta}{d R^i} \right|_{R = R_0},
+\end{equation}
+
+\noindent где
+
+\su
+\begin{equation}
+  \Delta R \equiv R - R_0, \quad R = \sqrt{R_0^2 + r^2 \cos{b}^2 - 2 R_0 r \cos{l} \cos{b}}.
+\end{equation}
+
+\noindent Здесь $ R $ --- галактоосевое расстояние, $ r $ --- гелиоцентрическое расстояние до объекта.\par
+
+Тогда модель \eqref{eq:v_r_rot} принимает общий вид
+
+\su
+\begin{equation}
+  V_{r,\text{rot}} = \left[ -2 A \Delta R + \sum_{i=2}^n \frac{\theta_i}{i!} (\Delta R)^i \right] \frac{R_0}{R} \sin{l} \cos{b},
+\end{equation}
+
+\su
+\begin{equation}
+  A \equiv - \frac{1}{2} R_0 \omega'(R_0) = - \frac{1}{2} (\theta_1 - \omega_0).
+\end{equation}
+
+\hyperlink{TOC}{\subsubsection{Собственные движения по долготе}}
+
+Определение: $ \mu_l \equiv \frac{dl}{dt} $, $ \mu_l' \equiv \frac{dl}{dt} \cos{b} = \mu_l \cos{b} $. В обозначениях, аналогичных использованным в случае $ V_r $, для модельного полинома \eqref{eq:model}
+
+\su\su
+\begin{align}
+  k \mu_{l,\text{mod}}' &= k \mu_{l,\text{rot}}' + k \mu_{l,\odot}',\\
+  k \mu_{l,\text{rot}}' &= \left[ -2 A \Delta R + \sum_{i=2}^n \frac{\theta_i}{i!} (\Delta R)^i \right] \left( \frac{R_0 \cos{l}}{r} - \cos{b} \right) R^{-1} - \omega_0 \cos{b},\\
+  k \mu_{l,\odot}' &= (u_\odot \sin{l} - v_\odot \cos{l}) / r,
+\end{align}
+
+\noindent где $ k = 4.7406 $ для $ r $ в кпк и $ \mu $ в мсд год$^{-1}$ \cite{G.N.O.2016}.
+
+\hyperlink{TOC}{\subsubsection{Собственные движения по широте}}
+
+Определение: $ \mu_b \equiv \frac{db}{dt} $. Аналогично:
+
+\su\su
+\begin{align}
+  k \mu_{b,\text{mod}} &= k \mu_{b,\text{rot}} + k \mu_{b,\odot},\\
+  k \mu_{b,\text{rot}} &= \left[ 2 A \Delta R - \sum_{i=2}^n \frac{\theta_i}{i!} (\Delta R)^i \right] \frac{R_0}{R r} \sin{l} \sin{b},\\
+  k \mu_{b,\odot} &= (u_\odot \cos{l} \sin{b} + u_\odot \sin{l} \sin{b} - w_\odot \cos{b}) / r,
+\end{align}
+
+\hyperlink{TOC}{\subsection{Формулы редукции в случае мазеров}}
+
+\hyperlink{TOC}{\subsubsection{Переход от экваториальных сферических координат к галактическим}}
+
+Если экваториальные координаты приведены на эпоху J2000.0, то $ l, b $ связаны с $ \alpha, \delta $ как
+
+\su\su
+\begin{align}
+  \sin{b} &= \sin{\delta} \cos{(90\degree - \delta_p)} - \cos{\delta} \sin{(\alpha - \alpha_p - 6^\text{h})} \sin{(90\degree - \delta_p)},\\
+  l &= \phi + (\theta - 90\degree),\\
+  \sin{\phi} &= \left[ \cos{\delta} \sin{(\alpha - \alpha_p - 6^\text{h})} \cos{(90\degree - \delta_p)} + \sin{\delta} \sin{(90\degree - \delta_p)} \right] / \cos{b},\\
+  \cos{\phi} &= \cos{\delta} \cos{(\alpha - \alpha_p - 6^\text{h})} / \cos{b},
+\end{align}
+
+\noindent где $ \alpha_p = 12^\text{h} 51^\text{m} 26^\text{s}.2817 $, $ \delta_p = 27\degree07'42''.013 $, $ \theta = 122\degree.932 $, $ \phi \in [0; 360) $ \cite{R.B.2004, R.2009}.
 
 \newpage
 
