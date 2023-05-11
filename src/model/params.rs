@@ -581,6 +581,8 @@ impl<F> Model<F> {
                 "
             Fits of the models (parameters)
             {sample_description}
+            Numbers under the errors of `theta_i`, i >= 2, are values of `\\sigma_{{\\theta_i}} / \\theta_i`.
+
             Optimization results:
             ",
                 sample_description = self
@@ -720,15 +722,22 @@ impl<F> Model<F> {
         ))?;
 
         for i in 9..=(8 + (n - 1)) {
+            let initial = params_vec[i];
+            let fit = fit_params_vec[i];
+            let fit_ep = fit_ep_vec[i];
+            let fit_em = fit_em_vec[i];
             writeln!(
                 plain_writer,
                 "{s:4}theta_{n}: {initial:>21.15} -> {fit:>21.15} + {fit_ep:>17.15} - {fit_em:>17.15}",
                 s = "",
                 n = i - 7,
-                initial = params_vec[i],
-                fit = fit_params_vec[i],
-                fit_ep = fit_ep_vec[i],
-                fit_em = fit_em_vec[i],
+            )?;
+            writeln!(
+                plain_writer,
+                "{s:62}{:>17.15}{s:4}{:>17.15}",
+                (fit_ep / fit).abs(),
+                (fit_em / fit).abs(),
+                s = "",
             )?;
         }
 

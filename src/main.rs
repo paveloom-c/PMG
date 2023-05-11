@@ -88,6 +88,8 @@ pub fn main() -> Result<()> {
                 for i in 0..args.n {
                     let n = i + 1;
 
+                    eprintln!("n: {n}");
+
                     let model = &mut models[i];
                     let fit_log_writer = &fit_log_writers[i];
 
@@ -159,8 +161,12 @@ pub fn main() -> Result<()> {
             serialize_n_results(&args, &models)
                 .with_context(|| "Couldn't serialize the `n` results")?;
 
+            eprintln!("errors");
+
             for i in 0..args.n {
                 let n = i + 1;
+
+                eprintln!("n: {n}");
 
                 let model = &mut models[i];
                 if model.fit_params.is_none() {

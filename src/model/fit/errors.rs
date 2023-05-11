@@ -16,7 +16,7 @@ use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
-use argmin::core::observers::ObserverMode;
+use argmin::core::observers::{ObserverMode, SlogLogger};
 use argmin::core::{ArgminFloat, CostFunction, Executor, State};
 use argmin::solver::brent::BrentRoot;
 use argmin::solver::linesearch::condition::ArmijoCondition;
@@ -180,6 +180,8 @@ where
                     index + 1,
                 )?;
 
+                eprintln!("index: {}", index + 1);
+
                 // We compute the best value again since the
                 // parameters are varied differently here
                 let best_frozen_cost = {
@@ -217,6 +219,8 @@ where
 
                 // Find a root to the right
                 'right: {
+                    eprintln!("right");
+
                     writeln!(errors_log_writer.borrow_mut(), "\nto the right:")?;
 
                     let problem = ConfidenceIntervalProblem {
@@ -249,6 +253,7 @@ where
                     let res = Executor::new(problem, solver)
                         .configure(|state| state.param(param).max_iters(max_iters))
                         .timer(false)
+                        .add_observer(SlogLogger::term(), ObserverMode::Always)
                         .add_observer(
                             ErrorsLogger {
                                 writer: Rc::clone(errors_log_writer),
@@ -271,6 +276,8 @@ where
 
                 // Find a root to the left
                 'left: {
+                    eprintln!("left");
+
                     writeln!(errors_log_writer.borrow_mut(), "\nto the left:")?;
 
                     let problem = ConfidenceIntervalProblem {
@@ -303,6 +310,7 @@ where
                     let res = Executor::new(problem, solver)
                         .configure(|state| state.param(param).max_iters(max_iters))
                         .timer(false)
+                        .add_observer(SlogLogger::term(), ObserverMode::Always)
                         .add_observer(
                             ErrorsLogger {
                                 writer: Rc::clone(errors_log_writer),
