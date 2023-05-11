@@ -671,15 +671,15 @@ impl<F> Model<F> {
                       n: {n}
                     L_1: {best_cost}
 
-                    R_0: {r_0:>21.15} -> {fit_r_0:>21.15} + {fit_r_0_ep:>17.15} - {fit_r_0_em:>17.15}
-                omega_0: {omega_0:>21.15} -> {fit_omega_0:>21.15} + {fit_omega_0_ep:>17.15} - {fit_omega_0_em:>17.15}
-                      A: {a:>21.15} -> {fit_a:>21.15} + {fit_a_ep:>17.15} - {fit_a_em:>17.15}
-                  U_sun: {u_sun:>21.15} -> {fit_u_sun:>21.15} + {fit_u_sun_ep:>17.15} - {fit_u_sun_em:>17.15}
-                  V_sun: {v_sun:>21.15} -> {fit_v_sun:>21.15} + {fit_v_sun_ep:>17.15} - {fit_v_sun_em:>17.15}
-                  W_sun: {w_sun:>21.15} -> {fit_w_sun:>21.15} + {fit_w_sun_ep:>17.15} - {fit_w_sun_em:>17.15}
-                sigma_R: {sigma_r_g:>21.15} -> {fit_sigma_r_g:>21.15} + {fit_sigma_r_g_ep:>17.15} - {fit_sigma_r_g_em:>17.15}
-            sigma_theta: {sigma_theta:>21.15} -> {fit_sigma_theta:>21.15} + {fit_sigma_theta_ep:>17.15} - {fit_sigma_theta_em:>17.15}
-                sigma_Z: {sigma_z:>21.15} -> {fit_sigma_z:>21.15} + {fit_sigma_z_ep:>17.15} - {fit_sigma_z_em:>17.15}
+                    R_0: {r_0:>21.15} -> {fit_r_0:>21.15}  + {fit_r_0_ep:>18.15}  - {fit_r_0_em:>18.15}
+                omega_0: {omega_0:>21.15} -> {fit_omega_0:>21.15}  + {fit_omega_0_ep:>18.15}  - {fit_omega_0_em:>18.15}
+                      A: {a:>21.15} -> {fit_a:>21.15}  + {fit_a_ep:>18.15}  - {fit_a_em:>18.15}
+                  U_sun: {u_sun:>21.15} -> {fit_u_sun:>21.15}  + {fit_u_sun_ep:>18.15}  - {fit_u_sun_em:>18.15}
+                  V_sun: {v_sun:>21.15} -> {fit_v_sun:>21.15}  + {fit_v_sun_ep:>18.15}  - {fit_v_sun_em:>18.15}
+                  W_sun: {w_sun:>21.15} -> {fit_w_sun:>21.15}  + {fit_w_sun_ep:>18.15}  - {fit_w_sun_em:>18.15}
+                sigma_R: {sigma_r_g:>21.15} -> {fit_sigma_r_g:>21.15}  + {fit_sigma_r_g_ep:>18.15}  - {fit_sigma_r_g_em:>18.15}
+            sigma_theta: {sigma_theta:>21.15} -> {fit_sigma_theta:>21.15}  + {fit_sigma_theta_ep:>18.15}  - {fit_sigma_theta_em:>18.15}
+                sigma_Z: {sigma_z:>21.15} -> {fit_sigma_z:>21.15}  + {fit_sigma_z_ep:>18.15}  - {fit_sigma_z_em:>18.15}
             ",
                 n = self.n.unwrap(),
                 best_cost = self.best_cost.as_ref().unwrap(),
@@ -728,13 +728,13 @@ impl<F> Model<F> {
             let fit_em = fit_em_vec[i];
             writeln!(
                 plain_writer,
-                "{s:4}theta_{n}: {initial:>21.15} -> {fit:>21.15} + {fit_ep:>17.15} - {fit_em:>17.15}",
+                "{s:4}theta_{n}: {initial:>21.15} -> {fit:>21.15}  + {fit_ep:>18.15}  - {fit_em:>18.15}",
                 s = "",
                 n = i - 7,
             )?;
             writeln!(
                 plain_writer,
-                "{s:62}{:>17.15}{s:4}{:>17.15}",
+                "{s:63}{:>18.15}{s:4}{:>18.15}",
                 (fit_ep / fit).abs(),
                 (fit_em / fit).abs(),
                 s = "",

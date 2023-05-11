@@ -29,10 +29,16 @@ echo -e "\n${PAD}> Compute per-object data..."
 
 echo -e "${PAD}> Fit near the solar circle (with errors and profiles)..."
 "${PMG}" -i "${I_SOLAR}" -o "${R_SOLAR}" --goal fit \
-  -n "${N_SOLAR}" --with-conditional-profiles --with-errors
+  --n-best "${N_BEST_SOLAR}" \
+  --n-max "${N_MAX_SOLAR}" \
+  --with-errors \
+  --with-conditional-profiles
 echo -e "${PAD}> Fit HMSFRs (with errors)..."
 "${PMG}" -i "${I_HMSFRS}" -o "${R_HMSFRS}" --goal fit \
-  -n "${N_HMSFRS}" --with-errors
+  --n-best "${N_BEST_HMSFRS}" \
+  --n-max "${N_MAX_HMSFRS}" \
+  --with-errors \
+  --with-conditional-profiles
 
 echo -e "
 ${PAD}Step 3. Plot the comparison charts for the objects that are
@@ -65,7 +71,7 @@ echo -e "${PAD}All by source:"
 echo -e "${PAD}Near the solar circle:"
 
 "${JULIA}" "${ROTCURVE}" -i "'${R_SOLAR}/objects'" -o "'${R_SOLAR}/objects'" -s
-for i in $(seq 1 "${N_SOLAR}"); do
+for i in $(seq 1 "${N_MAX_SOLAR}"); do
   echo -e "${PAD}n = $i"
   "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_SOLAR}'" -o "'${R_SOLAR}'" -s -n "$i"
 done
@@ -75,7 +81,7 @@ qpdf --empty --pages "${R_SOLAR}"/*/"Fitted rotation curve (errors).pdf" -- "${R
 echo -e "${PAD}HMSFRs:"
 
 "${JULIA}" "${ROTCURVE}" -i "'${R_HMSFRS}/objects'" -o "'${R_HMSFRS}/objects'" -s
-for i in $(seq 1 "${N_HMSFRS}"); do
+for i in $(seq 1 "${N_MAX_HMSFRS}"); do
   echo -e "${PAD}n = $i"
   "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'" -s -n "$i"
 done
@@ -89,14 +95,14 @@ echo "${PAD}Step 6. Plot the profiles"
 
 echo -e "${PAD}Near the solar circle:\n"
 
-for i in $(seq 1 "${N_SOLAR}"); do
+for i in $(seq 1 "${N_MAX_SOLAR}"); do
   echo -e "${PAD}n = $i"
   "${JULIA}" "${PROFILES}" -i "'${R_SOLAR}'" -o "'${R_SOLAR}'" -n "$i"
 done
 
 echo -e "${PAD}HMSFRs:\n"
 
-for i in $(seq 1 "${N_HMSFRS}"); do
+for i in $(seq 1 "${N_MAX_HMSFRS}"); do
   echo -e "${PAD}n = $i"
   "${JULIA}" "${PROFILES}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'" -n "$i"
 done

@@ -210,11 +210,16 @@ pub struct Args {
     /// Computation goal
     #[arg(long, required = true)]
     pub goal: Goal,
+    /// Optimal degree of the polynomial of the rotation curve
+    ///
+    /// Maximum supported value is 8.
+    #[arg(long = "n-best", default_value_t = 1)]
+    pub n_best: usize,
     /// Maximum degree of the polynomial of the rotation curve
     ///
     /// Maximum supported value is 8.
-    #[arg(short, default_value_t = 6)]
-    pub n: usize,
+    #[arg(long = "n-max", default_value_t = 6)]
+    pub n_max: usize,
     /// Try to define the confidence intervals (fit goal only)
     #[arg(long = "with-errors")]
     pub with_errors: bool,

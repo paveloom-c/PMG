@@ -43,9 +43,9 @@ pub fn main() -> Result<()> {
         }
         Goal::Fit => {
             // Prepare several models
-            let mut models = Vec::with_capacity(args.n);
-            let mut fit_log_writers = Vec::with_capacity(args.n);
-            for i in 0..args.n {
+            let mut models = Vec::with_capacity(args.n_max);
+            let mut fit_log_writers = Vec::with_capacity(args.n_max);
+            for i in 0..args.n_max {
                 let n = i + 1;
                 let output_dir = args.output_dir.join(format!("n = {n}"));
 
@@ -83,10 +83,13 @@ pub fn main() -> Result<()> {
                 ),
             )?;
 
+            let best_i = args.n_best - 1;
+            let best_n = args.n_best;
+
             let mut sample_iteration = 0;
             'samples: loop {
                 // Fit the parameters for each model
-                for i in 0..args.n {
+                for i in 0..args.n_max {
                     let n = i + 1;
 
                     eprintln!("n: {n}");
@@ -99,10 +102,6 @@ pub fn main() -> Result<()> {
                         .try_fit_params(n, sample_iteration, fit_log_writer)
                         .with_context(|| "Couldn't fit the model")?;
                 }
-
-                // Choose the best model
-                let best_i = 4;
-                let best_n = best_i + 1;
 
                 // Check for the outliers via the best model
                 {
@@ -166,7 +165,7 @@ pub fn main() -> Result<()> {
 
             eprintln!("errors");
 
-            for i in 0..args.n {
+            for i in 0..args.n_max {
                 let n = i + 1;
 
                 eprintln!("n: {n}");
@@ -206,14 +205,12 @@ pub fn main() -> Result<()> {
                     .with_context(|| "Couldn't write to the `fit_rotcurve.plain` file")?;
             }
 
-            // Choose a model for extra computations
-            let chosen_i = 0;
-            let chosen_n = chosen_i + 1;
-            let chosen_model = &mut models[chosen_i];
+            eprintln!("conditional");
 
+            let best_model = &mut models[best_i];
             if args.with_conditional_profiles {
-                let res = chosen_model
-                    .try_compute_conditional_profiles(chosen_n)
+                let res = best_model
+                    .try_compute_conditional_profiles(best_n)
                     .with_context(|| "Couldn't compute the conditional profiles");
                 if let Err(ref err) = res {
                     eprintln!("{err:?}");
