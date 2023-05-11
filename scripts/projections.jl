@@ -78,7 +78,7 @@ if "--help" in ARGS
 
         $(YELLOW)OPTIONS:$(RESET)
             $(GREEN)-s$(RESET)                     Show sources on the legend instead of types
-            $(GREEN)-o <INPUT_DIR>$(RESET)         Input directory
+            $(GREEN)-i <INPUT_DIR>$(RESET)         Input directory
             $(GREEN)-o <OUTPUT_DIR>$(RESET)        Output directory
             $(GREEN)--postfix <POSTFIX>$(RESET)    A postfix for the names of output files"""
     )

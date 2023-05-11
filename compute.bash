@@ -67,16 +67,20 @@ echo -e "${PAD}Near the solar circle:"
 "${JULIA}" "${ROTCURVE}" -i "'${R_SOLAR}/objects'" -o "'${R_SOLAR}/objects'" -s
 for i in $(seq 1 "${N_SOLAR}"); do
   echo -e "${PAD}n = $i"
-  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_SOLAR}/n = $i'" -o "'${R_SOLAR}/n = $i'" -s
+  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_SOLAR}'" -o "'${R_SOLAR}'" -s -n "$i"
 done
+qpdf --empty --pages "${R_SOLAR}"/*/"Fitted rotation curve.pdf" -- "${R_SOLAR}/Fitted rotation curves.pdf"
+qpdf --empty --pages "${R_SOLAR}"/*/"Fitted rotation curve (errors).pdf" -- "${R_SOLAR}/Fitted rotation curves (errors).pdf"
 
 echo -e "${PAD}HMSFRs:"
 
 "${JULIA}" "${ROTCURVE}" -i "'${R_HMSFRS}/objects'" -o "'${R_HMSFRS}/objects'" -s
 for i in $(seq 1 "${N_HMSFRS}"); do
   echo -e "${PAD}n = $i"
-  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_HMSFRS}/n = $i'" -o "'${R_HMSFRS}/n = $i'" -s
+  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'" -s -n "$i"
 done
+qpdf --empty --pages "${R_HMSFRS}"/*/"Fitted rotation curve.pdf" -- "${R_HMSFRS}/Fitted rotation curves.pdf"
+qpdf --empty --pages "${R_HMSFRS}"/*/"Fitted rotation curve (errors).pdf" -- "${R_HMSFRS}/Fitted rotation curves (errors).pdf"
 
 echo -e "${PAD}HMSFRs (test):"
 "${JULIA}" "${ROTCURVE}" -i "'${R_HMSFRS_TEST}/objects'" -o "'${R_HMSFRS_TEST}/objects'" -s --with-test
@@ -87,14 +91,14 @@ echo -e "${PAD}Near the solar circle:\n"
 
 for i in $(seq 1 "${N_SOLAR}"); do
   echo -e "${PAD}n = $i"
-  "${JULIA}" "${PROFILES}" -i "'${R_SOLAR}/n = $i'" -o "'${R_SOLAR}/n = $i'"
+  "${JULIA}" "${PROFILES}" -i "'${R_SOLAR}'" -o "'${R_SOLAR}'" -n "$i"
 done
 
 echo -e "${PAD}HMSFRs:\n"
 
 for i in $(seq 1 "${N_HMSFRS}"); do
   echo -e "${PAD}n = $i"
-  "${JULIA}" "${PROFILES}" -i "'${R_HMSFRS}/n = $i'" -o "'${R_HMSFRS}/n = $i'"
+  "${JULIA}" "${PROFILES}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'" -n "$i"
 done
 
 echo -e "${PAD}Step 7. Plot the \`n\` plots"

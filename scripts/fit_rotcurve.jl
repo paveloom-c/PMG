@@ -23,6 +23,7 @@ function parse_string(i)::String
 end
 
 # Define default values for the arguments
+N = nothing
 LEGEND_SHOW_SOURCES = false
 INPUT_DIR = ""
 OUTPUT_DIR = ""
@@ -30,6 +31,15 @@ POSTFIX = ""
 
 # Parse the options
 for i in eachindex(ARGS)
+    # Degree of the model
+    if ARGS[i] == "-n"
+        try
+            global N = parse(Int, ARGS[i+1])
+        catch
+            println("Couldn't parse the value of the `-n` argument.")
+            exit(1)
+        end
+    end
     # Show sources on the legend instead of types
     if ARGS[i] == "-s"
         global LEGEND_SHOW_SOURCES = true
@@ -75,8 +85,9 @@ if "--help" in ARGS
         { julia --project=. | ./julia.bash } scripts/fit_rotcurve.jl -i <INPUT_DIR> -o <OUTPUT_DIR> [-s] [--postfix <POSTFIX>]
 
         $(YELLOW)OPTIONS:$(RESET)
+            $(GREEN)-n$(RESET)                     Degree of the polynomial of the rotation curve
             $(GREEN)-s$(RESET)                     Show sources on the legend instead of types
-            $(GREEN)-o <INPUT_DIR>$(RESET)         Input directory
+            $(GREEN)-i <INPUT_DIR>$(RESET)         Input directory
             $(GREEN)-o <OUTPUT_DIR>$(RESET)        Output directory
             $(GREEN)--postfix <POSTFIX>$(RESET)    A postfix for the names of output files"""
     )
@@ -84,6 +95,10 @@ if "--help" in ARGS
 end
 
 # Make sure the required arguments are passed
+if isnothing(N)
+    println("A degree of the polynomial is required.")
+    exit(1)
+end
 if isempty(INPUT_DIR)
     println("An input file is required.")
     exit(1)
@@ -115,8 +130,8 @@ colors = ColorSchemes.tol_bright
 # Define the paths
 CURRENT_DIR = @__DIR__
 ROOT_DIR = dirname(CURRENT_DIR)
-INPUT_DIR = isabspath(INPUT_DIR) ? INPUT_DIR : joinpath(ROOT_DIR, INPUT_DIR)
-OUTPUT_DIR = isabspath(OUTPUT_DIR) ? OUTPUT_DIR : joinpath(ROOT_DIR, OUTPUT_DIR)
+INPUT_DIR = isabspath(INPUT_DIR) ? joinpath(INPUT_DIR, "n = $(N)") : joinpath(ROOT_DIR, INPUT_DIR, "n = $(N)")
+OUTPUT_DIR = isabspath(OUTPUT_DIR) ? joinpath(OUTPUT_DIR, "n = $(N)") : joinpath(ROOT_DIR, OUTPUT_DIR, "n = $(N)")
 OBJECTS_DATA_PATH = joinpath(INPUT_DIR, "fit_objects.bin")
 FIT_ROTCURVE_DATA_PATH = joinpath(INPUT_DIR, "fit_rotcurve.bin")
 FIT_PARAMS_DATA_PATH = joinpath(INPUT_DIR, "fit_params.bin")
@@ -291,7 +306,7 @@ function plot(
             "axis_lines*" = "left",
             legend_image_post_style = {mark_size = 2, line_width = 0.4},
             legend_pos = "outer north east",
-            legend_style = {line_width = 1},
+            legend_style = {line_width = 1, label="below: {\$ n = $(N) \$}"},
             mark_size = 0.5,
             line_width = 0.15,
             "scatter/classes" = {

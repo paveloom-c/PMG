@@ -72,7 +72,7 @@ if "--help" in ARGS
         { julia --project=. | ./julia.bash } scripts/n.jl -i <INPUT_DIR> -o <OUTPUT_DIR> [--postfix <POSTFIX>]
 
         $(YELLOW)OPTIONS:$(RESET)
-            $(GREEN)-o <INPUT_DIR>$(RESET)         Input directory
+            $(GREEN)-i <INPUT_DIR>$(RESET)         Input directory
             $(GREEN)-o <OUTPUT_DIR>$(RESET)        Output directory
             $(GREEN)--postfix <POSTFIX>$(RESET)    A postfix for the names of output files"""
     )

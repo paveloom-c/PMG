@@ -24,6 +24,7 @@
             clippy
             julia
             lsof
+            qpdf
             rust-analyzer
             rustc
             zip
