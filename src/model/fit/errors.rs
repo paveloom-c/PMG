@@ -89,7 +89,7 @@ where
             triples: self.triples,
             output_dir: self.output_dir,
         };
-        let mut init_param = self.params.to_vec(self.n);
+        let mut init_param = self.params.to_vec(self.n, false);
         // Remove the frozen parameter
         init_param.remove(self.index);
         let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;
@@ -151,12 +151,12 @@ where
     #[replace_float_literals(F::from(literal).unwrap())]
     pub fn try_fit_errors(
         &mut self,
-        n: usize,
         errors_log_writer: &Rc<RefCell<BufWriter<File>>>,
     ) -> Result<()> {
         // Make sure the fitting happened before this call
+        let n = self.n.unwrap();
         let fit_params = self.fit_params.as_mut().unwrap();
-        let best_point = fit_params.to_vec(n);
+        let best_point = fit_params.to_vec(n, false);
         // Prepare arrays for the confidence intervals
         let triple = vec![Triple::<F>::default(); 4];
         let triples = Rc::new(RefCell::new(vec![triple; self.objects.borrow().len()]));
@@ -193,7 +193,7 @@ where
                         triples: &Rc::clone(&triples),
                         output_dir: &self.output_dir,
                     };
-                    let mut init_param = self.params.to_vec(n);
+                    let mut init_param = self.params.to_vec(n, false);
                     // Remove the frozen parameter
                     init_param.remove(index);
                     let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;

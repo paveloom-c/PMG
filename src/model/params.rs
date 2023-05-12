@@ -218,7 +218,7 @@ impl<F> Params<F> {
     ///
     /// Note that not all fields are used, but only those needed for fitting
     #[allow(clippy::indexing_slicing)]
-    pub fn to_vec(&self, n: usize) -> Vec<F>
+    pub fn to_vec(&self, n: usize, remove_sigmas: bool) -> Vec<F>
     where
         F: Float + Debug,
     {
@@ -241,7 +241,14 @@ impl<F> Params<F> {
             self.theta_8,
         ];
         let slice = &array[0..=8 + (n - 1)];
-        slice.to_vec()
+        let mut vec = slice.to_vec();
+        if remove_sigmas {
+            // Nice
+            for i in (6..9).rev() {
+                vec.remove(i);
+            }
+        }
+        vec
     }
     /// Update the plus uncertainties of the parameters
     /// with the values in the provided vector
@@ -581,7 +588,7 @@ impl<F> Model<F> {
                 "
             Fits of the models (parameters)
             {sample_description}
-            Numbers under the errors of `theta_i`, i >= 2, are values of `\\sigma_{{\\theta_i}} / \\theta_i`.
+            Numbers under the errors of `theta_i`, i >= 2, are absolute values of `\\sigma_{{\\theta_i}} / \\theta_i`.
 
             Optimization results:
             ",
@@ -658,9 +665,9 @@ impl<F> Model<F> {
         }
 
         let params = &self.params;
-        let params_vec = params.to_vec(n);
+        let params_vec = params.to_vec(n, false);
         let fit_params = self.fit_params.as_ref().unwrap();
-        let fit_params_vec = fit_params.to_vec(n);
+        let fit_params_vec = fit_params.to_vec(n, false);
         let fit_ep_vec = fit_params.to_ep_vec(n);
         let fit_em_vec = fit_params.to_em_vec(n);
         write!(

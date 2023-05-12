@@ -57,11 +57,12 @@ const POINTS_N: usize = 100;
 impl<F> Model<F> {
     /// Try to compute the conditional profiles
     #[allow(clippy::indexing_slicing)]
+    #[allow(clippy::print_stderr)]
     #[allow(clippy::similar_names)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub fn try_compute_conditional_profiles(&mut self, n: usize) -> Result<()>
+    pub fn try_compute_conditional_profiles(&mut self) -> Result<()>
     where
         F: Float
             + Debug
@@ -92,7 +93,8 @@ impl<F> Model<F> {
         Vec<F>: FiniteDiff<F>,
     {
         // Get the optimized parameters as arrays
-        let fit_params = self.fit_params.as_ref().unwrap().to_vec(n);
+        let n = self.n.unwrap();
+        let fit_params = self.fit_params.as_ref().unwrap().to_vec(n, false);
         let fit_params_ep = self.fit_params.as_ref().unwrap().to_ep_vec(n);
         let fit_params_em = self.fit_params.as_ref().unwrap().to_em_vec(n);
         // Prepare storage
@@ -129,7 +131,7 @@ impl<F> Model<F> {
                     triples: &Rc::clone(&triples),
                     output_dir: &self.output_dir,
                 };
-                let mut init_param = self.params.to_vec(n);
+                let mut init_param = self.params.to_vec(n, false);
                 // Remove the frozen parameter
                 init_param.remove(index);
                 let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;
@@ -168,7 +170,7 @@ impl<F> Model<F> {
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub fn try_compute_frozen_profiles(&mut self, n: usize) -> Result<()>
+    pub fn try_compute_frozen_profiles(&mut self) -> Result<()>
     where
         F: Float
             + Debug
@@ -199,7 +201,8 @@ impl<F> Model<F> {
         Vec<F>: FiniteDiff<F>,
     {
         // Get the optimized parameters as arrays
-        let fit_params = self.fit_params.as_ref().unwrap().to_vec(n);
+        let n = self.n.unwrap();
+        let fit_params = self.fit_params.as_ref().unwrap().to_vec(n, false);
         let fit_params_ep = [1.0; PARAMS_N];
         let fit_params_em = [1.0; PARAMS_N];
         // Prepare storage for the profiles and the reduced parallaxes

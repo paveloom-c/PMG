@@ -78,8 +78,7 @@ pub fn main() -> Result<()> {
                     "
                 Outliers
 
-                L' = 1. `m` is the index of the discrepancy (starting from 1),
-                as in the array [V_r, mu_l', mu_b, par_r]."
+                `m` is the index of the discrepancy (starting from 1), as in the array [V_r, mu_l', mu_b, par_r]."
                 ),
             )?;
 
@@ -88,71 +87,83 @@ pub fn main() -> Result<()> {
 
             let mut sample_iteration = 0;
             'samples: loop {
-                // Fit the parameters for each model
-                for i in 0..args.n_max {
-                    let n = i + 1;
+                eprintln!("sample_iteration: {sample_iteration}");
+                'strokes: for l_stroke in [3, 1] {
+                    eprintln!("l_stroke: {l_stroke}");
 
-                    eprintln!("n: {n}");
+                    // Fit the parameters for each model
+                    for i in 0..args.n_max {
+                        let n = i + 1;
 
-                    let model = &mut models[i];
-                    let fit_log_writer = &fit_log_writers[i];
+                        eprintln!("n: {n}");
 
-                    // Try to fit a model with the specified degree
-                    model
-                        .try_fit_params(n, sample_iteration, fit_log_writer)
-                        .with_context(|| "Couldn't fit the model")?;
-                }
+                        let model = &mut models[i];
+                        let fit_log_writer = &fit_log_writers[i];
 
-                // Check for the outliers via the best model
-                {
-                    let best_model = &mut models[best_i];
-                    let before_nonoutliers_count = best_model.count_non_outliers();
-
-                    writeln!(
-                        outliers_log_writer,
-                        "\nsample_iteration: {sample_iteration}",
-                    )?;
-                    writeln!(
-                        outliers_log_writer,
-                        "before_nonoutliers_count: {before_nonoutliers_count}"
-                    )?;
-                    writeln!(outliers_log_writer, "best_n: {best_n}")?;
-
-                    let (all_outliers, k_1, k_005) = best_model
-                        .find_outliers()
-                        .with_context(|| "Couldn't check for outliers")?;
-
-                    if all_outliers.is_empty() {
-                        break 'samples;
+                        // Try to fit a model with the specified degree
+                        model
+                            .try_fit_params(n, sample_iteration, l_stroke, fit_log_writer)
+                            .with_context(|| "Couldn't fit the model")?;
                     }
 
-                    writeln!(
-                        outliers_log_writer,
-                        "\nm{s:1}rel_discrepancy{s:3}kappa{s:13}k_005{s:13}i{s:3}name",
-                        s = " "
-                    )?;
-                    let objects = best_model.objects.borrow();
-                    for &(m, i, rel_discrepancy) in &all_outliers {
+                    // Check for the outliers via the best model
+                    {
+                        let best_model = &mut models[best_i];
+                        let before_nonoutliers_count = best_model.count_non_outliers();
+
                         writeln!(
                             outliers_log_writer,
-                            "{} {rel_discrepancy:<17.15} {k_1:<17.15} {k_005:<17.15} {:<3} {}",
-                            m + 1,
-                            i + 1,
-                            objects[i].name.as_ref().unwrap(),
+                            "\nsample_iteration: {sample_iteration}",
                         )?;
-                    }
-                }
+                        writeln!(
+                            outliers_log_writer,
+                            "before_nonoutliers_count: {before_nonoutliers_count}"
+                        )?;
+                        writeln!(outliers_log_writer, "best_n: {best_n}")?;
+                        writeln!(outliers_log_writer, "l_stroke: {l_stroke}")?;
 
-                // Update the outliers
-                let outliers_mask = models[best_i].get_outliers_mask();
-                for i in 0..models.len() {
-                    if i != best_i {
-                        let model = &mut models[i];
-                        model.apply_outliers_mask(&outliers_mask);
-                    }
-                }
+                        let (all_outliers, k_1, k_005) = best_model
+                            .find_outliers(l_stroke)
+                            .with_context(|| "Couldn't check for outliers")?;
 
-                sample_iteration += 1;
+                        if all_outliers.is_empty() {
+                            if l_stroke == 3 {
+                                continue 'strokes;
+                            }
+                            break 'samples;
+                        }
+
+                        writeln!(
+                            outliers_log_writer,
+                            "\nm{s:1}rel_discrepancy{s:3}kappa{s:13}k_005{s:13}i{s:3}source name",
+                            s = " "
+                        )?;
+                        let objects = best_model.objects.borrow();
+                        for &(m, i, rel_discrepancy) in &all_outliers {
+                            let object = &objects[i];
+                            writeln!(
+                                outliers_log_writer,
+                                "{} {rel_discrepancy:<17.15} {k_1:<17.15} {k_005:<17.15} {:<3} {:6} {}",
+                                m + 1,
+                                i + 1,
+                                object.source.as_ref().unwrap(),
+                                object.name.as_ref().unwrap(),
+                            )?;
+                        }
+                    }
+
+                    // Update the outliers
+                    let outliers_mask = models[best_i].get_outliers_mask();
+                    for i in 0..models.len() {
+                        if i != best_i {
+                            let model = &mut models[i];
+                            model.apply_outliers_mask(&outliers_mask);
+                        }
+                    }
+
+                    sample_iteration += 1;
+                    continue 'samples;
+                }
             }
 
             outliers_log_writer.flush()?;
@@ -176,7 +187,7 @@ pub fn main() -> Result<()> {
                 }
 
                 model
-                    .try_compute_frozen_profiles(n)
+                    .try_compute_frozen_profiles()
                     .with_context(|| "Couldn't compute frozen profiles")?;
 
                 model.post_fit();
@@ -185,7 +196,7 @@ pub fn main() -> Result<()> {
                 if args.with_errors {
                     writeln!(errors_log_writer.borrow_mut(), "n: {n}\n")?;
                     let res = model
-                        .try_fit_errors(n, &errors_log_writer)
+                        .try_fit_errors(&errors_log_writer)
                         .with_context(|| "Couldn't compute the errors");
                     match res {
                         Ok(_) => {
@@ -210,7 +221,7 @@ pub fn main() -> Result<()> {
             let best_model = &mut models[best_i];
             if args.with_conditional_profiles {
                 let res = best_model
-                    .try_compute_conditional_profiles(best_n)
+                    .try_compute_conditional_profiles()
                     .with_context(|| "Couldn't compute the conditional profiles");
                 if let Err(ref err) = res {
                     eprintln!("{err:?}");

@@ -3,7 +3,7 @@
 extern crate alloc;
 
 use super::Model;
-use super::{FitLogger, OuterOptimizationProblem};
+use super::{FitLogger, OuterOptimizationProblem, SigmaOuterOptimizationProblem};
 use crate::utils::FiniteDiff;
 
 use alloc::rc::Rc;
@@ -50,6 +50,7 @@ impl<F> Model<F> {
     #[allow(clippy::indexing_slicing)]
     #[allow(clippy::many_single_char_names)]
     #[allow(clippy::non_ascii_literal)]
+    #[allow(clippy::print_stderr)]
     #[allow(clippy::shadow_unrelated)]
     #[allow(clippy::similar_names)]
     #[allow(clippy::too_many_lines)]
@@ -60,6 +61,7 @@ impl<F> Model<F> {
         &mut self,
         n: usize,
         sample_iteration: usize,
+        l_stroke: usize,
         fit_log_writer: &Rc<RefCell<BufWriter<File>>>,
     ) -> Result<()>
     where
@@ -100,42 +102,91 @@ impl<F> Model<F> {
             object.compute_mu_l_cos_b_mu_b(&self.params);
         });
 
-        // Define the problem of the outer optimization
-        let problem = OuterOptimizationProblem {
-            objects: &self.objects,
-            params: &self.params,
-            triples: &Rc::clone(&self.triples),
-            output_dir: &self.output_dir,
+        let (best_cost, mut fit_params) = if l_stroke == 3 {
+            // Define the problem of the outer optimization
+            let problem = OuterOptimizationProblem {
+                objects: &self.objects,
+                params: &self.params,
+                triples: &Rc::clone(&self.triples),
+                output_dir: &self.output_dir,
+            };
+            // Find the local minimum in the outer optimization
+            let init_param = self.params.to_vec(n, false);
+            let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;
+            let linesearch =
+                BacktrackingLineSearch::new(cond).rho(F::from(BACKTRACKING_PARAM).unwrap())?;
+            let solver = LBFGS::new(linesearch, LBFGS_M)
+                .with_tolerance_cost(F::from(LBFGS_TOLERANCE).unwrap())?;
+            let res = Executor::new(problem, solver)
+                .configure(|state| state.param(init_param).max_iters(MAX_ITERS))
+                .timer(false)
+                .add_observer(
+                    FitLogger {
+                        sample_iteration,
+                        objects: Rc::clone(&self.objects),
+                        params: self.params.clone(),
+                        triples: Rc::clone(&self.triples),
+                        writer: Rc::clone(fit_log_writer),
+                    },
+                    ObserverMode::Always,
+                )
+                .run()
+                .with_context(|| "Couldn't solve the outer optimization problem")?;
+
+            let best_cost = res.state().get_best_cost();
+            let best_point = res.state().get_best_param().unwrap().clone();
+
+            // Prepare storage for the new parameters
+            let mut fit_params = self.params.clone();
+            fit_params.update_with(&best_point);
+
+            (best_cost, fit_params)
+        } else {
+            let prev_fit_params = self.fit_params.as_ref().unwrap();
+            // Define the problem of the outer optimization
+            let problem = SigmaOuterOptimizationProblem {
+                objects: &self.objects,
+                params: &self.params,
+                prev_fit_params,
+                triples: &Rc::clone(&self.triples),
+                output_dir: &self.output_dir,
+            };
+            // Find the local minimum in the outer optimization
+            let init_param = self.params.to_vec(n, true);
+            let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;
+            let linesearch =
+                BacktrackingLineSearch::new(cond).rho(F::from(BACKTRACKING_PARAM).unwrap())?;
+            let solver = LBFGS::new(linesearch, LBFGS_M)
+                .with_tolerance_cost(F::from(LBFGS_TOLERANCE).unwrap())?;
+            let res = Executor::new(problem, solver)
+                .configure(|state| state.param(init_param).max_iters(MAX_ITERS))
+                .timer(false)
+                .add_observer(
+                    FitLogger {
+                        sample_iteration,
+                        objects: Rc::clone(&self.objects),
+                        params: self.params.clone(),
+                        triples: Rc::clone(&self.triples),
+                        writer: Rc::clone(fit_log_writer),
+                    },
+                    ObserverMode::Always,
+                )
+                .run()
+                .with_context(|| "Couldn't solve the outer optimization problem")?;
+
+            let best_cost = res.state().get_best_cost();
+            let mut best_point = res.state().get_best_param().unwrap().clone();
+
+            best_point.insert(6, prev_fit_params.sigma_r_g);
+            best_point.insert(7, prev_fit_params.sigma_theta);
+            best_point.insert(8, prev_fit_params.sigma_z);
+
+            // Prepare storage for the new parameters
+            let mut fit_params = self.params.clone();
+            fit_params.update_with(&best_point);
+
+            (best_cost, fit_params)
         };
-        // Find the local minimum in the outer optimization
-        let init_param = self.params.to_vec(n);
-        let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;
-        let linesearch =
-            BacktrackingLineSearch::new(cond).rho(F::from(BACKTRACKING_PARAM).unwrap())?;
-        let solver = LBFGS::new(linesearch, LBFGS_M)
-            .with_tolerance_cost(F::from(LBFGS_TOLERANCE).unwrap())?;
-        let res = Executor::new(problem, solver)
-            .configure(|state| state.param(init_param).max_iters(MAX_ITERS))
-            .timer(false)
-            .add_observer(
-                FitLogger {
-                    sample_iteration,
-                    objects: Rc::clone(&self.objects),
-                    params: self.params.clone(),
-                    triples: Rc::clone(&self.triples),
-                    writer: Rc::clone(fit_log_writer),
-                },
-                ObserverMode::Always,
-            )
-            .run()
-            .with_context(|| "Couldn't solve the outer optimization problem")?;
-
-        let best_cost = res.state().get_best_cost();
-        let best_point = res.state().get_best_param().unwrap().clone();
-
-        // Prepare storage for the new parameters
-        let mut fit_params = self.params.clone();
-        fit_params.update_with(&best_point);
         // Compute the derived values
         self.params.theta_0 = self.params.r_0 * self.params.omega_0;
         self.params.theta_1 = self.params.omega_0 - 2. * self.params.a;

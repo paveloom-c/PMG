@@ -77,7 +77,7 @@ where
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub fn find_outliers(&mut self) -> Result<(Vec<(usize, usize, F)>, F, F)> {
+    pub fn find_outliers(&mut self, l_stroke: usize) -> Result<(Vec<(usize, usize, F)>, F, F)> {
         // Find the appropriate coefficient
         let kappa = {
             let problem = KProblem {
@@ -90,7 +90,7 @@ where
                 .configure(|state| state.param(init_param).max_iters(1000))
                 .timer(false)
                 .run()
-                .with_context(|| "Couldn't solve the discrepancies problem")?;
+                .with_context(|| "Couldn't solve the `k` problem")?;
             *res.state().get_best_param().unwrap()
         };
 
@@ -105,7 +105,7 @@ where
                 .configure(|state| state.param(init_param).max_iters(1000))
                 .timer(false)
                 .run()
-                .with_context(|| "Couldn't solve the discrepancies problem")?;
+                .with_context(|| "Couldn't solve the `k` problem")?;
             *res.state().get_best_param().unwrap()
         };
 
@@ -132,21 +132,16 @@ where
                 .collect();
 
             if !outliers.is_empty() {
-                // Find the smallest discrepancy
-                let mut smallest_pair_index = 0;
-                let mut smallest_rel_discrepancy = F::infinity();
-                {
-                    for (j, (_, rel_discrepancy)) in outliers.iter().enumerate() {
-                        if *rel_discrepancy < smallest_rel_discrepancy {
-                            smallest_pair_index = j;
-                            smallest_rel_discrepancy = *rel_discrepancy;
-                        }
-                    }
-                }
+                // Sort the outliers, the smallest discrepancy first
+                outliers.sort_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap());
 
-                // Remove it from the outliers if it's small enough
-                if smallest_rel_discrepancy <= k_005 {
-                    outliers.swap_remove(smallest_pair_index);
+                // Remove L' outliers if they're small enough
+                let len = l_stroke.min(outliers.len());
+                for j in (0..len).rev() {
+                    let (_, rel_discrepancy) = outliers[j];
+                    if *rel_discrepancy <= k_005 {
+                        outliers.swap_remove(j);
+                    }
                 }
 
                 // Mark the rest as outliers

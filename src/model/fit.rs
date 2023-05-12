@@ -12,6 +12,7 @@ mod outliers;
 pub mod params;
 mod profiles;
 pub mod rotcurve;
+mod sigma_outer;
 mod steepest_descent;
 
 use super::io;
@@ -24,3 +25,4 @@ pub use inner::{compute_relative_discrepancy, InnerOptimizationProblem, Triple, 
 pub use outer::OuterOptimizationProblem;
 pub use profiles::{ProfileType, Profiles};
 pub use rotcurve::RotationCurve;
+pub use sigma_outer::SigmaOuterOptimizationProblem;
