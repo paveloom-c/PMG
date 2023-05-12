@@ -32,13 +32,13 @@ echo -e "${PAD}> Fit near the solar circle (with errors and profiles)..."
   --n-best "${N_BEST_SOLAR}" \
   --n-max "${N_MAX_SOLAR}" \
   --with-errors \
-  --with-conditional-profiles
-echo -e "${PAD}> Fit HMSFRs (with errors)..."
+  --with-conditional-profiles 2>/dev/null
+echo -e "${PAD}> Fit HMSFRs (with errors and profiles)..."
 "${PMG}" -i "${I_HMSFRS}" -o "${R_HMSFRS}" --goal fit \
   --n-best "${N_BEST_HMSFRS}" \
   --n-max "${N_MAX_HMSFRS}" \
   --with-errors \
-  --with-conditional-profiles
+  --with-conditional-profiles 2>/dev/null
 
 echo -e "
 ${PAD}Step 3. Plot the comparison charts for the objects that are

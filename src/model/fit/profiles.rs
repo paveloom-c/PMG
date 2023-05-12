@@ -9,7 +9,6 @@ use super::{Model, PARAMS_N, PARAMS_NAMES};
 use crate::utils::FiniteDiff;
 
 use alloc::rc::Rc;
-use argmin::core::observers::{ObserverMode, SlogLogger};
 use core::cell::RefCell;
 use core::fmt::{Debug, Display};
 use core::iter::Sum;
@@ -105,8 +104,6 @@ impl<F> Model<F> {
         // Compute conditional profiles (one parameter is fixed
         // and externally varied, the rest are free)
         for index in 0..=(8 + (n - 1)) {
-            eprintln!("conditional: index: {}", index + 1);
-
             let fit_param = fit_params[index];
             let fit_param_ep = fit_params_ep[index];
             let fit_param_em = fit_params_em[index];
@@ -119,8 +116,6 @@ impl<F> Model<F> {
             let mut profile = Vec::<ProfilePoint<F>>::with_capacity(POINTS_N);
 
             for j in 0..=POINTS_N {
-                eprintln!("conditional: j: {j}");
-
                 let param = start + F::from(j).unwrap() * h;
 
                 let problem = FrozenOuterOptimizationProblem {
@@ -142,7 +137,6 @@ impl<F> Model<F> {
                 // Find the local minimum in the outer optimization
                 let res = Executor::new(problem, solver)
                     .configure(|state| state.param(init_param).max_iters(MAX_ITERS))
-                    .add_observer(SlogLogger::term(), ObserverMode::Always)
                     .timer(false)
                     .run()
                     .with_context(|| {

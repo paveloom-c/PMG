@@ -147,7 +147,6 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
     #[allow(clippy::indexing_slicing)]
     #[allow(clippy::many_single_char_names)]
     #[allow(clippy::pattern_type_mismatch)]
-    #[allow(clippy::semicolon_outside_block)]
     #[allow(clippy::similar_names)]
     #[allow(clippy::too_many_lines)]
     #[allow(clippy::unwrap_in_result)]

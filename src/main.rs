@@ -87,15 +87,10 @@ pub fn main() -> Result<()> {
 
             let mut sample_iteration = 0;
             'samples: loop {
-                eprintln!("sample_iteration: {sample_iteration}");
                 'strokes: for l_stroke in [3, 1] {
-                    eprintln!("l_stroke: {l_stroke}");
-
                     // Fit the parameters for each model
                     for i in 0..args.n_max {
                         let n = i + 1;
-
-                        eprintln!("n: {n}");
 
                         let model = &mut models[i];
                         let fit_log_writer = &fit_log_writers[i];
@@ -174,12 +169,8 @@ pub fn main() -> Result<()> {
             serialize_n_results(&args, &models)
                 .with_context(|| "Couldn't serialize the `n` results")?;
 
-            eprintln!("errors");
-
             for i in 0..args.n_max {
                 let n = i + 1;
-
-                eprintln!("n: {n}");
 
                 let model = &mut models[i];
                 if model.fit_params.is_none() {
@@ -215,8 +206,6 @@ pub fn main() -> Result<()> {
                 write_fit_rotcurve_to_plain(&args, &models)
                     .with_context(|| "Couldn't write to the `fit_rotcurve.plain` file")?;
             }
-
-            eprintln!("conditional");
 
             let best_model = &mut models[best_i];
             if args.with_conditional_profiles {
