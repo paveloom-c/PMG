@@ -117,34 +117,61 @@ pub fn main() -> Result<()> {
                         writeln!(outliers_log_writer, "best_n: {best_n}")?;
                         writeln!(outliers_log_writer, "l_stroke: {l_stroke}")?;
 
-                        let (all_outliers, k_1, k_005) = best_model
+                        let (one_dimensional_outliers, four_dimensional_outliers) = best_model
                             .find_outliers(l_stroke)
                             .with_context(|| "Couldn't check for outliers")?;
 
-                        if all_outliers.is_empty() {
+                        if one_dimensional_outliers.vec.is_empty()
+                            && four_dimensional_outliers.vec.is_empty()
+                        {
                             if l_stroke == 3 {
                                 continue 'strokes;
                             }
                             break 'samples;
                         }
 
-                        writeln!(
-                            outliers_log_writer,
-                            "\nm{s:1}rel_discrepancy{s:3}kappa{s:13}k_005{s:13}i{s:3}source name",
-                            s = " "
-                        )?;
                         let objects = best_model.objects.borrow();
-                        for &(m, i, rel_discrepancy) in &all_outliers {
-                            let object = &objects[i];
+                        if !one_dimensional_outliers.vec.is_empty() {
                             writeln!(
                                 outliers_log_writer,
-                                "{} {rel_discrepancy:<17.15} {k_1:<17.15} {k_005:<17.15} {:<3} {:6} {}",
-                                m + 1,
-                                i + 1,
-                                object.source.as_ref().unwrap(),
-                                object.name.as_ref().unwrap(),
+                                "\none-dimensional:\nm{s:1}rel_discrepancy{s:3}kappa{s:13}k_005{s:13}i{s:3}source name",
+                                s = " "
                             )?;
+                            for &(m, i, rel_discrepancy) in &one_dimensional_outliers.vec {
+                                let object = &objects[i];
+                                writeln!(
+                                    outliers_log_writer,
+                                    "{} {rel_discrepancy:<17.15} {:<17.15} {:<17.15} {:<3} {:6} {}",
+                                    m + 1,
+                                    one_dimensional_outliers.kappa,
+                                    one_dimensional_outliers.k_005,
+                                    i + 1,
+                                    object.source.as_ref().unwrap(),
+                                    object.name.as_ref().unwrap(),
+                                )?;
+                            }
                         }
+                        if !four_dimensional_outliers.vec.is_empty() {
+                            writeln!(
+                                outliers_log_writer,
+                                "\nfour-dimensional:\nz{s:18}kappa{s:14}k_005{s:14}i{s:3}source name",
+                                s = " "
+                            )?;
+                            for &(i, rel_discrepancy) in &four_dimensional_outliers.vec {
+                                let object = &objects[i];
+                                writeln!(
+                                    outliers_log_writer,
+                                    "{rel_discrepancy:<17.15} {:<18.15} {:<18.15} {:<3} {:6} {}",
+                                    four_dimensional_outliers.kappa,
+                                    four_dimensional_outliers.k_005,
+                                    i + 1,
+                                    object.source.as_ref().unwrap(),
+                                    object.name.as_ref().unwrap(),
+                                )?;
+                            }
+                        }
+
+                        outliers_log_writer.flush()?;
                     }
 
                     // Update the outliers
