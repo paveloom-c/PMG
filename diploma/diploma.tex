@@ -6,21 +6,37 @@
 
 \linespread{1.0}
 
-\usepackage[english, russian]{babel}
-
 \usepackage{fontspec}
-\setmainfont[
-  Ligatures=TeX,
+\defaultfontfeatures{Ligatures={TeX}}
+\setmainfont{cmun}[
   Extension=.otf,
-  BoldFont=cmunbx,
-  ItalicFont=cmunti,
-  BoldItalicFont=cmunbi,
-]{cmunrm}
-\usepackage{unicode-math}
+  UprightFont=*rm,
+  ItalicFont=*ti,
+  BoldFont=*bx,
+  BoldItalicFont=*bi,
+]
+\setsansfont{cmun}[
+  Extension=.otf,
+  UprightFont=*ss,
+  ItalicFont=*si,
+  BoldFont=*sx,
+  BoldItalicFont=*so,
+]
+\setmonofont{cmun}[
+  Extension=.otf,
+  UprightFont=*btl,
+  ItalicFont=*bto,
+  BoldFont=*tb,
+  BoldItalicFont=*tx,
+]
+\usepackage[main=russian,english]{babel}
 
+\usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{gensymb}
 
 \usepackage{tocloft}
+\setcounter{tocdepth}{4}
 
 \usepackage[bookmarks=false,hidelinks]{hyperref}
 \hypersetup{pdfstartview={FitH}, pdfauthor={Павел Соболев}}
@@ -39,6 +55,7 @@
 
 \usepackage[
   backend=biber,
+  autolang=other,
   sorting=ynt,
   style=phys,
   biblabel=brackets,
@@ -47,7 +64,7 @@
 ]{biblatex}
 \addbibresource{refs.bib}
 \DeclareDelimFormat{finalnamedelim}{\addcomma\space}
-\defbibheading{bibintoc}{\phantomsection\addcontentsline{toc}{section}{\bibname}\hyperlink{TOC}{\section*{\bibname}}}
+\defbibheading{bibintoc}{\phantomsection\addcontentsline{toc}{section}{\bibname}\hyperlink{toc}{\section*{\bibname}}}
 \AtEveryBibitem{
   \clearfield{urlyear}
   \clearfield{urlmonth}
@@ -60,6 +77,10 @@
 
 \newcommand{\su}{\vspace{-0.5em}}
 \newcommand{\npar}{\par\vspace{\baselineskip}}
+
+\makeatletter
+\newcommand\subsubsubsection{\@startsection{paragraph}{4}{\z@}{-2.5ex\@plus -1ex \@minus -.25ex}{1.25ex \@plus .25ex}{\normalfont\normalsize\bfseries}}
+\makeatother
 
 \begin{document}
 
@@ -177,7 +198,7 @@
   \end{center}
 \end{titlepage}
 
-\hypertarget{TOC}{}
+\hypertarget{toc}{}
 \tableofcontents
 
 \setcounter{page}{3}
@@ -185,7 +206,7 @@
 \newpage
 
 \setcounter{secnumdepth}{-1}
-\hyperlink{TOC}{\section{Введение}}
+\hyperlink{toc}{\section{Введение}}
 
 Настоящая выпускная квалификационная работа посвящена пространственно-кинематическому моделированию плоской подсистемы Галактики. Под этим подразумевается аналитическое построение кинематической модели Галактики и использование её для определения параметров вращения (постоянной Оорта $ A $, линейной скорости вращения на солнечном круге $ \theta_0 $ и др.) вкупе с определением масштабного параметра --- расстояния от Солнца до центра Галактики ($ R_0 $). Как следствие, сюда же включается и построение галактической кривой вращения. Результаты достигаются путем решения связанной с моделью задачи оптимизации на выборке мазерных источников с имеющимися данными об их положениях и скоростях.
 
@@ -199,21 +220,21 @@
 
 Благодаря осознанию важности определения основных галактических характеристик на совершенствование методов моделирования Галактики было затрачено много усилий, однако вопрос получения достаточно точных для использования в большинстве приложений оценок этих параметров до сих пор остается открытым. Это является второй причиной актуальности данной работы. Так, полученные с середины 70-х гг. XX века оценки $ R_0 $ охватывают интервал от 6 до 10.5 кпк \cite{K.L.1986, F.1987, R.1993}. На основании найденного в обзоре \cite{K.L.1986} среднего арифметического $ R_0 = 8.54 \pm 1.1 $ кпк по 25 оценкам $ R_0 $, полученным в 1974-1986 гг., 33-я комиссия МАС рекомендовала использовать новое стандартное значение $ R_0 = 8.5 $ кпк, сменившее старый стандарт МАС 1964 г. $ R_0 = 10 $ кпк (см. \cite{F.T.1991}). В более поздних обзорах \cite{R.1993, N.2004} средняя оценка $ R_0 $ расположена около 8 кпк. Со временем разброс уменьшается, но медленно. В работах 90-х годов ХХ века и более поздних оценки варьировались от 6.5 до 9 кпк.
 
-\textbf{Цель} данной работы --- разработать наиболее корректный метод пространственно-кинематического моделирования и применить его к данным о подсистеме опорных объектов. Корректность здесь достигается использованием трехмерного поля скоростей (включаются данные и о лучевых скоростях, и о собственных движениях); определением остаточного движения Солнца; учетом вклада природной дисперсии; учетом случайных ошибок гелиоцентрических расстояний; оптимизацией порядка модели (порядка полинома Тейлора при разложении кривой вращения); использованием гибкого алгоритма для определения выбросов по невязкам \cite{N.2012}.
+\textbf{Цель} данной работы --- разработать наиболее корректный метод пространственно"=кинематического моделирования и применить его к данным о подсистеме опорных объектов. Корректность здесь достигается использованием трехмерного поля скоростей (включаются данные и о лучевых скоростях, и о собственных движениях); определением остаточного движения Солнца; учетом вклада природной дисперсии; учетом случайных ошибок гелиоцентрических расстояний; оптимизацией порядка модели (порядка полинома Тейлора при разложении кривой вращения); использованием гибкого алгоритма для определения выбросов по невязкам \cite{N.2012}.
 
-В качестве опорных объектов используются мазеры. Опорные расстояния данных объектов определяются абсолютными методами (параллаксы определяются напрямую геометрическим методом c помощью радиоинтерферометрии со сверхдлинной базой), а значит, сравнительно менее подвержены систематическим ошибкам, характерным при использовании относительных методов (например, при использовании шкал расстояний). Плюсом также является точность измерений: для большей части имеющихся измерений были определены ошибки параллаксов и собственных движений, не превышающие соответственно 10\% и 1 мсд год$^{-1}$, а зависимость ошибки параллакса обратно пропорциональна гелиоцентрическому расстоянию \cite{N.V.2018}. Минусом применения данного типа объектов является относительная малочисленность данных: по сравнению с наборами данных для звезд красного сгущения (например, более 50 тысяч объектов в каталоге APOGEE-RC DR-17 \cite{DR17-APOGEE}), мазерных источников с полным набором кинематических данных на данный момент набирается чуть более пары сотен (хотя их число всё же увеличивается со временем). Автором данной работы объединены и дополнены каталоги VERA (2020) \cite{VERA.2020} и Рид и др. (2019) \cite{Reid.2019}.
+В качестве опорных объектов используются мазеры. Опорные расстояния данных объектов определяются абсолютными методами (параллаксы определяются напрямую геометрическим методом c помощью радиоинтерферометрии со сверхдлинной базой), а значит, сравнительно менее подвержены систематическим ошибкам, характерным при использовании относительных методов (например, при использовании шкал расстояний). Плюсом также является точность измерений: для большей части имеющихся измерений были определены ошибки параллаксов и собственных движений, не превышающие соответственно 10\% и 1 мсд год$^{-1}$, а зависимость ошибки параллакса обратно пропорциональна гелиоцентрическому расстоянию \cite{N.V.2018}. Минусом применения данного типа объектов является относительная малочисленность данных: по сравнению с наборами данных для звезд красного сгущения (например, более 50 тысяч объектов в каталоге APOGEE-RC DR-17 \cite{DR17-APOGEE}), мазерных источников с полным набором кинематических данных на данный момент набирается чуть более пары сотен (хотя их число всё же увеличивается со временем). Автором данной работы объединены и дополнены каталоги VERA (2020) \cite{VERA.2020} и Рид и др. (2019) \cite{R.2019}.
 
 \newpage
 
-\setcounter{secnumdepth}{3}
+\setcounter{secnumdepth}{4}
 
-\hyperlink{TOC}{\section{Теория}}
+\hyperlink{toc}{\section{Теория}}
 
-\hyperlink{TOC}{\subsection{Основные предположения и определения}}
+\hyperlink{toc}{\subsection{Основные предположения и определения}}
 
 Использование кинематического метода определения $ R_0 $ и других параметров предполагает составление модели подсистемы Галактики. С этим связана проблема зависимости результата от модельных и оптимизационных предположений. Некоторые из предположений делаются ради упрощения модели.\npar
 
-\paragraph{Предположения:}
+\paragraph*{Предположения:}
 \begin{enumerate}
 \item Дифференциальное вращение Галактики является осесимметричным.
 \item Остаточное движение Солнца может быть найдено в процессе оптимизации.
@@ -224,16 +245,16 @@
 \item Оптимальный порядок $ n $ аппроксимирующего закон вращения полинома Тейлора может быть найден в ходе решения.
 \end{enumerate}
 
-\paragraph{Определения:}
+\paragraph*{Определения:}
 \begin{enumerate}
 \item Модельная скорость заданного объекта --- скорость центроида объектов
 данного типа, вычисленная для положения этого объекта.
 \item Стандарт покоя подсистемы (СПП) --- гелиоцентрическая система отсчета, по отношению к которой среднее азимутальное движение объектов подсистемы, находящихся сейчас в области солнечного кольца (в окрестности солнечного круга $ R = R_0 $), равно нулю, а также равны нулю среднее движение вдоль координаты X и среднее вертикальное движение всех объектов подсистемы (рассматриваемой выборки). Иными словами, СПП в данную эпоху проходит через местоположение Солнца с азимутальной скоростью, равной средней азимутальной скорости объектов из области солнечного кольца, и с X- и Z-компонентами скорости, равными средним X- и Z-скоростям объектов всей выборки.
 \end{enumerate}
 
-\hyperlink{TOC}{\subsection{Выражения для модельных величин наблюдаемых компонент 3D-скоростей}}
+\hyperlink{toc}{\subsection{Выражения для модельных величин наблюдаемых компонент 3D-скоростей}}
 
-\hyperlink{TOC}{\subsubsection{Лучевые скорости}}
+\hyperlink{toc}{\subsubsection{Лучевые скорости}}
 
 В предположении чисто кругового вращения модельная величина гелиоцентрической лучевой скорости данного объекта, $ V_{r,\text{mod}} $, в общем случае определяется выражениями
 
@@ -245,7 +266,7 @@
   V_{r,\odot} &= -u_\odot \cos{l} \cos{b} - v_\odot \sin{l} \cos{b} - w_\odot \sin{b},
 \end{align}
 
-\noindent где $ V_{r,\text{rot}} $ и $ V_{r,\odot} $ --- влияние на модельную лучевую скорость объекта вращения подсистемы и движения Солнца относительно СПП, соответственно; $ ω $ --- угловая скорость вращения подсистемы для точки, где находится рассматриваемый объект; $ ω_0 $ --- угловая скорость СПП; $ u_\odot $, $ v_\odot $, $ w_\odot $ --- компоненты остаточной скорости Солнца, т.е. компоненты движения Солнца относительно СПП в направлениях $ (l, b) = (0\degree, 0\degree) $, $ (l, b) = (90\degree, 0\degree) $ и $ b = 90\degree $, соответственно; $ l $ и $ b $ --- галактические координаты объекта.
+\noindent где $ V_{r,\text{rot}} $ и $ V_{r,\odot} $ --- влияние на модельную лучевую скорость объекта вращения подсистемы и движения Солнца относительно СПП, соответственно; $ \omega $ --- угловая скорость вращения подсистемы для точки, где находится рассматриваемый объект; $ \omega_0 $ --- угловая скорость СПП; $ u_\odot $, $ v_\odot $, $ w_\odot $ --- компоненты остаточной скорости Солнца, т.е. компоненты движения Солнца относительно СПП в направлениях $ (l, b) = (0\degree, 0\degree) $, $ (l, b) = (90\degree, 0\degree) $ и $ b = 90\degree $, соответственно; $ l $ и $ b $ --- галактические координаты объекта.
 
 В случае плоской подсистемы линейная скорость вращения центроидов $ \theta = \theta(R) $. Используем для представления $ \theta = \theta(R) $ модельный полином в виде многочлена Тейлора:
 
@@ -276,7 +297,7 @@
   A \equiv - \frac{1}{2} R_0 \omega'(R_0) = - \frac{1}{2} (\theta_1 - \omega_0).
 \end{equation}
 
-\hyperlink{TOC}{\subsubsection{Собственные движения по долготе}}
+\hyperlink{toc}{\subsubsection{Собственные движения по долготе}}
 
 Определение: $ \mu_l \equiv \frac{dl}{dt} $, $ \mu_l' \equiv \frac{dl}{dt} \cos{b} = \mu_l \cos{b} $. В обозначениях, аналогичных использованным в случае $ V_r $, для модельного полинома \eqref{eq:model}
 
@@ -289,7 +310,7 @@
 
 \noindent где $ k = 4.7406 $ для $ r $ в кпк и $ \mu $ в мсд год$^{-1}$ \cite{G.N.O.2016}.
 
-\hyperlink{TOC}{\subsubsection{Собственные движения по широте}}
+\hyperlink{toc}{\subsubsection{Собственные движения по широте}}
 
 Определение: $ \mu_b \equiv \frac{db}{dt} $. Аналогично:
 
@@ -300,27 +321,416 @@
   k \mu_{b,\odot} &= (u_\odot \cos{l} \sin{b} + u_\odot \sin{l} \sin{b} - w_\odot \cos{b}) / r,
 \end{align}
 
-\hyperlink{TOC}{\subsection{Формулы редукции в случае мазеров}}
+\hyperlink{toc}{\subsection{Формулы редукции в случае мазеров}}
 
-\hyperlink{TOC}{\subsubsection{Переход от экваториальных сферических координат к галактическим}}
+\hyperlink{toc}{\subsubsection{Переход от экваториальных сферических координат к галактическим}}
 
 Если экваториальные координаты приведены на эпоху J2000.0, то $ l, b $ связаны с $ \alpha, \delta $ как
 
 \su\su
 \begin{align}
+  \label{eq:lb_start}
   \sin{b} &= \sin{\delta} \cos{(90\degree - \delta_p)} - \cos{\delta} \sin{(\alpha - \alpha_p - 6^\text{h})} \sin{(90\degree - \delta_p)},\\
   l &= \phi + (\theta - 90\degree),\\
   \sin{\phi} &= \left[ \cos{\delta} \sin{(\alpha - \alpha_p - 6^\text{h})} \cos{(90\degree - \delta_p)} + \sin{\delta} \sin{(90\degree - \delta_p)} \right] / \cos{b},\\
+  \label{eq:lb_end}
   \cos{\phi} &= \cos{\delta} \cos{(\alpha - \alpha_p - 6^\text{h})} / \cos{b},
 \end{align}
 
 \noindent где $ \alpha_p = 12^\text{h} 51^\text{m} 26^\text{s}.2817 $, $ \delta_p = 27\degree07'42''.013 $, $ \theta = 122\degree.932 $, $ \phi \in [0; 360) $ \cite{R.B.2004, R.2009}.
 
+\hyperlink{toc}{\subsubsection{Преобразование собственного движения в экваториальных координатах в собственное движение в галактических координатах}}
+
+В каталогах непосредственно приведены $ \mu_x = \mu_\alpha \cos{\delta} $ и $ \mu_y = \mu_\delta $ (\cite{R.2009} и последующие работы). Согласно рецепту Reid et al. (2009) \cite{R.2009}
+
+\su
+\begin{equation}
+  \mu_l = l(\alpha + \mu_\alpha, \delta + \mu_\delta) - l(\alpha, \delta), \quad \mu_b = b(\alpha, \delta),
+\end{equation}
+
+\noindent где $ l(\alpha, \delta) $, $ b(\alpha, \delta) $ находятся по формулам \eqref{eq:lb_start}--\eqref{eq:lb_end}.
+
+\hyperlink{toc}{\subsubsection{Восстановление гелиоцентрической скорости по скорости относительно Местного стандарта покоя}}
+
+В каталоге приведены $ V_\text{LSR} $, вычисленные для стандартного движения Солнца $ V_\odot = 20 $ км/с в направлении $ \alpha(1900) = 18^\text{h} $, $ \delta(1900) = +30\degree $, обычно принимаемого в обсерваториях при обработке радионаблюдений \cite{R.2009}. Параметры этого движения:
+
+\su
+\begin{equation}
+  u_\odot = 10.3 \text{ км/с}, \quad u_\odot = 15.3 \text{ км/с}, \quad w_\odot = 7.7 \text{ км/с}.
+\end{equation}
+
+\noindent Тогда
+
+\su
+\begin{equation}
+  V_r = V_\text{LSR} - u_\odot \cos{l} \cos{b} - v_\odot \sin{l} \cos{b} - w_\odot \sin{b}.
+\end{equation}
+
+\hyperlink{toc}{\subsection{Преобразование лучевой скорости и собственного движения в линейные компоненты 3D-скорости для разных систем координат}}
+
+\hyperlink{toc}{\subsubsection{Вычисление компонент скорости в галактических координатах}}
+
+В общем случае
+
+\su
+\begin{equation}
+  \label{eq:V_l_V_b}
+  V_l \equiv r \mu_l' = r \mu_l \cos{b} = r \frac{dl}{dt} \cos{b}, \quad V_b = r \mu_b = r \frac{db}{dt}.
+\end{equation}
+
+Для компонент скорости, выраженных в километрах в секунду,
+
+\su
+\begin{equation}
+  \label{eq:V_l_V_b_with_k}
+  V_l \; [\text{км/с}] = k r \mu_l \cos{b} = k r \mu_l', \quad V_b \; [\text{км/с}] = k r \mu_b,
+\end{equation}
+
+\noindent где $ k = 4.7406 $ для $ r $ в кпк и $ \mu $ в мсд/год = mas y$^{-1}$, $ r $ [кпк] = $ 1 / \varpi $, где $ \varpi $ [мсд] -- параллакс, приведенный в каталоге.
+
+\hyperlink{toc}{\subsubsection{Переход к компонентам скорости в декартовых гелиоцентрических координатах}}
+
+Декартовы гелиоцентрические координаты:
+
+\su\su
+\begin{align}
+  X &= r \cos{l} \cos{b},\\
+  Y &= r \sin{l} \cos{b},\\
+  Z &= r \sin{b}.
+\end{align}
+
+Тогда компоненты скорости в этих координатах выражаются следующим образом:
+
+\su\su
+\begin{align}
+  U &\equiv \dot{X} = V_r \cos{l} \cos{b} - r \sin{l} \, \mu_l \cos{b} - r \cos{l} \sin{b} \, \mu_b,\\
+  V &\equiv \dot{Y} = V_r \sin{l} \cos{b} + r \cos{l} \, \mu_l \cos{b} - r \sin{l} \sin{b} \, \mu_b,\\
+  W &\equiv \dot{Z} = V_r \sin{b} + r \cos{b} \, \mu_b,
+\end{align}
+
+\noindent или, учитывая \eqref{eq:V_l_V_b},
+
+\su\su
+\begin{align}
+  \label{eq:U}
+  U &= (V_r \cos{b} - V_b \sin{b}) \cos{l} - V_l \sin{l},\\
+  \label{eq:V}
+  V &= (V_r \cos{b} - V_b \sin{b}) \sin{l} + V_l \cos{l},\\
+  \label{eq:W}
+  W &= V_b \cos{b} + V_r \sin{b}.
+\end{align}
+
+Для вычисления $ U $, $ V $ и $ W $, выраженных в километрах в секунду, в \eqref{eq:U}--\eqref{eq:W} следует подставлять значения $ V_l $ и $ V_b $, найденные по формулам \eqref{eq:V_l_V_b_with_k}.
+
+\hyperlink{toc}{\subsubsection{Переход к галактоцентрической системе координат, связанной с Солнцем}}
+
+Согласно формализму работы \cite{R.2009},
+
+\su
+\begin{equation}
+  \label{eq:U_g_V_g_W_g}
+  U_\text{g} = U + u_\odot, \quad V_\text{g} = V + \theta_\odot, \quad W_\text{g} = W + w_\odot,
+\end{equation}
+
+\noindent где используются значения компонент остаточного движения Солнца $ u_\odot $, $ w_\odot $ и линейной скорости вращения Солнца вокруг центра Галактики $ \theta_\odot = R_0 \omega_0 + v_\odot $, найденные при использовании уравнений раздела 1.1 по данным о скоростях и расстояниях, или, при отсутствии такого решения, подставляются результаты из \cite{R.2019}, полученные по мазерам: $ u_\odot = 10.7 $ км с$^{−1}$, $ \theta_\odot = 247 $ км с$^{−1}$, $ w_\odot = 7.7 $ км с$^{−1}$ (здесь $ u_\odot = u_\text{LSR} $ и $ w_\odot = w_\text{LSR} $ --- компоненты пекулярной скорости Солнца относительно МСП).
+
+\hyperlink{toc}{\subsubsection{Переход к галактоцентрической системе координат, связанной с объектом}}
+
+\hyperlink{toc}{\subsubsubsection{$\Lambda$-параметризация}}
+
+Согласно формализму работы \cite{R.2009},
+
+\su\su
+\begin{align}
+  \label{eq:Pi}
+  \Pi &\equiv -\dot{R} = U_\text{g} \cos{\Lambda} - V_\text{g} \sin{\Lambda},\\
+  \label{eq:theta}
+  \theta &\equiv \dot{\Lambda} R = U_\text{g} \sin{\Lambda} + V_\text{g} \cos{\Lambda},\\
+  \Upsilon &\equiv \dot{Z} = W_\text{g}.
+\end{align}
+
+Здесь $ \Lambda $ --- галактоцентрическая долгота объекта, которая отсчитывается от направления из центра Галактики на Солнце в сторону вращения Галактики:
+
+\su
+\begin{equation}
+  \sin{\Lambda} = \frac{r \cos{b}}{R} \sin{l}, \quad \cos{\Lambda} = \frac{R_0 - r \cos{b} \cos{l}}{R};
+\end{equation}
+
+\noindent $ \Pi $, $ \theta $, $ \Upsilon $ --- радиальная (положительная к центру Галактики), азимутальная и вертикальная (положительная к северному полюсу Галактики) скорости объекта, соответственно. При отсутствии собственной оценки $ R_0 = 8.15 $ кпк \cite{R.2019}.
+
+\hyperlink{toc}{\subsubsubsection{$\varphi$-параметризация}}
+
+Вместо угла $ \Lambda $ можно ввести угол $ \varphi $ с вершиной в точке $ O' $ проекции объекта $ O $ на плоскость Галактики между направлением на центр Галактики и линией $ l = \text{const} $, $ b = 0\degree $ (между проекциями большой оси эллипсоида скоростей и луча зрения на плоскость Галактики) \cite{R.2017}. Угол $ \varphi $ отсчитывается против часовой стрелки, если смотреть с северного полюса Галактики. Очевидно, что $ \Lambda + l + \pi − \varphi = \pi $. Отсюда
+
+\su
+\begin{equation}
+  \label{eq:lambda_varphi}
+  \Lambda = \varphi - l, \quad \varphi = \Lambda + l.
+\end{equation}
+
+Тогда
+
+\su\su
+\begin{align}
+  \label{eq:sin_phi}
+  \sin{\varphi} &= \sin{\Lambda} \cos{l} + \cos{\Lambda} \sin{l},\\
+  \label{eq:cos_phi}
+  \cos{\varphi} &= \cos{\Lambda} \cos{l} - \sin{\Lambda} \sin{l},
+\end{align}
+
+\noindent или в силу \eqref{eq:lambda_varphi}
+
+\su\su
+\begin{align}
+  \notag
+  \sin{\varphi} &= \frac{r \cos{b}}{R} \sin{l} \cos{l} + \frac{R_0 - r \cos{b} \cos{l}}{R} \sin{l} =\\
+  &= \frac{\sin{l}}{R} (r \cos{b} \cos{l} + R_0 - r \cos{b} \cos{l}) = \frac{R_0 \sin{l}}{R}.\\
+  \notag
+  \cos{\varphi} &= \frac{R_0 - r \cos{b} \cos{l}}{R} \cos{l} - \frac{r \cos{b}}{R} \sin^2{l} =\\
+  &= \frac{1}{R} (R_0 \cos{l} - r \cos{b} \cos^2{l} - r \cos{b} \sin^2{l}) = \frac{R_0 \cos{l} - r \cos{b}}{R}.
+\end{align}
+
+$\Lambda$-параметризация удобнее при выражении галактоцентрических компонент скоростей через наблюдаемые компоненты. $\varphi$-параметризация, наоборот, удобнее при представлении наблюдаемых компонент через галактоцентрические.
+
+\hyperlink{toc}{\subsection{Вклад эллипсоида скоростей в природные дисперсии измеренных компонент скорости объекта}}
+
+\hyperlink{toc}{\subsubsection{Выражение компонент скорости $ V_r $, $ V_l $ и $ V_b $ через компоненты $ U $, $ V $ и $ W $}}
+
+\hyperlink{toc}{\subsubsubsection{$ V_r $ в функции $ U $, $ V $ и $ W $}}
+
+Используя \eqref{eq:W}, запишем:
+
+\su
+\begin{equation}
+  \label{eq:V_b}
+  V_b = \frac{W - V_r \sin{b}}{\cos{b}}.
+\end{equation}
+
+Комбинируя \eqref{eq:U} и \eqref{eq:V} и подставляя \eqref{eq:V_b}, получаем:
+
+\su\su
+\begin{gather}
+  \nonumber
+  U \cos{l} + V \sin{l} = V_r \cos{b} - V_b \sin{b} = V_r \cos{b} - \frac{W \sin{b}}{\cos{b}} + \frac{V_r \sin^2{b}}{\cos{b}} = \frac{V_r}{\cos{b}} - \frac{W \sin{b}}{\cos{b}}, \implies\\
+  \label{eq:V_r}
+  V_r = U \cos{l} \cos{b} + V \sin{l} \cos{b} + W \sin{b}.
+\end{gather}
+
+\hyperlink{toc}{\subsubsubsection{$ V_l $ в функции $ U $ и $ V $}}
+
+Комбинируя \eqref{eq:U} и \eqref{eq:V}, получаем:
+
+\su\su
+\begin{gather}
+  \nonumber
+  U \sin{l} - V \cos{l} = -V_l \sin^2{l} - V_l \cos^2{l} = -V_l, \implies\\
+  \label{eq:V_l}
+  V_l = -U \sin{l} + V \cos{l}.
+\end{gather}
+
+\hyperlink{toc}{\subsubsubsection{$ V_b $ в функции $ U $, $ V $ и $ W $}}
+
+Подставляя \eqref{eq:V_r} в \eqref{eq:V_b}, получаем:
+
+\su\su
+\begin{gather}
+  \nonumber
+  V_b = \frac{W}{\cos{b}} - U \cos{l} \sin{b} - V \sin{l} \sin{b} - W \frac{\sin^2{b}}{\cos{b}}, \implies\\
+  \label{eq:V_b}
+  V_b = -U \cos{l} \sin{b} - V \sin{l} \sin{b} + W \cos{b}.
+\end{gather}
+
+\hyperlink{toc}{\subsubsection{Дисперсии компонент скорости $ V_r $, $ V_l $, $ V_b $ и собственных движений $ \mu_l' $, $ \mu_b $ как функции дисперсий компонент $ U $, $ V $ и $ W $}}
+
+Из выражений \eqref{eq:V_r}--\eqref{eq:V_b} в предположении отсутствия корреляции между $ U $, $ V $ и $ W $ по формуле распространения ошибок получаем следующие выражения для природных дисперсий линейных скоростей:
+
+\su\su
+\begin{align}
+  \sigma_{V_r}^{\ast 2} &= \sigma_U^2 \cos^2{l} \cos^2{b} + \sigma_V^2 \sin^2{l} \cos^2{b} + \sigma_W^2 \sin^2{b},\\
+  \sigma_{V_l}^{\ast 2} &= \sigma_U^2 \sin^2{l} + \sigma_V^2 \cos^2{l},\\
+  \sigma_{V_b}^{\ast 2} &= \sigma_U^2 \cos^2{l} \sin^2{b} + \sigma_V^2 \sin^2{l} \sin^2{b} + \sigma_W^2 \cos^2{b}.
+\end{align}
+
+В силу \eqref{eq:V_l_V_b_with_k} $ \mu_l' = V_l / (k r) $. Тогда для дисперсий собственных движений имеем:
+
+\su\su
+\begin{align}
+  \sigma_{\mu_l'}^{\ast 2} &= \frac{1}{k^2 r^2} (\sigma_U^2 \sin^2{l} + \sigma_V^2 \cos^2{l}),\\
+  \sigma_{\mu_b}^{\ast 2} &= \frac{1}{k^2 r^2} (\sigma_U^2 \cos^2{l} \sin^2{b} + \sigma_V^2 \sin^2{l} \sin^2{b} + \sigma_W^2 \cos^2{b}).
+\end{align}
+
+\hyperlink{toc}{\subsubsection{Выражение компонент скорости $ V_r $, $ V_l $ и $ V_b $ через компоненты $ \Pi $, $ \theta $ и $ \Upsilon $}}
+
+Комбинируя \eqref{eq:Pi} и \eqref{eq:theta}, запишем компоненты скорости $ U_\text{g} $, $ V_\text{g} $ и $ W_\text{g} $ как функции компонент $ \Pi $, $ \theta $ и $ \Upsilon $:
+
+\su\su
+\begin{align}
+  \Pi \cos{\Lambda} + \theta \sin{\Lambda} &= U_\text{g} \cos^2{\Lambda} + U_\text{g} \sin^2{\Lambda} = U_\text{g},\\
+  \Pi \sin{\Lambda} - \theta \cos{\Lambda} &= -V_\text{g} \sin^2{\Lambda} - V_\text{g} \cos^2{\Lambda} = -V_\text{g}.
+\end{align}
+
+Таким образом,
+
+\su\su
+\begin{align}
+  \label{eq:U_g}
+  U_\text{g} &= \Pi \cos{\Lambda} + \theta \sin{\Lambda},\\
+  V_\text{g} &= -\Pi \sin{\Lambda} + \theta \cos{\Lambda},\\
+  \label{eq:W_g}
+  W_\text{g} &= \Upsilon.
+\end{align}
+
+\hyperlink{toc}{\subsubsubsection{В $\Lambda$-параметризации}}
+
+Подставим \eqref{eq:U_g}--\eqref{eq:W_g} в \eqref{eq:V_r}, учитывая \eqref{eq:U_g_V_g_W_g}:
+
+\su\su
+\begin{align}
+  \label{eq:V_r_Lambda}\nonumber
+  V_r &= (U_\text{g} - u_\odot) \cos{l} \cos{b} + (V_\text{g} - \theta_\odot) \sin{l} \cos{b} + (W_\text{g} - w_\odot) \sin{b} =\\
+  \nonumber
+  &= (\Pi \cos{\Lambda} + \theta \sin{\Lambda} - u_\odot) \cos{l} \cos{b} + (-\Pi \sin{\Lambda} + \theta \cos{\Lambda} - \theta_\odot) \sin{l} \cos{b} + {}\\
+  &+ (\Upsilon - w_\odot) \sin{b}.
+\end{align}
+
+Подставим \eqref{eq:U_g}--\eqref{eq:W_g} в \eqref{eq:V_l}, учитывая \eqref{eq:U_g_V_g_W_g}:
+
+\su\su
+\begin{align}
+  \label{eq:V_l_Lambda}\nonumber
+  V_l &= -(U_\text{g} - u_\odot) \sin{l} + (V_\text{g} - \theta_\odot) \cos{l} =\\
+  &= -(\Pi \cos{\Lambda} + \theta \sin{\Lambda} - u_\odot) \sin{l} + (-\Pi \sin{\Lambda} + \theta \cos{\Lambda} - \theta_\odot) \cos{l}.
+\end{align}
+
+Подставим \eqref{eq:U_g}--\eqref{eq:W_g} в \eqref{eq:V_b}, учитывая \eqref{eq:U_g_V_g_W_g}:
+
+\su\su
+\begin{align}
+  \label{eq:V_b_Lambda}\nonumber
+  V_b &= -(U_\text{g} - u_\odot) \cos{l} \sin{b} - (V_g - \theta_\odot) \sin{l} \sin{b} + (W_g - w_\odot) \cos{b} =\\
+  \nonumber
+  &= -(\Pi \cos{\Lambda} + \theta \sin{\Lambda} - u_\odot) \cos{l} \sin{b} - (-\Pi \sin{\Lambda} + \theta \cos{\Lambda} - \theta_\odot) \sin{l} \sin{b} + {}\\
+  &+ (\Upsilon - w_\odot) \cos{b}.
+\end{align}
+
+\hyperlink{toc}{\subsubsubsection{В $\varphi$-параметризации}}
+
+Сгруппировав в \eqref{eq:V_r_Lambda}--\eqref{eq:V_b_Lambda} члены при $ \Pi $ и $ \theta $ и используя соотношения \eqref{eq:sin_phi}--\eqref{eq:cos_phi}, получаем
+
+\su\su
+\begin{align}
+  \label{eq:V_r_phi}\nonumber
+  V_r &= \Pi (\cos{\Lambda} \cos{l} - \sin{\Lambda} \sin{l}) \cos{b} + \theta (\sin{\Lambda} \cos{l} + \cos{\Lambda} \sin{l}) \cos{b} + \Upsilon \sin{b} - {}\\
+  \nonumber
+  &- u_\odot \cos{l} \cos{b} - \theta_\odot \sin{l} \cos{b} - w_\odot \sin{b} = {}\\
+  &= \Pi \cos{\varphi} \cos{b} + \theta \sin{\varphi} \cos{b} + \Upsilon \sin{b} - u_\odot \cos{l} \cos{b} - \theta_\odot \sin{l} \cos{b} - w_\odot \sin{b},\\
+  V_l &= -\Pi \sin{\varphi} + \theta \cos{\varphi} + u_\odot \sin{l} - \theta_\odot \cos{l},\\
+  \label{eq:V_b_phi}
+  V_b &= -\Pi \cos{\varphi} \sin{b} - \theta \sin{\varphi} \sin{b} + \Upsilon \cos{b} + u_\odot \cos{l} \sin{b} + \theta_\odot \sin{l} \sin{b} - w_\odot \cos{b}.
+\end{align}
+
+Здесь коэффициенты при $ \Pi $, $ \theta $ и $ \Upsilon $ соответствуют элементам матрицы $ G_S $ в \cite{R.2017}.
+
+\hyperlink{toc}{\subsubsection{Дисперсии компонент скорости $ V_r $, $ V_l $, $ V_b $ и собственных движений $ \mu_l' $, $ \mu_b $ как функции дисперсий компонент $ \Pi $, $ \theta $ и $ \Upsilon $}}
+
+\hyperlink{toc}{\subsubsubsection{В $\Lambda$-параметризации}}
+
+Из выражений \eqref{eq:V_r_Lambda}--\eqref{eq:V_b_Lambda} в предположении отсутствия корреляции между $ \Pi $, $ \theta $ и $ \Upsilon $ по формуле распространения ошибок получаем соотношения для природных дисперсий линейных скоростей в функции дисперсий $ \mathbb{D} \Pi \equiv \sigma_R^2 $, $ \mathbb{D} \theta \equiv \sigma_\theta^2 $ и $ \mathbb{D} \Upsilon = \mathbb{D} W_g = \mathbb{D} W \equiv \sigma_Z^2 $:
+
+\su\su
+\begin{align}
+  \label{eq:sigma_V_r_ast_Lambda}\nonumber
+  \sigma_{V_r}^{\ast 2} = {} & \sigma_R^2 (\cos^2{\Lambda} \cos^2{l} \cos^2{b} - 2 \sin{\Lambda} \cos{\Lambda} \sin{l} \cos{l} \cos^2{b} + \sin^2{\Lambda} \sin^2{l} \cos^2{b}) + {}\\
+  \nonumber
+  {} + {} & \sigma_\theta^2 (\sin^2{\Lambda} \cos^2{l} \cos^2{b} + 2 \sin{\Lambda} \cos{\Lambda} \sin{l} \cos{l} \cos^2{b} + \cos^2{\Lambda} \sin^2{l} \cos^2{b}) + {}\\
+  \nonumber
+  {} + {} & \sigma_Z^2 \sin^2{b} = {}\\
+  \nonumber
+  {} = {} & \sigma_R^2 (\cos^2{\Lambda} \cos^2{l} - 2 \sin{\Lambda} \cos{\Lambda} \sin{l} \cos{l} + \sin^2{\Lambda} \sin^2{l}) \cos^2{b} + {}\\
+  {} + {} & \sigma_\theta^2 (\sin^2{\Lambda} \cos^2{l} + 2 \sin{\Lambda} \cos{\Lambda} \sin{l} \cos{l} + \cos^2{\Lambda} \sin^2{l}) \cos^2{b} + \sigma_Z^2 \sin^2{b},\\
+  \nonumber
+  \sigma_{V_l}^{\ast 2} = {} & \sigma_R^2 (\cos^2{\Lambda} \sin^2{l} + 2 \sin{\Lambda} \cos{\Lambda} \sin{l} \cos{l} + \sin^2{\Lambda} \cos^2{l}) + {}\\
+  {} + {} & \sigma_\theta^2 (\sin^2{\Lambda} \sin^2{l} - 2 \sin{\Lambda} \cos{\Lambda} \sin{l} \cos{l} + \cos^2{\Lambda} \cos^2{l}),\\
+  \label{eq:sigma_V_b_ast_Lambda}\nonumber
+  \sigma_{V_b}^{\ast 2} = {} & \sigma_R^2 (\cos^2{\Lambda} \cos^2{l} - 2 \sin{\Lambda} \cos{\Lambda} \sin{l} \cos{l} + \sin^2{\Lambda} \sin^2{l}) \sin^2{b} + {}\\
+  {} + {} & \sigma_\theta^2 (\sin^2{\Lambda} \cos^2{l} + 2 \sin{\Lambda} \cos{\Lambda} \sin{l} \cos{l} + \cos^2{\Lambda} \sin^2{l}) \sin^2{b} + \sigma_Z^2 \cos^2{b}.
+\end{align}
+
+\hyperlink{toc}{\subsubsubsection{В $\varphi$-параметризации}}
+
+Применяя к \eqref{eq:V_r_phi}--\eqref{eq:V_b_phi} формулу распространения ошибок в тех же предположениях или используя \eqref{eq:sigma_V_r_ast_Lambda}--\eqref{eq:sigma_V_b_ast_Lambda} с учетом соотношений \eqref{eq:sin_phi}--\eqref{eq:cos_phi} для $ \varphi $, находим выражения для дисперсий в этой параметризации:
+
+\su\su
+\begin{align}
+  \sigma_{V_r}^{\ast 2} &= \sigma_R^2 \cos^2{\varphi} \cos^2{b} + \sigma_\theta^2 \sin^2{\varphi} \cos^2{l} + \sigma_Z^2 \sin^2{b},\\
+  \sigma_{V_l}^{\ast 2} &= \sigma_R^2 \sin^2{\varphi} + \sigma_\theta^2 \cos^2{\varphi},\\
+  \sigma_{V_b}^{\ast 2} &= \sigma_R^2 \cos^2{\varphi} \sin^2{b} + \sigma_\theta^2 \sin^2{\varphi} \sin^2{b} + \sigma_Z^2 \cos^2{b}.
+\end{align}
+
+Природные стандарты собственных движений находятся по общим формулам:
+
+\su
+\begin{equation}
+  \sigma_{\mu_l'}^\ast = \frac{\sigma_{V_l}^\ast}{k r}, \quad \sigma_{\mu_b}^\ast = \frac{\sigma_{V_b}^\ast}{k r}.
+\end{equation}
+
+\hyperlink{toc}{\subsection{Алгоритм с учетом случайных ошибок гелиоцентрических расстояний}}
+
+Пусть расстояния $ r $ определяются методом тригонометрического параллакса: $ r $ = $ 1 / \varpi $, где $ \varpi $ --- измеренное значение параллакса со средней ошибкой измерения $ \sigma_\varpi $. Тогда функция правдоподобия в случае моделирования поля 3D-скоростей является произведением четырех плотностей вероятностей, соответствующих нормально распределенным случайным величинам $ V_r $, $ \mu_l' $, $ \mu_b $ и $ \varpi $:
+
+\su\su
+\begin{align}
+  \nonumber
+  L = \prod_{j = 1}^N & \frac{1}{\sqrt{2 \pi} (\sigma_{V_r})_j} \exp{\left\{ \frac{\left[ V_{r,j} - V_{r,\text{mod}} (\varpi_{0,j}) \right]^2}{2 (\sigma_{V_r})_j^2} \right\}} \frac{1}{\sqrt{2 \pi} (\sigma_{\mu_l'})_j} \exp{\left\{ \frac{\left[ \mu_{l,j}' - \mu_{l,\text{mod}}' (\varpi_{0,j}) \right]^2}{2 (\sigma_{\mu_l'})_j^2} \right\}} \times {}\\
+  {} \times {} & \frac{1}{\sqrt{2 \pi} (\sigma_{\mu_b})_j} \exp{\left\{ \frac{\left[ \mu_{b,j} - \mu_{b,\text{mod}} (\varpi_{0,j}) \right]^2}{2 (\sigma_{\mu_b})_j^2} \right\}} \frac{1}{\sqrt{2 \pi} \sigma_{\varpi,j}} \exp{\left\{ \frac{(\varpi_j - \varpi_{0,j})^2}{2 \sigma_{\varpi,j}^2} \right\}}
+\end{align}
+
+\noindent где $ V_{r,j} $, $ \mu_{l,j}' $, $ \mu_{b,j} $ и $ \varpi_j $ --- каталожные (измеренные) значения $ V_r $, $ \mu_l' $, $ \mu_b $ и $ \varpi $ для $j$-го объекта; $ \varpi_{0,j} $ --- приведенное значение параллакса $j$-го объекта. Итоговые дисперсии скоростных характеристик для $j$-го объекта представляют собой суммы двух составляющих:
+
+\su\su
+\begin{align}
+  (\sigma_{V_r})_j^2 &= (\tilde{\sigma}_{V_r})_j^2 + (\sigma_{V_r}^\ast)_j^2,\\
+  (\sigma_{\mu_l'})_j^2 &= (\tilde{\sigma}_{\mu_l'})_j^2 + (\sigma_{\mu_l'}^\ast)_j^2,\\
+  (\sigma_{\mu_b})_j^2 &= (\tilde{\sigma}_{\mu_b})_j^2 + (\sigma_{\mu_b}^\ast)_j^2,
+\end{align}
+
+\noindent где $ \tilde{\sigma}_j^2 $ --- измерительная дисперсия, $ \sigma_j^{\ast 2} = \sigma_j^{\ast 2}(l_j, b_j, \varpi_{0,j}; \sigma_R, \sigma_\theta, \sigma_Z) $ --- вклад природной дисперсии. Приведенный параллакс рассматривается как нормально распределенная случайная величина $ \Pi_{0,j} \sim \mathrm{N}(\varpi_j, \sigma_{\varpi,j}^2) $. Тройка величин $ (l_j, b_j, \varpi_{0,j}) $ определяет точку (неортогональной) проекции объекта на кинематическую модель (кривую вращения) с учетом всех неопределенностей.\par
+
+Тогда логарифмическая функция правдоподобия имеет вид
+
+\su\su
+\begin{align}
+  \nonumber
+  \mathcal{L} \equiv -\ln{L} &=
+  \begin{aligned}[t]
+    &-\sum_{j=1}^N \Biggl\{ -4 \ln{\sqrt{2 \pi}} - \ln{(\sigma_{V_r})_j} - \ln{(\sigma_{\mu_l'})_j} - \ln{(\sigma_{\mu_b})_j} - \ln{\sigma_{\varpi,j}} - {}\\
+    &-\frac{\left[ V_{r,j} - V_{r,\text{mod}}(\varpi_{0,j}) \right]^2}{2 (\sigma_{V_r})_j^2} - \frac{\left[ \mu_{l,j}' - \mu_{l,\text{mod}}'(\varpi_{0,j}) \right]^2}{2 (\sigma_{\mu_l'})_j^2} - {}\\
+    &-\frac{\left[ \mu_{b,j} - \mu_{b,\text{mod}}(\varpi_{0,j}) \right]^2}{2 (\sigma_{\mu_b})_j^2} - \frac{\left( \varpi_j - \varpi_{0,j} \right)^2}{2 \sigma_{\varpi,j}^2} \Biggr\} = {}
+  \end{aligned}\\
+  \nonumber
+  &= 4 N \ln{\sqrt{2 \pi}}
+  \begin{aligned}[t]
+    &+ \sum_{j=1}^N \left[ \ln{(\sigma_{V_r})_j} + \ln{(\sigma_{\mu_l'})_j} + \ln{(\sigma_{\mu_b})_j} + \ln{\sigma_{\varpi,j}} \right] + {}\\
+    &+ \frac{1}{2} \sum_{j=1}^N \min_{\varpi_{0,j}} \left\{ \frac{\left[ V_{r,j} - V_{r,\text{mod}}(\varpi_{0,j}) \right]^2}{(\sigma_{V_r})_j^2} + \frac{\left[ \mu_{l,j}' - \mu_{l,\text{mod}}'(\varpi_{0,j}) \right]^2}{(\sigma_{\mu_l'})_j^2} + {} \right.\\
+    &+ \left. \frac{\left[ \mu_{b,j} - \mu_{b,\text{mod}}(\varpi_{0,j}) \right]^2}{(\sigma_{\mu_b})_j^2} + \frac{\left( \varpi_j - \varpi_{0,j} \right)^2}{\sigma_{\varpi,j}^2} \vphantom{\frac{\left[ \mu_{l,j}' - \mu_{l,\text{mod}}'(\varpi_{0,j}) \right]^2}{(\sigma_{\mu_l'})_j^2}} \right\} = {}
+  \end{aligned}\\
+  &= \mathcal{L}^{(0)} + \mathcal{L}^{(1)}(\mathbf{a}),
+\end{align}
+
+\noindent где $ L^{(0)} = 4 N \ln{\sqrt{2 \pi}} = \text{const} $, $ \mathbf{a} = (R_0, \omega_0, A, \theta_2, \ldots, \theta_n, u_\odot, v_\odot, w_\odot, \sigma_R, \sigma_\theta, \sigma_Z) $ --- вектор параметров модели.\par
+
+Решение --- точечная оценка вектора $ \mathbf{a} $ --- для фиксированных модели и выборки дается минимизацией логарифмической функции правдоподобия:
+
+\su
+\begin{equation}
+  \mathcal{L}^{(1)}(\mathbf{a}) \rightarrow \min.
+\end{equation}
+
 \newpage
 
 \setcounter{secnumdepth}{-1}
 
-\hyperlink{TOC}{\section{Заключение}}
+\hyperlink{toc}{\section{Заключение}}
 
 \newpage
 
