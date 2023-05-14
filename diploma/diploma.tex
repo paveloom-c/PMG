@@ -73,14 +73,17 @@
 \usepackage{indentfirst}
 
 \usepackage{enumitem}
-\setlist{nosep}
-
-\newcommand{\su}{\vspace{-0.5em}}
-\newcommand{\npar}{\par\vspace{\baselineskip}}
 
 \makeatletter
 \newcommand\subsubsubsection{\@startsection{paragraph}{4}{\z@}{-2.5ex\@plus -1ex \@minus -.25ex}{1.25ex \@plus .25ex}{\normalfont\normalsize\bfseries}}
 \makeatother
+
+\renewcommand{\thesection}{\arabic{section}.}
+\renewcommand{\thesubsection}{\thesection\arabic{subsection}.}
+\renewcommand{\thesubsubsection}{\thesubsection\arabic{subsubsection}.}
+\renewcommand{\theparagraph}{\thesubsubsection\arabic{paragraph}.}
+
+\newcommand{\npar}{\par\vspace{\baselineskip}}
 
 \begin{document}
 
@@ -222,13 +225,13 @@
 
 \textbf{Цель} данной работы --- разработать наиболее корректный метод пространственно"=кинематического моделирования и применить его к данным о подсистеме опорных объектов. Корректность здесь достигается использованием трехмерного поля скоростей (включаются данные и о лучевых скоростях, и о собственных движениях); определением остаточного движения Солнца; учетом вклада природной дисперсии; учетом случайных ошибок гелиоцентрических расстояний; оптимизацией порядка модели (порядка полинома Тейлора при разложении кривой вращения); использованием гибкого алгоритма для определения выбросов по невязкам \cite{N.2012}.
 
-В качестве опорных объектов используются мазеры. Опорные расстояния данных объектов определяются абсолютными методами (параллаксы определяются напрямую геометрическим методом c помощью радиоинтерферометрии со сверхдлинной базой), а значит, сравнительно менее подвержены систематическим ошибкам, характерным при использовании относительных методов (например, при использовании шкал расстояний). Плюсом также является точность измерений: для большей части имеющихся измерений были определены ошибки параллаксов и собственных движений, не превышающие соответственно 10\% и 1 мсд год$^{-1}$, а зависимость ошибки параллакса обратно пропорциональна гелиоцентрическому расстоянию \cite{N.V.2018}. Минусом применения данного типа объектов является относительная малочисленность данных: по сравнению с наборами данных для звезд красного сгущения (например, более 50 тысяч объектов в каталоге APOGEE-RC DR-17 \cite{DR17-APOGEE}), мазерных источников с полным набором кинематических данных на данный момент набирается чуть более пары сотен (хотя их число всё же увеличивается со временем). Автором данной работы объединены и дополнены каталоги VERA (2020) \cite{VERA.2020} и Рид и др. (2019) \cite{R.2019}.
+В качестве опорных объектов используются мазеры. Опорные расстояния данных объектов определяются абсолютными методами (параллаксы определяются напрямую геометрическим методом c помощью радиоинтерферометрии со сверхдлинной базой), а значит, сравнительно менее подвержены систематическим ошибкам, характерным при использовании относительных методов (например, при использовании шкал расстояний). Плюсом также является точность измерений: для большей части имеющихся измерений были определены ошибки параллаксов и собственных движений, не превышающие соответственно 10\% и 1 мсд год$^{-1}$, а зависимость ошибки параллакса обратно пропорциональна гелиоцентрическому расстоянию \cite{N.V.2018}. Минусом применения данного типа объектов является относительная малочисленность данных: по сравнению с наборами данных для звезд красного сгущения \cite{V.2019} (например, более 50 тысяч объектов в каталоге APOGEE-RC DR-17 \cite{DR17-APOGEE}), мазерных источников с полным набором кинематических данных на данный момент набирается чуть более пары сотен (хотя их число всё же увеличивается со временем). Автором данной работы объединены и дополнены каталоги VERA (2020) \cite{VERA.2020} и Рид и др. (2019) \cite{R.2019}.
 
 \newpage
 
 \setcounter{secnumdepth}{4}
 
-\hyperlink{toc}{\section{Теория}}
+\hyperlink{toc}{\section[Пространственно-кинематическое моделирование плоской подсистемы Галактики]{Пространственно-кинематическое моделирование \\ плоской подсистемы Галактики}}
 
 \hyperlink{toc}{\subsection{Основные предположения и определения}}
 
@@ -257,64 +260,58 @@
 \hyperlink{toc}{\subsubsection{Лучевые скорости}}
 
 В предположении чисто кругового вращения модельная величина гелиоцентрической лучевой скорости данного объекта, $ V_{r,\text{mod}} $, в общем случае определяется выражениями
-
-\su\su
+%
 \begin{align}
   V_{r,\text{mod}} &= V_{r,rot} + V_{r,\odot},\\
   \label{eq:v_r_rot}
   V_{r,\text{rot}} &= (\omega - \omega_0) R_0 \sin{l} \cos{b},\\
   V_{r,\odot} &= -u_\odot \cos{l} \cos{b} - v_\odot \sin{l} \cos{b} - w_\odot \sin{b},
 \end{align}
-
-\noindent где $ V_{r,\text{rot}} $ и $ V_{r,\odot} $ --- влияние на модельную лучевую скорость объекта вращения подсистемы и движения Солнца относительно СПП, соответственно; $ \omega $ --- угловая скорость вращения подсистемы для точки, где находится рассматриваемый объект; $ \omega_0 $ --- угловая скорость СПП; $ u_\odot $, $ v_\odot $, $ w_\odot $ --- компоненты остаточной скорости Солнца, т.е. компоненты движения Солнца относительно СПП в направлениях $ (l, b) = (0\degree, 0\degree) $, $ (l, b) = (90\degree, 0\degree) $ и $ b = 90\degree $, соответственно; $ l $ и $ b $ --- галактические координаты объекта.
+%
+где $ V_{r,\text{rot}} $ и $ V_{r,\odot} $ --- влияние на модельную лучевую скорость объекта вращения подсистемы и движения Солнца относительно СПП, соответственно; $ \omega $ --- угловая скорость вращения подсистемы для точки, где находится рассматриваемый объект; $ \omega_0 $ --- угловая скорость СПП; $ u_\odot $, $ v_\odot $, $ w_\odot $ --- компоненты остаточной скорости Солнца, т.е. компоненты движения Солнца относительно СПП в направлениях $ (l, b) = (0\degree, 0\degree) $, $ (l, b) = (90\degree, 0\degree) $ и $ b = 90\degree $, соответственно; $ l $ и $ b $ --- галактические координаты объекта.
 
 В случае плоской подсистемы линейная скорость вращения центроидов $ \theta = \theta(R) $. Используем для представления $ \theta = \theta(R) $ модельный полином в виде многочлена Тейлора:
-
-\su
+%
 \begin{equation}
   \label{eq:model}
   \Theta_n(R) = \sum_{i=0}^n \frac{\theta_i}{i!} (\Delta R)^i, \quad n \ge 1, \quad \theta_i = \left. \frac{d^i \theta}{d R^i} \right|_{R = R_0},
 \end{equation}
-
-\noindent где
-
-\su
+%
+где
+%
 \begin{equation}
   \Delta R \equiv R - R_0, \quad R = \sqrt{R_0^2 + r^2 \cos{b}^2 - 2 R_0 r \cos{l} \cos{b}}.
 \end{equation}
-
-\noindent Здесь $ R $ --- галактоосевое расстояние, $ r $ --- гелиоцентрическое расстояние до объекта.\par
+%
+Здесь $ R $ --- галактоосевое расстояние, $ r $ --- гелиоцентрическое расстояние до объекта.
 
 Тогда модель \eqref{eq:v_r_rot} принимает общий вид
-
-\su
+%
 \begin{equation}
   V_{r,\text{rot}} = \left[ -2 A \Delta R + \sum_{i=2}^n \frac{\theta_i}{i!} (\Delta R)^i \right] \frac{R_0}{R} \sin{l} \cos{b},
 \end{equation}
-
-\su
+%
 \begin{equation}
+  \label{eq:A}
   A \equiv - \frac{1}{2} R_0 \omega'(R_0) = - \frac{1}{2} (\theta_1 - \omega_0).
 \end{equation}
 
 \hyperlink{toc}{\subsubsection{Собственные движения по долготе}}
 
 Определение: $ \mu_l \equiv \frac{dl}{dt} $, $ \mu_l' \equiv \frac{dl}{dt} \cos{b} = \mu_l \cos{b} $. В обозначениях, аналогичных использованным в случае $ V_r $, для модельного полинома \eqref{eq:model}
-
-\su\su
+%
 \begin{align}
   k \mu_{l,\text{mod}}' &= k \mu_{l,\text{rot}}' + k \mu_{l,\odot}',\\
   k \mu_{l,\text{rot}}' &= \left[ -2 A \Delta R + \sum_{i=2}^n \frac{\theta_i}{i!} (\Delta R)^i \right] \left( \frac{R_0 \cos{l}}{r} - \cos{b} \right) R^{-1} - \omega_0 \cos{b},\\
   k \mu_{l,\odot}' &= (u_\odot \sin{l} - v_\odot \cos{l}) / r,
 \end{align}
-
-\noindent где $ k = 4.7406 $ для $ r $ в кпк и $ \mu $ в мсд год$^{-1}$ \cite{G.N.O.2016}.
+%
+где $ k = 4.7406 $ для $ r $ в кпк и $ \mu $ в мсд год$^{-1}$ \cite{G.N.O.2016}.
 
 \hyperlink{toc}{\subsubsection{Собственные движения по широте}}
 
 Определение: $ \mu_b \equiv \frac{db}{dt} $. Аналогично:
-
-\su\su
+%
 \begin{align}
   k \mu_{b,\text{mod}} &= k \mu_{b,\text{rot}} + k \mu_{b,\odot},\\
   k \mu_{b,\text{rot}} &= \left[ 2 A \Delta R - \sum_{i=2}^n \frac{\theta_i}{i!} (\Delta R)^i \right] \frac{R_0}{R r} \sin{l} \sin{b},\\
@@ -326,8 +323,7 @@
 \hyperlink{toc}{\subsubsection{Переход от экваториальных сферических координат к галактическим}}
 
 Если экваториальные координаты приведены на эпоху J2000.0, то $ l, b $ связаны с $ \alpha, \delta $ как
-
-\su\su
+%
 \begin{align}
   \label{eq:lb_start}
   \sin{b} &= \sin{\delta} \cos{(90\degree - \delta_p)} - \cos{\delta} \sin{(\alpha - \alpha_p - 6^\text{h})} \sin{(90\degree - \delta_p)},\\
@@ -336,32 +332,34 @@
   \label{eq:lb_end}
   \cos{\phi} &= \cos{\delta} \cos{(\alpha - \alpha_p - 6^\text{h})} / \cos{b},
 \end{align}
-
-\noindent где $ \alpha_p = 12^\text{h} 51^\text{m} 26^\text{s}.2817 $, $ \delta_p = 27\degree07'42''.013 $, $ \theta = 122\degree.932 $, $ \phi \in [0; 360) $ \cite{R.B.2004, R.2009}.
+%
+где $ \alpha_p = 12^\text{h} 51^\text{m} 26^\text{s}.2817 $, $ \delta_p = 27\degree07'42''.013 $, $ \theta = 122\degree.932 $, $ \phi \in [0; 360) $ \cite{R.B.2004, R.2009}.
 
 \hyperlink{toc}{\subsubsection{Преобразование собственного движения в экваториальных координатах в собственное движение в галактических координатах}}
 
-В каталогах непосредственно приведены $ \mu_x = \mu_\alpha \cos{\delta} $ и $ \mu_y = \mu_\delta $ (\cite{R.2009} и последующие работы). Согласно рецепту Reid et al. (2009) \cite{R.2009}
-
-\su
+В каталогах непосредственно приведены $ \mu_x = \mu_\alpha \cos{\delta} $ и $ \mu_y = \mu_\delta $ (\cite{R.2009} и последующие работы). Согласно рецепту Reid et al. (2009) \cite{R.2009},
+%
 \begin{equation}
   \mu_l = l(\alpha + \mu_\alpha, \delta + \mu_\delta) - l(\alpha, \delta), \quad \mu_b = b(\alpha, \delta),
 \end{equation}
-
-\noindent где $ l(\alpha, \delta) $, $ b(\alpha, \delta) $ находятся по формулам \eqref{eq:lb_start}--\eqref{eq:lb_end}.
+%
+где $ l(\alpha, \delta) $, $ b(\alpha, \delta) $ находятся по формулам \eqref{eq:lb_start}--\eqref{eq:lb_end}. Измерительные дисперсии $ \tilde{\sigma}_{\mu_l'}^2 $ и $ \tilde{\sigma}_{\mu_b}^2 $, являющиеся функциями от $ \mu_x $ и $ \mu_y $, определяются по формуле распространения ошибок:
+%
+\begin{align}
+  \tilde{\sigma}_{\mu_l'}^2 &= \left( \frac{\partial \mu_l'}{\partial \mu_x} \right)^2 \tilde{\sigma}_{\mu_x}^2 + \left( \frac{\partial \mu_l'}{\partial \mu_y} \right)^2 \tilde{\sigma}_{\mu_y}^2\\
+  \tilde{\sigma}_{\mu_b}^2 &= \left( \frac{\partial \mu_b}{\partial \mu_x} \right)^2 \tilde{\sigma}_{\mu_x}^2 + \left( \frac{\partial \mu_b}{\partial \mu_y} \right)^2 \tilde{\sigma}_{\mu_y}^2
+\end{align}
 
 \hyperlink{toc}{\subsubsection{Восстановление гелиоцентрической скорости по скорости относительно Местного стандарта покоя}}
 
 В каталоге приведены $ V_\text{LSR} $, вычисленные для стандартного движения Солнца $ V_\odot = 20 $ км/с в направлении $ \alpha(1900) = 18^\text{h} $, $ \delta(1900) = +30\degree $, обычно принимаемого в обсерваториях при обработке радионаблюдений \cite{R.2009}. Параметры этого движения:
-
-\su
+%
 \begin{equation}
   u_\odot = 10.3 \text{ км/с}, \quad u_\odot = 15.3 \text{ км/с}, \quad w_\odot = 7.7 \text{ км/с}.
 \end{equation}
-
-\noindent Тогда
-
-\su
+%
+Тогда
+%
 \begin{equation}
   V_r = V_\text{LSR} - u_\odot \cos{l} \cos{b} - v_\odot \sin{l} \cos{b} - w_\odot \sin{b}.
 \end{equation}
@@ -371,46 +369,41 @@
 \hyperlink{toc}{\subsubsection{Вычисление компонент скорости в галактических координатах}}
 
 В общем случае
-
-\su
+%
 \begin{equation}
   \label{eq:V_l_V_b}
   V_l \equiv r \mu_l' = r \mu_l \cos{b} = r \frac{dl}{dt} \cos{b}, \quad V_b = r \mu_b = r \frac{db}{dt}.
 \end{equation}
-
+%
 Для компонент скорости, выраженных в километрах в секунду,
-
-\su
+%
 \begin{equation}
   \label{eq:V_l_V_b_with_k}
   V_l \; [\text{км/с}] = k r \mu_l \cos{b} = k r \mu_l', \quad V_b \; [\text{км/с}] = k r \mu_b,
 \end{equation}
-
-\noindent где $ k = 4.7406 $ для $ r $ в кпк и $ \mu $ в мсд/год = mas y$^{-1}$, $ r $ [кпк] = $ 1 / \varpi $, где $ \varpi $ [мсд] -- параллакс, приведенный в каталоге.
+%
+где $ k = 4.7406 $ для $ r $ в кпк и $ \mu $ в мсд/год = mas y$^{-1}$, $ r $ [кпк] = $ 1 / \varpi $, где $ \varpi $ [мсд] -- параллакс, приведенный в каталоге.
 
 \hyperlink{toc}{\subsubsection{Переход к компонентам скорости в декартовых гелиоцентрических координатах}}
 
 Декартовы гелиоцентрические координаты:
-
-\su\su
+%
 \begin{align}
   X &= r \cos{l} \cos{b},\\
   Y &= r \sin{l} \cos{b},\\
   Z &= r \sin{b}.
 \end{align}
-
+%
 Тогда компоненты скорости в этих координатах выражаются следующим образом:
-
-\su\su
+%
 \begin{align}
   U &\equiv \dot{X} = V_r \cos{l} \cos{b} - r \sin{l} \, \mu_l \cos{b} - r \cos{l} \sin{b} \, \mu_b,\\
   V &\equiv \dot{Y} = V_r \sin{l} \cos{b} + r \cos{l} \, \mu_l \cos{b} - r \sin{l} \sin{b} \, \mu_b,\\
   W &\equiv \dot{Z} = V_r \sin{b} + r \cos{b} \, \mu_b,
 \end{align}
-
-\noindent или, учитывая \eqref{eq:V_l_V_b},
-
-\su\su
+%
+или, учитывая \eqref{eq:V_l_V_b},
+%
 \begin{align}
   \label{eq:U}
   U &= (V_r \cos{b} - V_b \sin{b}) \cos{l} - V_l \sin{l},\\
@@ -419,28 +412,26 @@
   \label{eq:W}
   W &= V_b \cos{b} + V_r \sin{b}.
 \end{align}
-
+%
 Для вычисления $ U $, $ V $ и $ W $, выраженных в километрах в секунду, в \eqref{eq:U}--\eqref{eq:W} следует подставлять значения $ V_l $ и $ V_b $, найденные по формулам \eqref{eq:V_l_V_b_with_k}.
 
 \hyperlink{toc}{\subsubsection{Переход к галактоцентрической системе координат, связанной с Солнцем}}
 
 Согласно формализму работы \cite{R.2009},
-
-\su
+%
 \begin{equation}
   \label{eq:U_g_V_g_W_g}
   U_\text{g} = U + u_\odot, \quad V_\text{g} = V + \theta_\odot, \quad W_\text{g} = W + w_\odot,
 \end{equation}
-
-\noindent где используются значения компонент остаточного движения Солнца $ u_\odot $, $ w_\odot $ и линейной скорости вращения Солнца вокруг центра Галактики $ \theta_\odot = R_0 \omega_0 + v_\odot $, найденные при использовании уравнений раздела 1.1 по данным о скоростях и расстояниях, или, при отсутствии такого решения, подставляются результаты из \cite{R.2019}, полученные по мазерам: $ u_\odot = 10.7 $ км с$^{−1}$, $ \theta_\odot = 247 $ км с$^{−1}$, $ w_\odot = 7.7 $ км с$^{−1}$ (здесь $ u_\odot = u_\text{LSR} $ и $ w_\odot = w_\text{LSR} $ --- компоненты пекулярной скорости Солнца относительно МСП).
+%
+где используются значения компонент остаточного движения Солнца $ u_\odot $, $ w_\odot $ и линейной скорости вращения Солнца вокруг центра Галактики $ \theta_\odot = R_0 \omega_0 + v_\odot $, найденные при использовании уравнений раздела 1.1 по данным о скоростях и расстояниях, или, при отсутствии такого решения, подставляются результаты из \cite{R.2019}, полученные по мазерам: $ u_\odot = 10.7 $ км с$^{−1}$, $ \theta_\odot = 247 $ км с$^{−1}$, $ w_\odot = 7.7 $ км с$^{−1}$ (здесь $ u_\odot = u_\text{LSR} $ и $ w_\odot = w_\text{LSR} $ --- компоненты пекулярной скорости Солнца относительно МСП).
 
 \hyperlink{toc}{\subsubsection{Переход к галактоцентрической системе координат, связанной с объектом}}
 
 \hyperlink{toc}{\subsubsubsection{$\Lambda$-параметризация}}
 
 Согласно формализму работы \cite{R.2009},
-
-\su\su
+%
 \begin{align}
   \label{eq:Pi}
   \Pi &\equiv -\dot{R} = U_\text{g} \cos{\Lambda} - V_\text{g} \sin{\Lambda},\\
@@ -448,39 +439,35 @@
   \theta &\equiv \dot{\Lambda} R = U_\text{g} \sin{\Lambda} + V_\text{g} \cos{\Lambda},\\
   \Upsilon &\equiv \dot{Z} = W_\text{g}.
 \end{align}
-
+%
 Здесь $ \Lambda $ --- галактоцентрическая долгота объекта, которая отсчитывается от направления из центра Галактики на Солнце в сторону вращения Галактики:
-
-\su
+%
 \begin{equation}
   \sin{\Lambda} = \frac{r \cos{b}}{R} \sin{l}, \quad \cos{\Lambda} = \frac{R_0 - r \cos{b} \cos{l}}{R};
 \end{equation}
-
-\noindent $ \Pi $, $ \theta $, $ \Upsilon $ --- радиальная (положительная к центру Галактики), азимутальная и вертикальная (положительная к северному полюсу Галактики) скорости объекта, соответственно. При отсутствии собственной оценки $ R_0 = 8.15 $ кпк \cite{R.2019}.
+%
+$ \Pi $, $ \theta $, $ \Upsilon $ --- радиальная (положительная к центру Галактики), азимутальная и вертикальная (положительная к северному полюсу Галактики) скорости объекта, соответственно. При отсутствии собственной оценки $ R_0 = 8.15 $ кпк \cite{R.2019}.
 
 \hyperlink{toc}{\subsubsubsection{$\varphi$-параметризация}}
 
 Вместо угла $ \Lambda $ можно ввести угол $ \varphi $ с вершиной в точке $ O' $ проекции объекта $ O $ на плоскость Галактики между направлением на центр Галактики и линией $ l = \text{const} $, $ b = 0\degree $ (между проекциями большой оси эллипсоида скоростей и луча зрения на плоскость Галактики) \cite{R.2017}. Угол $ \varphi $ отсчитывается против часовой стрелки, если смотреть с северного полюса Галактики. Очевидно, что $ \Lambda + l + \pi − \varphi = \pi $. Отсюда
-
-\su
+%
 \begin{equation}
   \label{eq:lambda_varphi}
   \Lambda = \varphi - l, \quad \varphi = \Lambda + l.
 \end{equation}
-
+%
 Тогда
-
-\su\su
+%
 \begin{align}
   \label{eq:sin_phi}
   \sin{\varphi} &= \sin{\Lambda} \cos{l} + \cos{\Lambda} \sin{l},\\
   \label{eq:cos_phi}
   \cos{\varphi} &= \cos{\Lambda} \cos{l} - \sin{\Lambda} \sin{l},
 \end{align}
-
-\noindent или в силу \eqref{eq:lambda_varphi}
-
-\su\su
+%
+или в силу \eqref{eq:lambda_varphi}
+%
 \begin{align}
   \notag
   \sin{\varphi} &= \frac{r \cos{b}}{R} \sin{l} \cos{l} + \frac{R_0 - r \cos{b} \cos{l}}{R} \sin{l} =\\
@@ -499,16 +486,14 @@ $\Lambda$-параметризация удобнее при выражении 
 \hyperlink{toc}{\subsubsubsection{$ V_r $ в функции $ U $, $ V $ и $ W $}}
 
 Используя \eqref{eq:W}, запишем:
-
-\su
+%
 \begin{equation}
   \label{eq:V_b}
   V_b = \frac{W - V_r \sin{b}}{\cos{b}}.
 \end{equation}
-
+%
 Комбинируя \eqref{eq:U} и \eqref{eq:V} и подставляя \eqref{eq:V_b}, получаем:
-
-\su\su
+%
 \begin{gather}
   \nonumber
   U \cos{l} + V \sin{l} = V_r \cos{b} - V_b \sin{b} = V_r \cos{b} - \frac{W \sin{b}}{\cos{b}} + \frac{V_r \sin^2{b}}{\cos{b}} = \frac{V_r}{\cos{b}} - \frac{W \sin{b}}{\cos{b}}, \implies\\
@@ -519,8 +504,7 @@ $\Lambda$-параметризация удобнее при выражении 
 \hyperlink{toc}{\subsubsubsection{$ V_l $ в функции $ U $ и $ V $}}
 
 Комбинируя \eqref{eq:U} и \eqref{eq:V}, получаем:
-
-\su\su
+%
 \begin{gather}
   \nonumber
   U \sin{l} - V \cos{l} = -V_l \sin^2{l} - V_l \cos^2{l} = -V_l, \implies\\
@@ -531,8 +515,7 @@ $\Lambda$-параметризация удобнее при выражении 
 \hyperlink{toc}{\subsubsubsection{$ V_b $ в функции $ U $, $ V $ и $ W $}}
 
 Подставляя \eqref{eq:V_r} в \eqref{eq:V_b}, получаем:
-
-\su\su
+%
 \begin{gather}
   \nonumber
   V_b = \frac{W}{\cos{b}} - U \cos{l} \sin{b} - V \sin{l} \sin{b} - W \frac{\sin^2{b}}{\cos{b}}, \implies\\
@@ -543,17 +526,15 @@ $\Lambda$-параметризация удобнее при выражении 
 \hyperlink{toc}{\subsubsection{Дисперсии компонент скорости $ V_r $, $ V_l $, $ V_b $ и собственных движений $ \mu_l' $, $ \mu_b $ как функции дисперсий компонент $ U $, $ V $ и $ W $}}
 
 Из выражений \eqref{eq:V_r}--\eqref{eq:V_b} в предположении отсутствия корреляции между $ U $, $ V $ и $ W $ по формуле распространения ошибок получаем следующие выражения для природных дисперсий линейных скоростей:
-
-\su\su
+%
 \begin{align}
   \sigma_{V_r}^{\ast 2} &= \sigma_U^2 \cos^2{l} \cos^2{b} + \sigma_V^2 \sin^2{l} \cos^2{b} + \sigma_W^2 \sin^2{b},\\
   \sigma_{V_l}^{\ast 2} &= \sigma_U^2 \sin^2{l} + \sigma_V^2 \cos^2{l},\\
   \sigma_{V_b}^{\ast 2} &= \sigma_U^2 \cos^2{l} \sin^2{b} + \sigma_V^2 \sin^2{l} \sin^2{b} + \sigma_W^2 \cos^2{b}.
 \end{align}
-
+%
 В силу \eqref{eq:V_l_V_b_with_k} $ \mu_l' = V_l / (k r) $. Тогда для дисперсий собственных движений имеем:
-
-\su\su
+%
 \begin{align}
   \sigma_{\mu_l'}^{\ast 2} &= \frac{1}{k^2 r^2} (\sigma_U^2 \sin^2{l} + \sigma_V^2 \cos^2{l}),\\
   \sigma_{\mu_b}^{\ast 2} &= \frac{1}{k^2 r^2} (\sigma_U^2 \cos^2{l} \sin^2{b} + \sigma_V^2 \sin^2{l} \sin^2{b} + \sigma_W^2 \cos^2{b}).
@@ -562,16 +543,14 @@ $\Lambda$-параметризация удобнее при выражении 
 \hyperlink{toc}{\subsubsection{Выражение компонент скорости $ V_r $, $ V_l $ и $ V_b $ через компоненты $ \Pi $, $ \theta $ и $ \Upsilon $}}
 
 Комбинируя \eqref{eq:Pi} и \eqref{eq:theta}, запишем компоненты скорости $ U_\text{g} $, $ V_\text{g} $ и $ W_\text{g} $ как функции компонент $ \Pi $, $ \theta $ и $ \Upsilon $:
-
-\su\su
+%
 \begin{align}
   \Pi \cos{\Lambda} + \theta \sin{\Lambda} &= U_\text{g} \cos^2{\Lambda} + U_\text{g} \sin^2{\Lambda} = U_\text{g},\\
   \Pi \sin{\Lambda} - \theta \cos{\Lambda} &= -V_\text{g} \sin^2{\Lambda} - V_\text{g} \cos^2{\Lambda} = -V_\text{g}.
 \end{align}
-
+%
 Таким образом,
-
-\su\su
+%
 \begin{align}
   \label{eq:U_g}
   U_\text{g} &= \Pi \cos{\Lambda} + \theta \sin{\Lambda},\\
@@ -583,8 +562,7 @@ $\Lambda$-параметризация удобнее при выражении 
 \hyperlink{toc}{\subsubsubsection{В $\Lambda$-параметризации}}
 
 Подставим \eqref{eq:U_g}--\eqref{eq:W_g} в \eqref{eq:V_r}, учитывая \eqref{eq:U_g_V_g_W_g}:
-
-\su\su
+%
 \begin{align}
   \label{eq:V_r_Lambda}\nonumber
   V_r &= (U_\text{g} - u_\odot) \cos{l} \cos{b} + (V_\text{g} - \theta_\odot) \sin{l} \cos{b} + (W_\text{g} - w_\odot) \sin{b} =\\
@@ -594,8 +572,7 @@ $\Lambda$-параметризация удобнее при выражении 
 \end{align}
 
 Подставим \eqref{eq:U_g}--\eqref{eq:W_g} в \eqref{eq:V_l}, учитывая \eqref{eq:U_g_V_g_W_g}:
-
-\su\su
+%
 \begin{align}
   \label{eq:V_l_Lambda}\nonumber
   V_l &= -(U_\text{g} - u_\odot) \sin{l} + (V_\text{g} - \theta_\odot) \cos{l} =\\
@@ -603,8 +580,7 @@ $\Lambda$-параметризация удобнее при выражении 
 \end{align}
 
 Подставим \eqref{eq:U_g}--\eqref{eq:W_g} в \eqref{eq:V_b}, учитывая \eqref{eq:U_g_V_g_W_g}:
-
-\su\su
+%
 \begin{align}
   \label{eq:V_b_Lambda}\nonumber
   V_b &= -(U_\text{g} - u_\odot) \cos{l} \sin{b} - (V_g - \theta_\odot) \sin{l} \sin{b} + (W_g - w_\odot) \cos{b} =\\
@@ -616,8 +592,7 @@ $\Lambda$-параметризация удобнее при выражении 
 \hyperlink{toc}{\subsubsubsection{В $\varphi$-параметризации}}
 
 Сгруппировав в \eqref{eq:V_r_Lambda}--\eqref{eq:V_b_Lambda} члены при $ \Pi $ и $ \theta $ и используя соотношения \eqref{eq:sin_phi}--\eqref{eq:cos_phi}, получаем
-
-\su\su
+%
 \begin{align}
   \label{eq:V_r_phi}\nonumber
   V_r &= \Pi (\cos{\Lambda} \cos{l} - \sin{\Lambda} \sin{l}) \cos{b} + \theta (\sin{\Lambda} \cos{l} + \cos{\Lambda} \sin{l}) \cos{b} + \Upsilon \sin{b} - {}\\
@@ -628,7 +603,7 @@ $\Lambda$-параметризация удобнее при выражении 
   \label{eq:V_b_phi}
   V_b &= -\Pi \cos{\varphi} \sin{b} - \theta \sin{\varphi} \sin{b} + \Upsilon \cos{b} + u_\odot \cos{l} \sin{b} + \theta_\odot \sin{l} \sin{b} - w_\odot \cos{b}.
 \end{align}
-
+%
 Здесь коэффициенты при $ \Pi $, $ \theta $ и $ \Upsilon $ соответствуют элементам матрицы $ G_S $ в \cite{R.2017}.
 
 \hyperlink{toc}{\subsubsection{Дисперсии компонент скорости $ V_r $, $ V_l $, $ V_b $ и собственных движений $ \mu_l' $, $ \mu_b $ как функции дисперсий компонент $ \Pi $, $ \theta $ и $ \Upsilon $}}
@@ -636,8 +611,7 @@ $\Lambda$-параметризация удобнее при выражении 
 \hyperlink{toc}{\subsubsubsection{В $\Lambda$-параметризации}}
 
 Из выражений \eqref{eq:V_r_Lambda}--\eqref{eq:V_b_Lambda} в предположении отсутствия корреляции между $ \Pi $, $ \theta $ и $ \Upsilon $ по формуле распространения ошибок получаем соотношения для природных дисперсий линейных скоростей в функции дисперсий $ \mathbb{D} \Pi \equiv \sigma_R^2 $, $ \mathbb{D} \theta \equiv \sigma_\theta^2 $ и $ \mathbb{D} \Upsilon = \mathbb{D} W_g = \mathbb{D} W \equiv \sigma_Z^2 $:
-
-\su\su
+%
 \begin{align}
   \label{eq:sigma_V_r_ast_Lambda}\nonumber
   \sigma_{V_r}^{\ast 2} = {} & \sigma_R^2 (\cos^2{\Lambda} \cos^2{l} \cos^2{b} - 2 \sin{\Lambda} \cos{\Lambda} \sin{l} \cos{l} \cos^2{b} + \sin^2{\Lambda} \sin^2{l} \cos^2{b}) + {}\\
@@ -659,72 +633,246 @@ $\Lambda$-параметризация удобнее при выражении 
 \hyperlink{toc}{\subsubsubsection{В $\varphi$-параметризации}}
 
 Применяя к \eqref{eq:V_r_phi}--\eqref{eq:V_b_phi} формулу распространения ошибок в тех же предположениях или используя \eqref{eq:sigma_V_r_ast_Lambda}--\eqref{eq:sigma_V_b_ast_Lambda} с учетом соотношений \eqref{eq:sin_phi}--\eqref{eq:cos_phi} для $ \varphi $, находим выражения для дисперсий в этой параметризации:
-
-\su\su
+%
 \begin{align}
   \sigma_{V_r}^{\ast 2} &= \sigma_R^2 \cos^2{\varphi} \cos^2{b} + \sigma_\theta^2 \sin^2{\varphi} \cos^2{l} + \sigma_Z^2 \sin^2{b},\\
   \sigma_{V_l}^{\ast 2} &= \sigma_R^2 \sin^2{\varphi} + \sigma_\theta^2 \cos^2{\varphi},\\
   \sigma_{V_b}^{\ast 2} &= \sigma_R^2 \cos^2{\varphi} \sin^2{b} + \sigma_\theta^2 \sin^2{\varphi} \sin^2{b} + \sigma_Z^2 \cos^2{b}.
 \end{align}
-
+%
 Природные стандарты собственных движений находятся по общим формулам:
-
-\su
+%
 \begin{equation}
   \sigma_{\mu_l'}^\ast = \frac{\sigma_{V_l}^\ast}{k r}, \quad \sigma_{\mu_b}^\ast = \frac{\sigma_{V_b}^\ast}{k r}.
 \end{equation}
 
-\hyperlink{toc}{\subsection{Алгоритм с учетом случайных ошибок гелиоцентрических расстояний}}
+\hyperlink{toc}{\section{Алгоритм с учетом случайных ошибок гелиоцентрических расстояний}}
+
+\hyperlink{toc}{\subsection{Уровень I. Решения для $ n = \text{const} $ и фиксированной выборки из $ N $ объектов}}
 
 Пусть расстояния $ r $ определяются методом тригонометрического параллакса: $ r $ = $ 1 / \varpi $, где $ \varpi $ --- измеренное значение параллакса со средней ошибкой измерения $ \sigma_\varpi $. Тогда функция правдоподобия в случае моделирования поля 3D-скоростей является произведением четырех плотностей вероятностей, соответствующих нормально распределенным случайным величинам $ V_r $, $ \mu_l' $, $ \mu_b $ и $ \varpi $:
-
-\su\su
+%
 \begin{align}
   \nonumber
-  L = \prod_{j = 1}^N & \frac{1}{\sqrt{2 \pi} (\sigma_{V_r})_j} \exp{\left\{ \frac{\left[ V_{r,j} - V_{r,\text{mod}} (\varpi_{0,j}) \right]^2}{2 (\sigma_{V_r})_j^2} \right\}} \frac{1}{\sqrt{2 \pi} (\sigma_{\mu_l'})_j} \exp{\left\{ \frac{\left[ \mu_{l,j}' - \mu_{l,\text{mod}}' (\varpi_{0,j}) \right]^2}{2 (\sigma_{\mu_l'})_j^2} \right\}} \times {}\\
-  {} \times {} & \frac{1}{\sqrt{2 \pi} (\sigma_{\mu_b})_j} \exp{\left\{ \frac{\left[ \mu_{b,j} - \mu_{b,\text{mod}} (\varpi_{0,j}) \right]^2}{2 (\sigma_{\mu_b})_j^2} \right\}} \frac{1}{\sqrt{2 \pi} \sigma_{\varpi,j}} \exp{\left\{ \frac{(\varpi_j - \varpi_{0,j})^2}{2 \sigma_{\varpi,j}^2} \right\}}
+  L = \prod_{j = 1}^N & \frac{1}{\sqrt{2 \pi} (\sigma_{V_r})_j} \exp{\left\{ \frac{[ V_{r,j} - V_{r,\text{mod}} (\varpi_{0,j}) ]^2}{2 (\sigma_{V_r})_j^2} \right\}} \frac{1}{\sqrt{2 \pi} (\sigma_{\mu_l'})_j} \exp{\left\{ \frac{[ \mu_{l,j}' - \mu_{l,\text{mod}}' (\varpi_{0,j}) ]^2}{2 (\sigma_{\mu_l'})_j^2} \right\}} \times {}\\
+  {} \times {} & \frac{1}{\sqrt{2 \pi} (\sigma_{\mu_b})_j} \exp{\left\{ \frac{[ \mu_{b,j} - \mu_{b,\text{mod}} (\varpi_{0,j}) ]^2}{2 (\sigma_{\mu_b})_j^2} \right\}} \frac{1}{\sqrt{2 \pi} \sigma_{\varpi,j}} \exp{\left\{ \frac{(\varpi_j - \varpi_{0,j})^2}{2 \sigma_{\varpi,j}^2} \right\}}
 \end{align}
-
-\noindent где $ V_{r,j} $, $ \mu_{l,j}' $, $ \mu_{b,j} $ и $ \varpi_j $ --- каталожные (измеренные) значения $ V_r $, $ \mu_l' $, $ \mu_b $ и $ \varpi $ для $j$-го объекта; $ \varpi_{0,j} $ --- приведенное значение параллакса $j$-го объекта. Итоговые дисперсии скоростных характеристик для $j$-го объекта представляют собой суммы двух составляющих:
-
-\su\su
+%
+где $ V_{r,j} $, $ \mu_{l,j}' $, $ \mu_{b,j} $ и $ \varpi_j $ --- каталожные (измеренные) значения $ V_r $, $ \mu_l' $, $ \mu_b $ и $ \varpi $ для $j$-го объекта; $ \varpi_{0,j} $ --- приведенное значение параллакса $j$-го объекта. Итоговые дисперсии скоростных характеристик для $j$-го объекта представляют собой суммы двух составляющих:
+%
 \begin{align}
+  \label{eq:D_V_r}
   (\sigma_{V_r})_j^2 &= (\tilde{\sigma}_{V_r})_j^2 + (\sigma_{V_r}^\ast)_j^2,\\
   (\sigma_{\mu_l'})_j^2 &= (\tilde{\sigma}_{\mu_l'})_j^2 + (\sigma_{\mu_l'}^\ast)_j^2,\\
+  \label{eq:D_mu_b}
   (\sigma_{\mu_b})_j^2 &= (\tilde{\sigma}_{\mu_b})_j^2 + (\sigma_{\mu_b}^\ast)_j^2,
 \end{align}
-
-\noindent где $ \tilde{\sigma}_j^2 $ --- измерительная дисперсия, $ \sigma_j^{\ast 2} = \sigma_j^{\ast 2}(l_j, b_j, \varpi_{0,j}; \sigma_R, \sigma_\theta, \sigma_Z) $ --- вклад природной дисперсии. Приведенный параллакс рассматривается как нормально распределенная случайная величина $ \Pi_{0,j} \sim \mathrm{N}(\varpi_j, \sigma_{\varpi,j}^2) $. Тройка величин $ (l_j, b_j, \varpi_{0,j}) $ определяет точку (неортогональной) проекции объекта на кинематическую модель (кривую вращения) с учетом всех неопределенностей.\par
+%
+где $ \tilde{\sigma}_j^2 $ --- измерительная дисперсия, $ \sigma_j^{\ast 2} = \sigma_j^{\ast 2}(l_j, b_j, \varpi_{0,j}; \sigma_R, \sigma_\theta, \sigma_Z) $ --- вклад природной дисперсии. Приведенный параллакс рассматривается как нормально распределенная случайная величина $ \Pi_{0,j} \sim \mathrm{N}(\varpi_j, \sigma_{\varpi,j}^2) $. Тройка величин $ (l_j, b_j, \varpi_{0,j}) $ определяет точку (неортогональной) проекции объекта на кинематическую модель (кривую вращения) с учетом всех неопределенностей.\par
 
 Тогда логарифмическая функция правдоподобия имеет вид
-
-\su\su
+%
 \begin{align}
-  \nonumber
+  \label{eq:L}\nonumber
   \mathcal{L} \equiv -\ln{L} &=
   \begin{aligned}[t]
     &-\sum_{j=1}^N \Biggl\{ -4 \ln{\sqrt{2 \pi}} - \ln{(\sigma_{V_r})_j} - \ln{(\sigma_{\mu_l'})_j} - \ln{(\sigma_{\mu_b})_j} - \ln{\sigma_{\varpi,j}} - {}\\
-    &-\frac{\left[ V_{r,j} - V_{r,\text{mod}}(\varpi_{0,j}) \right]^2}{2 (\sigma_{V_r})_j^2} - \frac{\left[ \mu_{l,j}' - \mu_{l,\text{mod}}'(\varpi_{0,j}) \right]^2}{2 (\sigma_{\mu_l'})_j^2} - {}\\
-    &-\frac{\left[ \mu_{b,j} - \mu_{b,\text{mod}}(\varpi_{0,j}) \right]^2}{2 (\sigma_{\mu_b})_j^2} - \frac{\left( \varpi_j - \varpi_{0,j} \right)^2}{2 \sigma_{\varpi,j}^2} \Biggr\} = {}
+    &-\frac{[ V_{r,j} - V_{r,\text{mod}}(\varpi_{0,j}) ]^2}{2 (\sigma_{V_r})_j^2} - \frac{[ \mu_{l,j}' - \mu_{l,\text{mod}}'(\varpi_{0,j}) ]^2}{2 (\sigma_{\mu_l'})_j^2} - {}\\
+    &-\frac{[ \mu_{b,j} - \mu_{b,\text{mod}}(\varpi_{0,j}) ]^2}{2 (\sigma_{\mu_b})_j^2} - \frac{( \varpi_j - \varpi_{0,j} )^2}{2 \sigma_{\varpi,j}^2} \Biggr\} = {}
   \end{aligned}\\
   \nonumber
   &= 4 N \ln{\sqrt{2 \pi}}
   \begin{aligned}[t]
     &+ \sum_{j=1}^N \left[ \ln{(\sigma_{V_r})_j} + \ln{(\sigma_{\mu_l'})_j} + \ln{(\sigma_{\mu_b})_j} + \ln{\sigma_{\varpi,j}} \right] + {}\\
-    &+ \frac{1}{2} \sum_{j=1}^N \min_{\varpi_{0,j}} \left\{ \frac{\left[ V_{r,j} - V_{r,\text{mod}}(\varpi_{0,j}) \right]^2}{(\sigma_{V_r})_j^2} + \frac{\left[ \mu_{l,j}' - \mu_{l,\text{mod}}'(\varpi_{0,j}) \right]^2}{(\sigma_{\mu_l'})_j^2} + {} \right.\\
-    &+ \left. \frac{\left[ \mu_{b,j} - \mu_{b,\text{mod}}(\varpi_{0,j}) \right]^2}{(\sigma_{\mu_b})_j^2} + \frac{\left( \varpi_j - \varpi_{0,j} \right)^2}{\sigma_{\varpi,j}^2} \vphantom{\frac{\left[ \mu_{l,j}' - \mu_{l,\text{mod}}'(\varpi_{0,j}) \right]^2}{(\sigma_{\mu_l'})_j^2}} \right\} = {}
+    &+ \frac{1}{2} \sum_{j=1}^N \min_{\varpi_{0,j}} \left\{ \frac{[ V_{r,j} - V_{r,\text{mod}}(\varpi_{0,j}) ]^2}{(\sigma_{V_r})_j^2} + \frac{[ \mu_{l,j}' - \mu_{l,\text{mod}}'(\varpi_{0,j}) ]^2}{(\sigma_{\mu_l'})_j^2} + {} \right.\\
+    &+ \left. \frac{[ \mu_{b,j} - \mu_{b,\text{mod}}(\varpi_{0,j}) ]^2}{(\sigma_{\mu_b})_j^2} + \frac{( \varpi_j - \varpi_{0,j} )^2}{\sigma_{\varpi,j}^2} \vphantom{\frac{[ \mu_{l,j}' - \mu_{l,\text{mod}}'(\varpi_{0,j}) ]^2}{(\sigma_{\mu_l'})_j^2}} \right\} = {}
   \end{aligned}\\
   &= \mathcal{L}^{(0)} + \mathcal{L}^{(1)}(\mathbf{a}),
 \end{align}
-
-\noindent где $ L^{(0)} = 4 N \ln{\sqrt{2 \pi}} = \text{const} $, $ \mathbf{a} = (R_0, \omega_0, A, \theta_2, \ldots, \theta_n, u_\odot, v_\odot, w_\odot, \sigma_R, \sigma_\theta, \sigma_Z) $ --- вектор параметров модели.\par
+%
+где $ L^{(0)} = 4 N \ln{\sqrt{2 \pi}} + \sum_{j=1}^N \ln{\sigma_{\varpi,j}} = \text{const} $, $ \mathbf{a} = (R_0, \omega_0, A, \theta_2, \ldots, \theta_n, u_\odot, v_\odot, w_\odot, \sigma_R, \sigma_\theta, \sigma_Z) $ --- вектор параметров модели.
 
 Решение --- точечная оценка вектора $ \mathbf{a} $ --- для фиксированных модели и выборки дается минимизацией логарифмической функции правдоподобия:
-
-\su
+%
 \begin{equation}
+  \label{eq:L_1}
   \mathcal{L}^{(1)}(\mathbf{a}) \rightarrow \min.
 \end{equation}
+
+\hyperlink{toc}{\subsection{Уровень II. Оптимизация порядка модельной кривой вращения}}
+
+В \cite{N.2003} предлагается следующая процедура определения для любой заданной выборки опорных объектов таких порядков разложения \eqref{eq:model} $ n \ge 1 $, которые обеспечивают достаточно адекватное представление кривой вращения по этим объектам, чтобы оценки $ R_0 $ получались систематически несмещенными. Назовем такие порядки допустимыми ($ \tilde{n}_\text{o} $).
+
+По результатам решений \eqref{eq:L_1} для $ n = 1, 2, \ldots $ строятся зависимости $ \mathcal{L}_0^{(1)}(n) \equiv \min_\mathbf{a} \mathcal{L}^{(1)}(\mathbf{a}, n) $ и $ \sigma_\theta(n) $. Расчеты, выполненные в \cite{N.2003} и данной работе, показывают, что обычно после начального резкого падения дальнейшее уменьшение этих величин приостанавливается для нескольких значений $ n $. Этот эффект возникает благодаря достигнутому воспроизведению наиболее значимых деталей действительного закона $ \theta(R) $ модельными полиномами $ \eqref{eq:model} $: рост $ n $ не ведет к выявлению новой структуры в данных. Поэтому первоначально во множество допустимых порядков $ \{ \tilde{n}_\text{o} \} $ включаются последовательные значения $ n $ по правилу
+%
+\begin{equation}
+  \label{eq:n_rule}
+  \mathcal{L}_0^{(1)}(n) \approx \text{const}, \quad \sigma_\theta(n) \approx \text{const} \quad \forall \; n \in \{ \tilde{n}_\text{o} \}.
+\end{equation}
+%
+Затем эти значения $ \tilde{n}_\text{o} $ строго ограничиваются сверху минимальным из порядков $ n $, при которых\npar
+
+\begin{enumerate}[label={\arabic*)}]
+  \item все коэффициенты $ \theta_i $ становятся незначимыми:
+  \begin{equation}
+    \sigma_{\theta_i} / \theta_i \gtrsim 0.5 \quad \forall \; 2 \le i \le n;
+  \end{equation}
+
+  \item значимость коэффициента $ \theta_n $ снижается до уровня $ 1 \sigma $:
+  \begin{equation}
+    \sigma_{\theta_n} / \theta_n \gtrsim 1;
+  \end{equation}
+
+  \item модель $ \Theta_n(R) $ \eqref{eq:model} оказывается явно нереалистичной на краях интервала $ R $.
+\end{enumerate}
+
+Последнее часто сопровождается возобновлением уменьшением значений $ L_0^{(1)} $ и $ \sigma_\theta $, поэтому излишне сложные модели отсекаются уже на стадии формального применение правила \eqref{eq:n_rule}. Таким образом, в число допустимых моделей (как правило, от одной до трех) попадают самые простые модели кривой вращения из возможных.
+
+\hyperlink{toc}{\subsection{Уровень III. Исключение <<выбросов>>}}
+
+Полученное для функции правдоподобия \eqref{eq:L} решение \eqref{eq:L_1} определяет для каждого объекта выборки четыре невязки:
+%
+\begin{equation}
+  V_{r,j} - V_{r,\text{mod}}(\varpi_{0,j}), \quad \mu_{l,j}' - \mu_{l,\text{mod}}'(\varpi_{0,j}), \quad \mu_{b,j} - \mu_{b,\text{mod}}(\varpi_{0,j}), \quad \varpi_j - \varpi_{0,j}, \quad j = 1, 2, \ldots, N.
+\end{equation}
+%
+По этим данным, полученным при фиксированном допустимом порядке $ \tilde{n}_\text{o} $, производится поиск и исключение объектов с избыточными невязками. Для одномерного случая алгоритм описан в \cite{N.2003, N.2012, R.2017}. Для многомерного случая простейший алгоритм состоит в применении одномерного алгоритма к относительным невязкам по каждой из компонент скорости. Тогда исключаются объекты, которые отбираются хотя бы по одной компоненте. По результатам поиска <<выбросов>> для множества допустимых порядков $ \{ \tilde{n}_\text{o} \} $ принимается решение о перечне объектов, исключаемых из выборки. На следующей итерации все вычисления по схемам уровня I и II повторяются для оставшейся выборки. Остановка происходит, когда на очередной итерации исключений больше не понадобится.
+
+\hyperlink{toc}{\subsubsection{Одномерный метод исключения <<выбросов>>}}
+
+Обычно отбрасывают объекты с невязками
+%
+\begin{equation}
+  \label{eq:rel_discrepancy}
+  \frac{|\delta_j|}{\sigma_j} > k = 3,
+\end{equation}
+%
+где $ \sigma_j $ --- выборочная оценка стандарта для $j$-ого объекта, которая в нашем случае находится по формулам \eqref{eq:D_V_r}--\eqref{eq:D_mu_b}. Однако данный критерий трех сигм (действующий при $ N $ > 10) не учитывает того, что вероятность появления хотя бы одной невязки \eqref{eq:rel_discrepancy} растет с $ N $ и становится не малой уже при $ N $ порядка нескольких десятков. Можно выбирать $ k \sim 4 \div 5 $ таким образом, чтобы оно росло в зависимости от $ N $. Но этот вариант критерия \eqref{eq:rel_discrepancy} позволяет исключать только явные промахи и срабатывает довольно редко. Главное, при помощи него нельзя обнаружить отклонение $ f(\delta / \sigma) $ от нормального распределения, состоящее в наличии избытка объектов с $ |\delta_j| \sim 3 \sigma_j $.
+
+Взамен, используется более гибкий алгоритм исключения объектов с большими невязками, учитывающий возможность подобных отклонений \cite{N.2003}:\npar
+
+\begin{enumerate}
+  \item Для данного объема выборки $ N $ находится значение $ \kappa $, которое удовлетворяет уравнению
+  %
+  \begin{equation}
+    \left[ 1 - \psi(\kappa) \right] N = 1,
+  \end{equation}
+  %
+  где $ \psi(z) $ --- интеграл вероятностей:
+  %
+  \begin{equation}
+    \psi(z) = \sqrt{\frac{2}{\pi}} \int_0^z e^{-\frac{1}{2} t^2} dt.
+  \end{equation}
+
+  \item Находится число объектов $ L $ данной выборки, удовлетворяющих условию
+  %
+  \begin{equation}
+    \label{eq:kappa_condition}
+    \frac{|\delta_j|}{\sigma_j} > \kappa.
+  \end{equation}
+  %
+  Математическое ожидание этого числа равно единице при нормальном распределении невязок. Большее число таких объектов может рассматриваться как избыточное с той или иной вероятностью.
+
+  \item Если $ L > 1 $, то из дальнейшего рассмотрения исключаются $ L - L' $ объектов с наибольшими по модулю невязками, где $ L' \ge 1 $ --- параметр данного алгоритма.
+
+  \item К оставшимся объектам, т.е., в частности, при $ L = 1 $, применяется критерий \eqref{eq:rel_discrepancy} с $ k $, зависящим от $ N $: исключаются объекты с невязками
+  %
+  \begin{equation}
+    \frac{|\delta_j|}{\sigma_j} > k_\gamma(N),
+  \end{equation}
+  %
+  где $ k_\gamma $ --- корень уравнения
+  %
+  \begin{equation}
+    \label{eq:k_gamma}
+    1 - \left[ \psi(k_\gamma) \right]^N = \gamma,
+  \end{equation}
+  %
+  $ \gamma $ --- принятый уровень значимости. При малых $ \gamma $, т.е. при малых $ 1 — \psi(k_\gamma) $, вместо \eqref{eq:k_gamma} можно воспользоваться приближенным уравнением
+  %
+  \begin{equation}
+    \left[ 1 - \psi(k_\gamma) \right] N = \gamma.
+  \end{equation}
+  %
+  Данный пункт является страховочным на те случаи, когда имеется единственный и очень сильный промах (при $ L = 1 $ пункт 3 обходится) или когда при больших $ N $ имеются только несколько таких промахов, а остальные невязки следуют нормальному закону (тогда оставшиеся в выборке $ L'$ объектов удовлетворяют \eqref{eq:k_gamma}). В данной работе принят уровень значимости $ \gamma = 0.05 $.
+\end{enumerate}
+
+Для приблизительной оценки вероятности $ \mathcal{P}(L) $ случайного появления $ L $ невязок, удовлетворяющих условию $ \eqref{eq:kappa_condition} $, можно воспользоваться распределением Пуассона, которое в этом случае имеет вид:
+%
+\begin{equation}
+  \mathcal{P}(L) = \frac{e^{-1}}{L!}.
+\end{equation}
+%
+Тогда
+%
+\begin{align}
+  \mathcal{P}(L \ge 2) &\approx 0.264,\\
+  \mathcal{P}(L \ge 3) &\approx 0.080,\\
+  \mathcal{P}(L \ge 4) &\approx 0.019.
+\end{align}
+%
+Исходя из этих величин, избыточным можно считать число $ L = 3 $ или $ 4 $, т.е. принять $ L' = 2 $ или $ 3 $, соответственно. Выбор $ L' $ зависит от характера задачи. Для получения несмещенных оценок недисперсионных параметров модели следует выбрать $ L' = 1 $. Даже в этом случае $ \approx 3/4 $ исключаемых объектов действительно являются аномальными. Однако для оценки дисперсий скоростей важно не слишком урезать крылья распределения по скоростям, иначе дисперсии получатся систематически заниженными. Потому для оценки природных дисперсий следует брать $ L' = 3 $. Действовать надо, однако, в обратном порядке: сначала решить задачу с $ L' = 3 $. Затем зафиксировать полученные (несмещенные) дисперсии и решить задачу относительно остальных параметров, но уже с $ L' = 1 $.
+
+\hyperlink{toc}{\subsubsection{Четырехмерный метод исключения <<выбросов>>}}
+
+Альтернативой применению одномерного алгоритма к каждому из четырех векторов относительных невязок (исключаются объекты, которые отбираются хотя бы по одной компоненте) является рассмотрение задачи о вероятности получить для объекта по случайности величину некоторой статистики, характеризующей всю комбинацию измеренных для данного объекта четырех относительных невязок, равной или большей найденной для принятой модели. Если решение близко к истинному вектору параметров, то можно предположить, что каждая их этих относительных невязок распределена по нормальному закону с нулевым математическим ожиданием и единичной дисперсией. Тогда указанной статистикой может служить случайная величина хи-квадрат с четырьмя степенями свободы, $ \chi_4^2 $.
+
+В общем случае для $ n $ степеней свободы ($ n \ge 1 $) плотность вероятности случайной величины $ \chi_n^2 $ имеет вид
+%
+\begin{equation}
+  \label{eq:f_n}
+  f_n(z) = \frac{1}{2^{n/2} \, \Gamma(n / 2)} z^{n / 2 - 1} e^{-z / 2},
+\end{equation}
+%
+где $ z $ --- значение $ \chi_n^2 $. При $ n = 4 $ распределение \eqref{eq:f_n} приобретает более простую форму:
+%
+\begin{equation}
+  f_4(z) = \frac{1}{4 \, \Gamma(2)} z e^{-z / 2} = \frac{1}{4} z e^{-z / 2}.
+\end{equation}
+%
+Здесь использовано равенство $ \Gamma(n) = (n - 1)! \;\, \forall \; n \in \mathbb{Z}, \; n > 0 $. Найдем интегральное распределение $ \chi_4^2 $:
+%
+\begin{equation}
+  F_4(z) \stackrel{\text{def}}{=} \mathcal{P}(\chi_4^2 < z) = \int_0^z f_4(\zeta) \, d\zeta = \frac{1}{4} \int_0^z \zeta e^{-\zeta / 2} \, d\zeta.
+\end{equation}
+%
+После замены переменной $ u = \zeta / 2 $ получаем:
+%
+\begin{equation}
+  F_4(z) = \frac{1}{4} \int_0^{z / 2} 2 u e^{-u} 2 \, du = \int_0^{z / 2} u e^{-u} \, du = \left[ -e^{-u} (u + 1) \right]_0^{z / 2} = 1 - e^{-z / 2} \left( \frac{z}{2} + 1 \right).
+\end{equation}
+%
+То есть, в отличие от общего случая, интегральное распределение $ \chi_4^2 $ выражается в явном виде. Тогда дополнение функции $ F_4(z) $ до единицы (вероятность превышения $ \chi_4^2 $ величины $ z $)
+%
+\begin{equation}
+  1 - F_4(z) = \mathcal{P}(\chi_4^2 > z) = e^{-z / 2} \left( \frac{1}{2} + 1 \right).
+\end{equation}
+
+Применительно к данной задаче для $j$-го объекта значение $ \chi_4^2 $ находится по формуле
+%
+\begin{equation}
+  z_j = \frac{[ V_{r,j} - V_{r,\text{mod}}(\varpi_{0,j}) ]^2}{(\sigma_{V_r})_j^2} + \frac{[ \mu_{l,j}' - \mu_{l,\text{mod}}'(\varpi_{0,j}) ]^2}{(\sigma_{\mu_l'})_j^2} + \frac{[ \mu_{b,j} - \mu_{b,\text{mod}}(\varpi_{0,j}) ]^2}{(\sigma_{\mu_b})_j^2} + \frac{( \varpi_j - \varpi_{0,j} )^2}{\sigma_{\varpi,j}^2}.
+\end{equation}
+%
+В обобщенном алгоритме функция интегрального распределения $ F_4(z) $ случайной величины $ \chi_4^2 $ играет ту же роль, что и интеграл вероятности $ \psi(z) $ в одномерном алгоритме. Соответственно, алгоритм применения метода аналогичен пунктам 1--4, описанным в предыдущем подразделе.
+
+\hyperlink{toc}{\subsection{Визуализация результатов}}
+
+В принятой параметризации \eqref{eq:A}
+%
+\begin{equation}
+  \theta_1 = \omega_0 - 2 A.
+\end{equation}
+%
+Тогда, принимая во внимание, что $ \theta_0 = \omega_0 R_0 $, модельная кривая вращения \eqref{eq:model} следующим образом выражается через найденные параметры:
+%
+\begin{align}
+  \Theta_n(R) &= \theta_0 + \theta_1 \Delta R + \sum_{i=2}^n \frac{\theta_i}{i!} (\Delta R)^i = {}\\
+  &= \omega_0 R_0 + (\omega_0 - 2 A) (R - R_0) + \sum_{i=2}^n \frac{\theta_i}{i!} (\Delta R)^i = {}\\
+  &= \omega_0 R - 2 A \Delta R + \sum_{i=2}^n \frac{\theta_i}{i!} (\Delta R)^i.
+\end{align}
+%
+Модельная кривая вращения сопоставляется с наблюдательными данными $ \theta_j(R_j) $ на одном рисунке.
 
 \newpage
 
