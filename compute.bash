@@ -112,7 +112,12 @@ echo -e "${PAD}Step 7. Plot the \`n\` plots"
 "${JULIA}" "${N}" -i "'${R_SOLAR}'" -o "'${R_SOLAR}'"
 "${JULIA}" "${N}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'"
 
-echo -e "${PAD}Step 8. Zip the results\n"
+echo -e "${PAD}Step 8. Plot the inner profiles"
+
+"${JULIA}" "${INNER_PROFILES}" -i "'${R_SOLAR}'" -o "'${R_SOLAR}'" -n "${N_BEST_SOLAR}"
+"${JULIA}" "${INNER_PROFILES}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'" -n "${N_BEST_HMSFRS}"
+
+echo -e "${PAD}Step 9. Zip the results\n"
 
 rm -f results.zip
 zip -rq results.zip results

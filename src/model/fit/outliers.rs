@@ -107,33 +107,7 @@ pub struct FourDimensionalOutliers<F> {
     pub k_005: F,
 }
 
-impl<F> Model<F>
-where
-    F: Float
-        + Debug
-        + Default
-        + Sync
-        + Send
-        + ArgminFloat
-        + ArgminL2Norm<F>
-        + ArgminSub<F, F>
-        + ArgminAdd<F, F>
-        + ArgminDot<F, F>
-        + ArgminMul<F, F>
-        + ArgminZeroLike
-        + ArgminMul<Vec<F>, Vec<F>>,
-    Vec<F>: ArgminSub<Vec<F>, Vec<F>>,
-    Vec<F>: ArgminSub<F, Vec<F>>,
-    Vec<F>: ArgminAdd<Vec<F>, Vec<F>>,
-    Vec<F>: ArgminAdd<F, Vec<F>>,
-    Vec<F>: ArgminMul<F, Vec<F>>,
-    Vec<F>: ArgminMul<Vec<F>, Vec<F>>,
-    Vec<F>: ArgminL1Norm<F>,
-    Vec<F>: ArgminSignum,
-    Vec<F>: ArgminMinMax,
-    Vec<F>: ArgminDot<Vec<F>, F>,
-    Vec<F>: ArgminL2Norm<F>,
-{
+impl<F> Model<F> {
     /// Check the estimates of the parameters for discrepancies
     #[allow(clippy::indexing_slicing)]
     #[allow(clippy::pattern_type_mismatch)]
@@ -145,7 +119,33 @@ where
     pub fn find_outliers(
         &mut self,
         l_stroke: usize,
-    ) -> Result<(OneDimensionalOutliers<F>, FourDimensionalOutliers<F>)> {
+    ) -> Result<(OneDimensionalOutliers<F>, FourDimensionalOutliers<F>)>
+    where
+        F: Float
+            + Debug
+            + Default
+            + Sync
+            + Send
+            + ArgminFloat
+            + ArgminL2Norm<F>
+            + ArgminSub<F, F>
+            + ArgminAdd<F, F>
+            + ArgminDot<F, F>
+            + ArgminMul<F, F>
+            + ArgminZeroLike
+            + ArgminMul<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminSub<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminSub<F, Vec<F>>,
+        Vec<F>: ArgminAdd<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminAdd<F, Vec<F>>,
+        Vec<F>: ArgminMul<F, Vec<F>>,
+        Vec<F>: ArgminMul<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminL1Norm<F>,
+        Vec<F>: ArgminSignum,
+        Vec<F>: ArgminMinMax,
+        Vec<F>: ArgminDot<Vec<F>, F>,
+        Vec<F>: ArgminL2Norm<F>,
+    {
         let n_nonblacklisted = self.count_non_outliers();
 
         // Check for outliers using one-dimensional algorithm
@@ -319,7 +319,8 @@ where
                 // Mark the rest as outliers
                 let mut objects = self.objects.borrow_mut();
                 for (i, _) in &outliers {
-                    objects[*i].outlier = true;
+                    let object = &mut objects[*i];
+                    object.outlier = true;
                 }
             }
 

@@ -21,7 +21,9 @@ use super::{Model, Object, Objects, Params, PARAMS_N, PARAMS_NAMES};
 pub use errors_logger::ErrorsLogger;
 pub use fit_logger::FitLogger;
 pub use frozen_outer::FrozenOuterOptimizationProblem;
-pub use inner::{compute_relative_discrepancy, InnerOptimizationProblem, Triple, Triples};
+pub use inner::{
+    compute_relative_discrepancy, prepare_inner_problem, InnerOptimizationProblem, Triple, Triples,
+};
 pub use outer::OuterOptimizationProblem;
 pub use profiles::{ProfileType, Profiles};
 pub use rotcurve::RotationCurve;

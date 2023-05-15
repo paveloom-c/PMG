@@ -211,6 +211,12 @@ pub fn main() -> Result<()> {
                 model.post_fit();
                 model.write_fit_data()?;
 
+                if n == best_n {
+                    model.compute_inner_profiles().with_context(|| {
+                        "Couldn't compute the profiles of the inner targer function"
+                    })?;
+                }
+
                 if args.with_errors {
                     writeln!(errors_log_writer.borrow_mut(), "n: {n}\n")?;
                     let res = model
