@@ -212,7 +212,7 @@ pub fn main() -> Result<()> {
                 model.write_fit_data()?;
 
                 if n == best_n {
-                    model.compute_inner_profiles().with_context(|| {
+                    model.analyze_inner_profiles().with_context(|| {
                         "Couldn't compute the profiles of the inner targer function"
                     })?;
                 }

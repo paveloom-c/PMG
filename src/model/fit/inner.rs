@@ -2,6 +2,7 @@
 
 use super::rotcurve::compute_rot_curve_series;
 use super::{Model, Object, Params};
+use crate::utils;
 
 use core::fmt::Debug;
 use core::fmt::Display;
@@ -10,6 +11,8 @@ use std::io::{BufWriter, Write};
 
 use anyhow::Result;
 use argmin::core::CostFunction;
+use indoc::indoc;
+use itertools::izip;
 use num::Float;
 use numeric_literals::replace_float_literals;
 use rayon::iter::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
@@ -275,14 +278,15 @@ where
 }
 
 impl<F> Model<F> {
-    /// Compute the profiles of the inner target function
+    /// Compute the profiles of the inner target function. Also, find those objects
+    /// that have profiles with multiple local minima and output their coordinates
     #[allow(clippy::indexing_slicing)]
     #[allow(clippy::pattern_type_mismatch)]
     #[allow(clippy::too_many_lines)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub fn compute_inner_profiles(&self) -> Result<()>
+    pub fn analyze_inner_profiles(&self) -> Result<()>
     where
         F: Float + Debug + Default + Display + Sync + Send,
     {
@@ -291,11 +295,14 @@ impl<F> Model<F> {
         let inner_profiles_dir = &self.output_dir.join("Inner profiles");
         std::fs::create_dir_all(inner_profiles_dir)?;
 
+        let mut odd_objects = vec![false; self.objects.borrow().len()];
+
         self.objects
             .borrow()
             .par_iter()
             .enumerate()
-            .try_for_each(|(i, object)| -> Result<()> {
+            .zip(&mut odd_objects)
+            .try_for_each(|((i, object), odd_object)| -> Result<()> {
                 if object.outlier {
                     return Ok(());
                 }
@@ -319,15 +326,68 @@ impl<F> Model<F> {
                     "# Profile of the inner target function\npar_r sum"
                 )?;
 
+                let diff_epsilon = F::sqrt(F::epsilon());
+                let mut subinterval_start_diff =
+                    utils::central_diff(start, &|x| problem.cost(&x).unwrap(), diff_epsilon);
+
+                let mut minima_count = 0;
                 for j in 0..=n_points {
                     let par_r = start + F::from(j).unwrap() * h;
                     let sum = problem.cost(&par_r)?;
 
+                    let subinterval_end_diff =
+                        utils::central_diff(par_r, &|x| problem.cost(&x).unwrap(), diff_epsilon);
+
                     writeln!(inner_profile_writer, "{par_r} {sum}")?;
+
+                    if subinterval_start_diff < 0. && subinterval_end_diff > 0. {
+                        minima_count += 1;
+                    }
+
+                    subinterval_start_diff = subinterval_end_diff;
+                }
+
+                if minima_count > 1 {
+                    *odd_object = true;
                 }
 
                 Ok(())
             })?;
+
+        let odd_objects_path = &self.output_dir.join("odd_objects.dat");
+        let odd_objects_file = File::create(odd_objects_path)?;
+        let mut odd_objects_writer = BufWriter::new(odd_objects_file);
+
+        writeln!(
+            &mut odd_objects_writer,
+            indoc!(
+                "
+                # Coordinates of the objects that have more than one local
+                # minima in their profile of the inner target function
+                i name source X X_p X_m Y Y_p Y_m"
+            ),
+        )?;
+
+        for ((i, object), odd_object) in
+            izip!(self.objects.borrow().iter().enumerate(), &odd_objects)
+        {
+            if *odd_object {
+                writeln!(
+                    odd_objects_writer,
+                    "{} \"{}\" \"{}\" {} {} {} {} {} {}",
+                    i + 1,
+                    object.name.as_ref().unwrap(),
+                    object.source.as_ref().unwrap(),
+                    object.x.as_ref().unwrap(),
+                    object.x_p.as_ref().unwrap(),
+                    object.x_m.as_ref().unwrap(),
+                    object.y.as_ref().unwrap(),
+                    object.y_p.as_ref().unwrap(),
+                    object.y_m.as_ref().unwrap(),
+                )?;
+            }
+        }
+
         Ok(())
     }
 }

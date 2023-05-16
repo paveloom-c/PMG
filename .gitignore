@@ -9,5 +9,5 @@ result
 *.zip
 diploma/*.pdf
 public
-results
+results*
 target

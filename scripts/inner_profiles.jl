@@ -80,6 +80,7 @@ if "--help" in ARGS
         $(YELLOW)USAGE:$(RESET)
         { julia --project=. | ./julia.bash } scripts/outliers.jl -i <INPUT_DIR> -o <OUTPUT_DIR> [--postfix <POSTFIX>]
         $(YELLOW)OPTIONS:$(RESET)
+            $(GREEN)-n$(RESET)                     Degree of the polynomial of the rotation curve
             $(GREEN)-i <INPUT_DIR>$(RESET)         Input directory
             $(GREEN)-o <OUTPUT_DIR>$(RESET)        Output directory
             $(GREEN)--postfix <POSTFIX>$(RESET)    A postfix for the names of output files"""
@@ -196,8 +197,8 @@ for profile_path in readdir(INNER_PROFILES_DIR, join=true)
         p = plot(
             profile_data.par_r,
             profile_data.sum,
-            L"\varpi",
-            L"\sum",
+            L"\varpi_{0,j}",
+            L"\sum_m (|\delta_m| / \sigma_m)^2",
         )
         pgfsave(
             joinpath(
