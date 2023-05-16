@@ -201,10 +201,13 @@ if isfile(FIT_PARAMS_DATA_PATH)
         x_max, x_min = max_min(x)
         y_max, y_min = max_min(y; factor=0.5)
         # Compute the X tick distance
-        xtick_distance = if (x_max - x_min) < 1
+        x_diff = (x_max - x_min)
+        xtick_distance = if x_diff < 1
             0.1
-        else
+        elseif x_diff < 5
             0.5
+        else
+            1
         end
         # Prepare a table
         table = @pgf Table(

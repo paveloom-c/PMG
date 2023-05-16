@@ -27,8 +27,7 @@ use numeric_literals::replace_float_literals;
 #[allow(clippy::type_complexity)]
 pub struct SigmaOuterOptimizationProblem<'a, F> {
     pub objects: &'a Objects<F>,
-    pub params: &'a Params<F>,
-    pub prev_fit_params: &'a Params<F>,
+    pub fit_params: &'a Params<F>,
     pub triples: &'a Rc<RefCell<Vec<Triples<F>>>>,
     pub output_dir: &'a PathBuf,
 }
@@ -78,15 +77,15 @@ where
         // Create an outer problem
         let outer_problem = OuterOptimizationProblem {
             objects: self.objects,
-            params: self.params,
+            params: self.fit_params,
             triples: self.triples,
             output_dir: self.output_dir,
         };
         // Prepare the parameter vector
         let mut new_p = p.clone();
-        new_p.insert(6, self.prev_fit_params.sigma_r_g);
-        new_p.insert(7, self.prev_fit_params.sigma_theta);
-        new_p.insert(8, self.prev_fit_params.sigma_z);
+        new_p.insert(6, self.fit_params.sigma_r_g);
+        new_p.insert(7, self.fit_params.sigma_theta);
+        new_p.insert(8, self.fit_params.sigma_z);
         // Compute the cost
         outer_problem.inner_cost(&new_p, false)
     }

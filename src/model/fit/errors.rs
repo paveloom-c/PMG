@@ -33,13 +33,91 @@ use numeric_literals::replace_float_literals;
 #[allow(clippy::missing_docs_in_private_items)]
 #[allow(clippy::type_complexity)]
 pub struct ConfidenceIntervalProblem<'a, F> {
+    pub l_stroke: usize,
     pub n: usize,
     pub index: usize,
     pub best_outer_cost: F,
     pub objects: &'a Objects<F>,
     pub params: &'a Params<F>,
+    pub fit_params: &'a Params<F>,
     pub triples: &'a Rc<RefCell<Vec<Triples<F>>>>,
     pub output_dir: &'a PathBuf,
+}
+
+impl<'a, F> ConfidenceIntervalProblem<'a, F> {
+    /// Optimize the outer problem with one (or four) parameters frozen
+    #[allow(clippy::indexing_slicing)]
+    #[allow(clippy::unwrap_in_result)]
+    #[allow(clippy::unwrap_used)]
+    pub fn inner_cost(&self, param: &F) -> Result<F>
+    where
+        F: Float
+            + Debug
+            + Default
+            + Display
+            + Sum
+            + Sync
+            + Send
+            + ArgminFloat
+            + ArgminL2Norm<F>
+            + ArgminSub<F, F>
+            + ArgminAdd<F, F>
+            + ArgminDot<F, F>
+            + ArgminMul<F, F>
+            + ArgminZeroLike
+            + ArgminMul<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminSub<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminSub<F, Vec<F>>,
+        Vec<F>: ArgminAdd<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminAdd<F, Vec<F>>,
+        Vec<F>: ArgminMul<F, Vec<F>>,
+        Vec<F>: ArgminMul<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminL1Norm<F>,
+        Vec<F>: ArgminSignum,
+        Vec<F>: ArgminMinMax,
+        Vec<F>: ArgminDot<Vec<F>, F>,
+        Vec<F>: ArgminL2Norm<F>,
+        Vec<F>: FiniteDiff<F>,
+    {
+        let index = if self.l_stroke == 1 {
+            if self.index < 6 {
+                self.index
+            } else {
+                self.index - 3
+            }
+        } else {
+            self.index
+        };
+
+        // Define the problem of the outer optimization with a frozen parameter
+        let problem = FrozenOuterOptimizationProblem {
+            l_stroke: self.l_stroke,
+            index,
+            param: *param,
+            objects: self.objects,
+            params: self.params,
+            fit_params: self.fit_params,
+            triples: self.triples,
+            output_dir: self.output_dir,
+        };
+        let mut init_param = self.params.to_vec(self.n, self.l_stroke == 1);
+        // Remove the frozen parameter
+        init_param.remove(index);
+        let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;
+        let linesearch =
+            BacktrackingLineSearch::new(cond).rho(F::from(BACKTRACKING_PARAM).unwrap())?;
+        let solver = LBFGS::new(linesearch, LBFGS_M)
+            .with_tolerance_cost(F::from(LBFGS_TOLERANCE_ERRORS).unwrap())?;
+        // Find the local minimum in the outer optimization
+        let res = Executor::new(problem, solver)
+            .configure(|state| state.param(init_param).max_iters(MAX_ITERS))
+            .timer(false)
+            .run()
+            .with_context(|| {
+                "Couldn't solve the outer optimization problem with a frozen parameter"
+            })?;
+        Ok(res.state().get_best_cost())
+    }
 }
 
 impl<'a, F> CostFunction for ConfidenceIntervalProblem<'a, F>
@@ -75,37 +153,11 @@ where
     type Param = F;
     type Output = F;
 
-    #[allow(clippy::indexing_slicing)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
     fn cost(&self, param: &Self::Param) -> Result<Self::Output> {
-        // Define the problem of the outer optimization with a frozen parameter
-        let problem = FrozenOuterOptimizationProblem {
-            index: self.index,
-            param: *param,
-            objects: self.objects,
-            params: self.params,
-            triples: self.triples,
-            output_dir: self.output_dir,
-        };
-        let mut init_param = self.params.to_vec(self.n, false);
-        // Remove the frozen parameter
-        init_param.remove(self.index);
-        let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;
-        let linesearch =
-            BacktrackingLineSearch::new(cond).rho(F::from(BACKTRACKING_PARAM).unwrap())?;
-        let solver = LBFGS::new(linesearch, LBFGS_M)
-            .with_tolerance_cost(F::from(LBFGS_TOLERANCE_ERRORS).unwrap())?;
-        // Find the local minimum in the outer optimization
-        let res = Executor::new(problem, solver)
-            .configure(|state| state.param(init_param).max_iters(MAX_ITERS))
-            .timer(false)
-            .run()
-            .with_context(|| {
-                "Couldn't solve the outer optimization problem with a frozen parameter"
-            })?;
-        let best_inner_cost = res.state().get_best_cost();
+        let best_inner_cost = self.inner_cost(param)?;
         Ok(best_inner_cost - self.best_outer_cost - 0.5)
     }
 }
@@ -189,31 +241,18 @@ where
                 // We compute the best value again since the
                 // parameters are varied differently here
                 let best_frozen_cost = {
-                    let problem = FrozenOuterOptimizationProblem {
+                    let problem = ConfidenceIntervalProblem {
+                        l_stroke,
+                        n,
                         index,
-                        param,
+                        best_outer_cost: F::zero(),
                         objects: &self.objects,
                         params: &self.params,
+                        fit_params,
                         triples: &Rc::clone(&triples),
                         output_dir: &self.output_dir,
                     };
-                    let mut init_param = self.params.to_vec(n, false);
-                    // Remove the frozen parameter
-                    init_param.remove(index);
-                    let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;
-                    let linesearch = BacktrackingLineSearch::new(cond)
-                        .rho(F::from(BACKTRACKING_PARAM).unwrap())?;
-                    let solver = LBFGS::new(linesearch, LBFGS_M)
-                        .with_tolerance_cost(F::from(LBFGS_TOLERANCE_ERRORS).unwrap())?;
-                    // Find the local minimum in the outer optimization
-                    let res = Executor::new(problem, solver)
-                        .configure(|state| state.param(init_param))
-                        .timer(false)
-                        .run()
-                        .with_context(|| {
-                            "Couldn't solve the outer optimization problem with a frozen parameter"
-                        })?;
-                    res.state().get_best_cost()
+                    problem.inner_cost(&param)?
                 };
 
                 writeln!(
@@ -226,11 +265,13 @@ where
                     writeln!(errors_log_writer.borrow_mut(), "\nto the right:")?;
 
                     let problem = ConfidenceIntervalProblem {
+                        l_stroke,
                         n,
                         index,
                         best_outer_cost: best_frozen_cost,
                         objects: &self.objects,
                         params: &self.params,
+                        fit_params,
                         triples: &Rc::clone(&triples),
                         output_dir: &self.output_dir,
                     };
@@ -280,11 +321,13 @@ where
                     writeln!(errors_log_writer.borrow_mut(), "\nto the left:")?;
 
                     let problem = ConfidenceIntervalProblem {
+                        l_stroke,
                         n,
                         index,
                         best_outer_cost: best_frozen_cost,
                         objects: &self.objects,
                         params: &self.params,
+                        fit_params,
                         triples: &Rc::clone(&triples),
                         output_dir: &self.output_dir,
                     };

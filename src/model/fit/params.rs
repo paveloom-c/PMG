@@ -143,12 +143,11 @@ impl<F> Model<F> {
 
             (best_cost, fit_params)
         } else {
-            let prev_fit_params = self.fit_params.as_ref().unwrap();
+            let mut fit_params = self.fit_params.as_ref().unwrap().clone();
             // Define the problem of the outer optimization
             let problem = SigmaOuterOptimizationProblem {
                 objects: &self.objects,
-                params: &self.params,
-                prev_fit_params,
+                fit_params: &fit_params,
                 triples: &Rc::clone(&self.triples),
                 output_dir: &self.output_dir,
             };
@@ -179,12 +178,11 @@ impl<F> Model<F> {
             let best_cost = res.state().get_best_cost();
             let mut best_point = res.state().get_best_param().unwrap().clone();
 
-            best_point.insert(6, prev_fit_params.sigma_r_g);
-            best_point.insert(7, prev_fit_params.sigma_theta);
-            best_point.insert(8, prev_fit_params.sigma_z);
+            best_point.insert(6, fit_params.sigma_r_g);
+            best_point.insert(7, fit_params.sigma_theta);
+            best_point.insert(8, fit_params.sigma_z);
 
             // Update the previous parameters
-            let mut fit_params = self.fit_params.as_ref().unwrap().clone();
             fit_params.update_with(&best_point);
 
             (best_cost, fit_params)

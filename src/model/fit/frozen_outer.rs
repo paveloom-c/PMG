@@ -3,8 +3,8 @@
 extern crate alloc;
 
 use super::outer::{Output, Param};
-use super::{Objects, Params};
-use super::{OuterOptimizationProblem, Triples};
+use super::{Objects, OuterOptimizationProblem, Params};
+use super::{SigmaOuterOptimizationProblem, Triples};
 use crate::utils::FiniteDiff;
 use alloc::rc::Rc;
 use core::cell::RefCell;
@@ -26,10 +26,12 @@ use numeric_literals::replace_float_literals;
 #[allow(clippy::missing_docs_in_private_items)]
 #[allow(clippy::type_complexity)]
 pub struct FrozenOuterOptimizationProblem<'a, F> {
+    pub l_stroke: usize,
     pub index: usize,
     pub param: F,
     pub objects: &'a Objects<F>,
     pub params: &'a Params<F>,
+    pub fit_params: &'a Params<F>,
     pub triples: &'a Rc<RefCell<Vec<Triples<F>>>>,
     pub output_dir: &'a PathBuf,
 }
@@ -70,24 +72,40 @@ where
     #[allow(clippy::as_conversions)]
     #[allow(clippy::indexing_slicing)]
     #[allow(clippy::many_single_char_names)]
+    #[allow(clippy::print_stderr)]
     #[allow(clippy::similar_names)]
     #[allow(clippy::too_many_lines)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
     fn cost(&self, p: &Self::Param) -> Result<Self::Output> {
-        // Create an outer problem
-        let outer_problem = OuterOptimizationProblem {
-            objects: self.objects,
-            params: self.params,
-            triples: self.triples,
-            output_dir: self.output_dir,
-        };
-        // Prepare the parameter vector
-        let mut new_p = p.clone();
-        new_p.insert(self.index, self.param);
-        // Compute the cost
-        outer_problem.inner_cost(&new_p, false)
+        if self.l_stroke == 3 {
+            // Create an outer problem
+            let outer_problem = OuterOptimizationProblem {
+                objects: self.objects,
+                params: self.params,
+                triples: self.triples,
+                output_dir: self.output_dir,
+            };
+            // Prepare the parameter vector
+            let mut new_p = p.clone();
+            new_p.insert(self.index, self.param);
+            // Compute the cost
+            outer_problem.cost(&new_p)
+        } else {
+            // Create an outer problem
+            let outer_problem = SigmaOuterOptimizationProblem {
+                objects: self.objects,
+                fit_params: self.fit_params,
+                triples: self.triples,
+                output_dir: self.output_dir,
+            };
+            // Prepare the parameter vector
+            let mut new_p = p.clone();
+            new_p.insert(self.index, self.param);
+            // Compute the cost
+            outer_problem.cost(&new_p)
+        }
     }
 }
 

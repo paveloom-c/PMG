@@ -243,7 +243,6 @@ impl<F> Params<F> {
         let slice = &array[0..=8 + (n - 1)];
         let mut vec = slice.to_vec();
         if remove_sigmas {
-            // Nice
             for i in (6..9).rev() {
                 vec.remove(i);
             }

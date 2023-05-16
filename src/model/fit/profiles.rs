@@ -3,8 +3,7 @@
 extern crate alloc;
 
 use super::io::output;
-use super::params::{ARMIJO_PARAM, BACKTRACKING_PARAM, LBFGS_M, LBFGS_TOLERANCE_ERRORS, MAX_ITERS};
-use super::{FrozenOuterOptimizationProblem, OuterOptimizationProblem, Triple};
+use super::{ConfidenceIntervalProblem, OuterOptimizationProblem, Triple};
 use super::{Model, Params, PARAMS_N, PARAMS_NAMES};
 use crate::utils::FiniteDiff;
 
@@ -14,10 +13,7 @@ use core::fmt::{Debug, Display};
 use core::iter::Sum;
 
 use anyhow::{Context, Result};
-use argmin::core::{ArgminFloat, Executor};
-use argmin::solver::linesearch::condition::ArmijoCondition;
-use argmin::solver::linesearch::BacktrackingLineSearch;
-use argmin::solver::quasinewton::LBFGS;
+use argmin::core::ArgminFloat;
 use argmin_math::{
     ArgminAdd, ArgminDot, ArgminL1Norm, ArgminL2Norm, ArgminMinMax, ArgminMul, ArgminSignum,
     ArgminSub, ArgminZeroLike,
@@ -112,8 +108,8 @@ impl<F> Model<F> {
             let fit_param_em = fit_params_em[index];
 
             let coeff = 1.1;
-            let start = fit_param - fit_param_em * coeff;
-            let end = fit_param + fit_param_ep * coeff;
+            let start = fit_param - 3. * fit_param_em * coeff;
+            let end = fit_param + 3. * fit_param_ep * coeff;
             let h = (end - start) / F::from(POINTS_N).unwrap();
 
             let mut profile = Vec::<ProfilePoint<F>>::with_capacity(POINTS_N);
@@ -121,31 +117,18 @@ impl<F> Model<F> {
             for j in 0..=POINTS_N {
                 let param = start + F::from(j).unwrap() * h;
 
-                let problem = FrozenOuterOptimizationProblem {
+                let problem = ConfidenceIntervalProblem {
+                    l_stroke,
+                    n,
                     index,
-                    param,
+                    best_outer_cost: F::zero(),
                     objects: &self.objects,
                     params: &self.params,
+                    fit_params: self.fit_params.as_ref().unwrap(),
                     triples: &Rc::clone(&triples),
                     output_dir: &self.output_dir,
                 };
-                let mut init_param = self.params.to_vec(n, false);
-                // Remove the frozen parameter
-                init_param.remove(index);
-                let cond = ArmijoCondition::new(F::from(ARMIJO_PARAM).unwrap())?;
-                let linesearch =
-                    BacktrackingLineSearch::new(cond).rho(F::from(BACKTRACKING_PARAM).unwrap())?;
-                let solver = LBFGS::new(linesearch, LBFGS_M)
-                    .with_tolerance_cost(F::from(LBFGS_TOLERANCE_ERRORS).unwrap())?;
-                // Find the local minimum in the outer optimization
-                let res = Executor::new(problem, solver)
-                    .configure(|state| state.param(init_param).max_iters(MAX_ITERS))
-                    .timer(false)
-                    .run()
-                    .with_context(|| {
-                        "Couldn't solve the outer optimization problem with a frozen parameter"
-                    })?;
-                let cost = res.state().get_best_cost();
+                let cost = problem.inner_cost(&param)?;
 
                 profile.push(ProfilePoint { param, cost });
             }

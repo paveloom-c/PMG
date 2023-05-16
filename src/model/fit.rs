@@ -18,6 +18,7 @@ mod steepest_descent;
 use super::io;
 use super::{Model, Object, Objects, Params, PARAMS_N, PARAMS_NAMES};
 
+pub use errors::ConfidenceIntervalProblem;
 pub use errors_logger::ErrorsLogger;
 pub use fit_logger::FitLogger;
 pub use frozen_outer::FrozenOuterOptimizationProblem;
