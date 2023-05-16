@@ -5,7 +5,7 @@ extern crate alloc;
 use super::io::output;
 use super::params::{ARMIJO_PARAM, BACKTRACKING_PARAM, LBFGS_M, LBFGS_TOLERANCE_ERRORS, MAX_ITERS};
 use super::{FrozenOuterOptimizationProblem, OuterOptimizationProblem, Triple};
-use super::{Model, PARAMS_N, PARAMS_NAMES};
+use super::{Model, Params, PARAMS_N, PARAMS_NAMES};
 use crate::utils::FiniteDiff;
 
 use alloc::rc::Rc;
@@ -26,9 +26,6 @@ use indoc::formatdoc;
 use num::Float;
 use numeric_literals::replace_float_literals;
 use serde::Serialize;
-
-/// Profiles
-pub type Profiles<F> = Vec<Profile<F>>;
 
 /// A profile
 pub type Profile<F> = Vec<ProfilePoint<F>>;
@@ -61,7 +58,7 @@ impl<F> Model<F> {
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub fn try_compute_conditional_profiles(&mut self) -> Result<()>
+    pub fn try_compute_conditional_profiles(&mut self, l_stroke: usize) -> Result<()>
     where
         F: Float
             + Debug
@@ -97,13 +94,19 @@ impl<F> Model<F> {
         let fit_params_ep = self.fit_params.as_ref().unwrap().to_ep_vec(n);
         let fit_params_em = self.fit_params.as_ref().unwrap().to_em_vec(n);
         // Prepare storage
-        let mut profiles = Profiles::<F>::with_capacity(PARAMS_N);
         let triple = vec![Triple::<F>::default(); 4];
         let triples = Rc::new(RefCell::new(vec![triple; self.objects.borrow().len()]));
 
         // Compute conditional profiles (one parameter is fixed
         // and externally varied, the rest are free)
-        for index in 0..=(8 + (n - 1)) {
+        let len = fit_params.len();
+        for index in 0..len {
+            // Don't compute for the sigmas or compute for the sigmas only
+            if Params::<F>::compute_with_l_stroke(index, l_stroke) {
+                continue;
+            }
+            eprintln!("conditional profiles index: {index}");
+
             let fit_param = fit_params[index];
             let fit_param_ep = fit_params_ep[index];
             let fit_param_em = fit_params_em[index];
@@ -149,22 +152,19 @@ impl<F> Model<F> {
 
             self.serialize_to_profile(&ProfileType::Conditional, &profile, index)
                 .with_context(|| "Couldn't write a conditional profile to a file")?;
-
-            profiles.push(profile);
         }
-
-        self.conditional_profiles = Some(profiles);
 
         Ok(())
     }
     /// Try to compute the frozen profiles
     #[allow(clippy::indexing_slicing)]
+    #[allow(clippy::print_stderr)]
     #[allow(clippy::shadow_unrelated)]
     #[allow(clippy::similar_names)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub fn try_compute_frozen_profiles(&mut self) -> Result<()>
+    pub fn try_compute_frozen_profiles(&mut self, l_stroke: usize) -> Result<()>
     where
         F: Float
             + Debug
@@ -200,7 +200,6 @@ impl<F> Model<F> {
         let fit_params_ep = [1.0; PARAMS_N];
         let fit_params_em = [1.0; PARAMS_N];
         // Prepare storage for the profiles and the reduced parallaxes
-        let mut profiles = Profiles::<F>::with_capacity(PARAMS_N);
         let triple = vec![Triple::<F>::default(); 4];
         let triples = Rc::new(RefCell::new(vec![triple; self.objects.borrow().len()]));
 
@@ -213,7 +212,14 @@ impl<F> Model<F> {
         //
         // We compute for the first parameter
         // only here (R_0) for debug purposes
-        for index in 0..=(8 + (n - 1)) {
+        let len = fit_params.len();
+        for index in 0..len {
+            // Don't compute for the sigmas or compute for the sigmas only
+            if Params::<F>::compute_with_l_stroke(index, l_stroke) {
+                continue;
+            }
+            eprintln!("frozen profiles index: {index}");
+
             let fit_param = fit_params[index];
             let fit_param_ep = fit_params_ep[index];
             let fit_param_em = fit_params_em[index];
@@ -244,11 +250,7 @@ impl<F> Model<F> {
 
             self.serialize_to_profile(&ProfileType::Frozen, &profile, index)
                 .with_context(|| "Couldn't write a frozen profile to a file")?;
-
-            profiles.push(profile);
         }
-
-        self.frozen_profiles = Some(profiles);
 
         Ok(())
     }

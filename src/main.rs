@@ -86,11 +86,15 @@ pub fn main() -> Result<()> {
             let best_n = args.n_best;
 
             let mut sample_iteration = 0;
-            'samples: loop {
-                'strokes: for l_stroke in [3, 1] {
+            for l_stroke in [3, 1] {
+                eprintln!("l_stroke: {l_stroke}");
+
+                'samples: loop {
                     // Fit the parameters for each model
                     for i in 0..args.n_max {
                         let n = i + 1;
+
+                        eprintln!("n: {n}");
 
                         let model = &mut models[i];
                         let fit_log_writer = &fit_log_writers[i];
@@ -124,9 +128,6 @@ pub fn main() -> Result<()> {
                         if one_dimensional_outliers.vec.is_empty()
                             && four_dimensional_outliers.vec.is_empty()
                         {
-                            if l_stroke == 3 {
-                                continue 'strokes;
-                            }
                             break 'samples;
                         }
 
@@ -184,71 +185,83 @@ pub fn main() -> Result<()> {
                     }
 
                     sample_iteration += 1;
-                    continue 'samples;
                 }
-            }
 
-            outliers_log_writer.flush()?;
-            for fit_log_writer in fit_log_writers {
-                fit_log_writer.borrow_mut().flush()?;
+                outliers_log_writer.flush()?;
+                for fit_log_writer in &fit_log_writers {
+                    fit_log_writer.borrow_mut().flush()?;
+                }
+
+                let l_stroke_n = models[best_i].count_non_outliers();
+
+                for i in 0..args.n_max {
+                    let n = i + 1;
+
+                    eprintln!("post n: {n}");
+
+                    let model = &mut models[i];
+                    if model.fit_params.is_none() {
+                        continue;
+                    }
+
+                    if l_stroke == 1 {
+                        model.l_stroke_1_n = Some(l_stroke_n);
+                    } else {
+                        model.l_stroke_3_n = Some(l_stroke_n);
+                    }
+
+                    model
+                        .try_compute_frozen_profiles(l_stroke)
+                        .with_context(|| "Couldn't compute frozen profiles")?;
+
+                    if n == best_n && args.with_errors {
+                        writeln!(errors_log_writer.borrow_mut(), "n: {n}\n")?;
+                        let res = model
+                            .try_fit_errors(&errors_log_writer, l_stroke)
+                            .with_context(|| "Couldn't compute the errors");
+                        match res {
+                            Ok(_) => {
+                                model.serialize_to_fit_params().with_context(|| {
+                                    "Couldn't write the fitted parameters to a file"
+                                })?;
+                            }
+                            Err(ref err) => {
+                                eprintln!("{err:?}");
+                            }
+                        }
+                    }
+
+                    if l_stroke == 1 {
+                        model.post_fit();
+                        model.write_fit_data()?;
+
+                        if n == best_n {
+                            model.analyze_inner_profiles().with_context(|| {
+                                "Couldn't compute the profiles of the inner targer function"
+                            })?;
+                        }
+
+                        write_fit_rotcurve_to_plain(&args, &models)
+                            .with_context(|| "Couldn't write to the `fit_rotcurve.plain` file")?;
+                    }
+
+                    write_fit_params_to_plain(&args, &models)
+                        .with_context(|| "Couldn't write to the `fit_params.plain` file")?;
+                }
+
+                let best_model = &mut models[best_i];
+                if args.with_conditional_profiles {
+                    let res = best_model
+                        .try_compute_conditional_profiles(l_stroke)
+                        .with_context(|| "Couldn't compute the conditional profiles");
+                    if let Err(ref err) = res {
+                        eprintln!("{err:?}");
+                    }
+                }
             }
 
             serialize_n_results(&args, &models)
                 .with_context(|| "Couldn't serialize the `n` results")?;
-
-            for i in 0..args.n_max {
-                let n = i + 1;
-
-                let model = &mut models[i];
-                if model.fit_params.is_none() {
-                    continue;
-                }
-
-                model
-                    .try_compute_frozen_profiles()
-                    .with_context(|| "Couldn't compute frozen profiles")?;
-
-                model.post_fit();
-                model.write_fit_data()?;
-
-                if n == best_n {
-                    model.analyze_inner_profiles().with_context(|| {
-                        "Couldn't compute the profiles of the inner targer function"
-                    })?;
-                }
-
-                if args.with_errors {
-                    writeln!(errors_log_writer.borrow_mut(), "n: {n}\n")?;
-                    let res = model
-                        .try_fit_errors(&errors_log_writer)
-                        .with_context(|| "Couldn't compute the errors");
-                    match res {
-                        Ok(_) => {
-                            model.serialize_to_fit_params().with_context(|| {
-                                "Couldn't write the fitted parameters to a file"
-                            })?;
-                        }
-                        Err(ref err) => {
-                            eprintln!("{err:?}");
-                        }
-                    }
-                }
-
-                write_fit_params_to_plain(&args, &models)
-                    .with_context(|| "Couldn't write to the `fit_params.plain` file")?;
-                write_fit_rotcurve_to_plain(&args, &models)
-                    .with_context(|| "Couldn't write to the `fit_rotcurve.plain` file")?;
-            }
-
-            let best_model = &mut models[best_i];
-            if args.with_conditional_profiles {
-                let res = best_model
-                    .try_compute_conditional_profiles()
-                    .with_context(|| "Couldn't compute the conditional profiles");
-                if let Err(ref err) = res {
-                    eprintln!("{err:?}");
-                }
-            }
         }
     }
     Ok(())

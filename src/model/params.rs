@@ -364,6 +364,11 @@ impl<F> Params<F> {
         let slice = &array[0..=8 + (n - 1)];
         slice.to_vec()
     }
+    /// Should you run computations for this parameter with this L'?
+    pub fn compute_with_l_stroke(index: usize, l_stroke: usize) -> bool {
+        (l_stroke == 1 && (6..9).contains(&index))
+            || (l_stroke == 3 && ((0..6).contains(&index) || (9..).contains(&index)))
+    }
 }
 
 /// Descriptions of the fields

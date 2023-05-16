@@ -122,6 +122,7 @@ impl<F> Model<F> {
                 .timer(false)
                 .add_observer(
                     FitLogger {
+                        l_stroke,
                         sample_iteration,
                         objects: Rc::clone(&self.objects),
                         params: self.params.clone(),
@@ -163,6 +164,7 @@ impl<F> Model<F> {
                 .timer(false)
                 .add_observer(
                     FitLogger {
+                        l_stroke,
                         sample_iteration,
                         objects: Rc::clone(&self.objects),
                         params: self.params.clone(),
@@ -181,8 +183,8 @@ impl<F> Model<F> {
             best_point.insert(7, prev_fit_params.sigma_theta);
             best_point.insert(8, prev_fit_params.sigma_z);
 
-            // Prepare storage for the new parameters
-            let mut fit_params = self.params.clone();
+            // Update the previous parameters
+            let mut fit_params = self.fit_params.as_ref().unwrap().clone();
             fit_params.update_with(&best_point);
 
             (best_cost, fit_params)

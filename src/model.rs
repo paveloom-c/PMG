@@ -10,7 +10,7 @@ mod sample_description;
 
 use crate::cli::Args;
 use crate::utils;
-pub use fit::{ProfileType, Profiles, RotationCurve, Triple, Triples};
+pub use fit::{ProfileType, RotationCurve, Triple, Triples};
 pub use objects::{Object, Objects};
 pub use params::{Params, PARAMS_N, PARAMS_NAMES};
 
@@ -36,6 +36,10 @@ pub struct Model<F> {
 
     /// The degree of the polynomial of the rotation curve
     pub n: Option<usize>,
+    /// Number of the objects after the L' = 3 run
+    pub l_stroke_3_n: Option<usize>,
+    /// Number of the objects after the L' = 1 run
+    pub l_stroke_1_n: Option<usize>,
     /// The best value of the cost function
     pub best_cost: Option<F>,
     /// Fit of the model (parameters)
@@ -44,10 +48,6 @@ pub struct Model<F> {
     pub fit_rotcurve: Option<RotationCurve<F>>,
     /// Triples
     pub triples: Rc<RefCell<Vec<Triples<F>>>>,
-    /// Conditional profiles
-    pub conditional_profiles: Option<Profiles<F>>,
-    /// Frozen profiles
-    pub frozen_profiles: Option<Profiles<F>>,
 
     /// Sample description
     pub sample_description: Option<String>,

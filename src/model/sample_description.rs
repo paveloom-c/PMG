@@ -46,14 +46,22 @@ impl<F> Model<F> {
     }
     /// Get the sample description as a formatted string
     pub fn format_sample_description(&self) -> String {
-        let total_count = self.objects.borrow().len();
-        let nonoutliers_count = self.count_non_outliers();
+        let n = self.objects.borrow().len();
+        let l_stroke_3_n = self
+            .l_stroke_3_n
+            .as_ref()
+            .map_or("???".to_owned(), |v| format!("{v}"));
+        let l_stroke_1_n = self
+            .l_stroke_1_n
+            .as_ref()
+            .map_or("???".to_owned(), |v| format!("{v}"));
         match self.sample_description {
             Some(ref sample_description) => formatdoc!(
                 "
                 {sample_description}
-                # Total number of the objects: {total_count}.
-                # Number of the objects without outliers: {nonoutliers_count}.
+                # Total number of the objects: {n}.
+                # Number of the objects after the L' = 3 run: {l_stroke_3_n}.
+                # Number of the objects after the L' = 1 run: {l_stroke_1_n}.
                 #",
             ),
             None => String::from("#"),

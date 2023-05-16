@@ -25,6 +25,6 @@ pub use inner::{
     compute_relative_discrepancy, prepare_inner_problem, InnerOptimizationProblem, Triple, Triples,
 };
 pub use outer::OuterOptimizationProblem;
-pub use profiles::{ProfileType, Profiles};
+pub use profiles::ProfileType;
 pub use rotcurve::RotationCurve;
 pub use sigma_outer::SigmaOuterOptimizationProblem;

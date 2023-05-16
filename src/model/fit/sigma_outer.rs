@@ -22,7 +22,7 @@ use argmin_math::{
 use num::Float;
 use numeric_literals::replace_float_literals;
 
-/// A problem for the outer optimization, but with a frozen parameter
+/// A problem for the outer optimization, but with frozen sigmas
 #[allow(clippy::missing_docs_in_private_items)]
 #[allow(clippy::type_complexity)]
 pub struct SigmaOuterOptimizationProblem<'a, F> {

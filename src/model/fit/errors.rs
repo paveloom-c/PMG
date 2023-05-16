@@ -152,6 +152,7 @@ where
     pub fn try_fit_errors(
         &mut self,
         errors_log_writer: &Rc<RefCell<BufWriter<File>>>,
+        l_stroke: usize,
     ) -> Result<()> {
         // Make sure the fitting happened before this call
         let n = self.n.unwrap();
@@ -161,9 +162,8 @@ where
         let triple = vec![Triple::<F>::default(); 4];
         let triples = Rc::new(RefCell::new(vec![triple; self.objects.borrow().len()]));
 
-        let len = 9 + (n - 1);
-        let mut fit_params_ep = vec![F::zero(); len];
-        let mut fit_params_em = vec![F::zero(); len];
+        let mut fit_params_ep = fit_params.to_ep_vec(n);
+        let mut fit_params_em = fit_params.to_em_vec(n);
 
         let tolerance = F::sqrt(F::epsilon());
         let max_iters = 100;
@@ -172,6 +172,12 @@ where
         izip!(&mut fit_params_ep, &mut fit_params_em)
             .enumerate()
             .try_for_each(|(index, (fit_param_ep, fit_param_em))| -> Result<()> {
+                // Don't compute for the sigmas or compute for the sigmas only
+                if Params::<F>::compute_with_l_stroke(index, l_stroke) {
+                    return Ok(());
+                }
+                eprintln!("errors index: {index}");
+
                 let param = best_point[index];
 
                 writeln!(
