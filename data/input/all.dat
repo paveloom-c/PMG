@@ -50,7 +50,7 @@
 #
 name alpha delta par par_e mu_x mu_x_e mu_y mu_y_e v_lsr v_lsr_e type source reference
 #
-# New objects and new data for old objects (as of June 2022)
+# New objects and new data for old objects (as of September 2022)
 #
 # New objects:
 G027.22+0.14 18:40:30.5420 -05:01:05.519 0.158 0.014 -2.21 0.17 -5.08 0.18 113 3 HMSFR New "Bian et al. (2022)"
