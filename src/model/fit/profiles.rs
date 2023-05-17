@@ -101,7 +101,6 @@ impl<F> Model<F> {
             if Params::<F>::compute_with_l_stroke(index, l_stroke) {
                 continue;
             }
-            eprintln!("conditional profiles index: {index}");
 
             let fit_param = fit_params[index];
             let fit_param_ep = fit_params_ep[index];
@@ -126,7 +125,6 @@ impl<F> Model<F> {
         // Compute the conditional profile for `omega_sun`, too,
         // mimicking under `omega_0`
         if l_stroke == 1 {
-            eprintln!("omega_sun conditional profile");
             let fit_param = self.fit_params.as_ref().unwrap().omega_sun;
             let fit_param_ep = self.fit_params.as_ref().unwrap().omega_sun_ep;
             let fit_param_em = self.fit_params.as_ref().unwrap().omega_sun_em;
@@ -294,7 +292,6 @@ impl<F> Model<F> {
             if Params::<F>::compute_with_l_stroke(index, l_stroke) {
                 continue;
             }
-            eprintln!("frozen profiles index: {index}");
 
             let fit_param = fit_params[index];
             let fit_param_ep = fit_params_ep[index];

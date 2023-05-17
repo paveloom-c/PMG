@@ -87,14 +87,10 @@ pub fn main() -> Result<()> {
 
             let mut sample_iteration = 0;
             for l_stroke in [3, 1] {
-                eprintln!("l_stroke: {l_stroke}");
-
                 'samples: loop {
                     // Fit the parameters for each model
                     for i in 0..args.n_max {
                         let n = i + 1;
-
-                        eprintln!("n: {n}");
 
                         let model = &mut models[i];
                         let fit_log_writer = &fit_log_writers[i];
@@ -196,8 +192,6 @@ pub fn main() -> Result<()> {
 
                 for i in 0..args.n_max {
                     let n = i + 1;
-
-                    eprintln!("post n: {n}");
 
                     let model = &mut models[i];
                     if model.fit_params.is_none() {

@@ -232,7 +232,6 @@ where
                 if Params::<F>::compute_with_l_stroke(index, l_stroke) {
                     return Ok(());
                 }
-                eprintln!("errors index: {index}");
 
                 let param = best_point[index];
 
@@ -271,7 +270,6 @@ where
                 "errors for `omega_sun` while mimicking under `omega_0`",
             )?;
 
-            eprintln!("omega_sun errors");
             let param = self.fit_params.as_ref().unwrap().omega_sun;
 
             // Compute `omega_0` from `omega_sun` = `v_sun` / `R_0`
