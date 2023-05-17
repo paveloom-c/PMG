@@ -2,6 +2,8 @@
 # (as vectors, so one could parse it by pushing the values)
 
 module Types
+    using Parameters
+
     struct ObjectsData{F}
         outlier::Vector{Bool}
         name::Vector{String}
@@ -88,61 +90,61 @@ module Types
         Θ::Vector{F}
     end
 
-    struct Params{F}
-        R_0::Vector{F}
-        R_0_ep::Vector{F}
-        R_0_em::Vector{F}
-        ω_0::Vector{F}
-        ω_0_ep::Vector{F}
-        ω_0_em::Vector{F}
-        A::Vector{F}
-        A_ep::Vector{F}
-        A_em::Vector{F}
-        U_sun::Vector{F}
-        U_sun_ep::Vector{F}
-        U_sun_em::Vector{F}
-        V_sun::Vector{F}
-        V_sun_ep::Vector{F}
-        V_sun_em::Vector{F}
-        W_sun::Vector{F}
-        W_sun_ep::Vector{F}
-        W_sun_em::Vector{F}
-        σ_R::Vector{F}
-        σ_R_ep::Vector{F}
-        σ_R_em::Vector{F}
-        σ_θ::Vector{F}
-        σ_θ_ep::Vector{F}
-        σ_θ_em::Vector{F}
-        σ_Z::Vector{F}
-        σ_Z_ep::Vector{F}
-        σ_Z_em::Vector{F}
-        θ_2::Vector{F}
-        θ_2_ep::Vector{F}
-        θ_2_em::Vector{F}
-        θ_3::Vector{F}
-        θ_3_ep::Vector{F}
-        θ_3_em::Vector{F}
-        θ_4::Vector{F}
-        θ_4_ep::Vector{F}
-        θ_4_em::Vector{F}
-        θ_5::Vector{F}
-        θ_5_ep::Vector{F}
-        θ_5_em::Vector{F}
-        θ_6::Vector{F}
-        θ_6_ep::Vector{F}
-        θ_6_em::Vector{F}
-        θ_7::Vector{F}
-        θ_7_ep::Vector{F}
-        θ_7_em::Vector{F}
-        θ_8::Vector{F}
-        θ_8_ep::Vector{F}
-        θ_8_em::Vector{F}
-        θ_0::Vector{F}
-        θ_1::Vector{F}
-        θ_sun::Vector{F}
-        ω_sun::Vector{F}
-        ω_sun_ep::Vector{F}
-        ω_sun_em::Vector{F}
+    @with_kw struct Params{F}
+        R_0::Vector{F} = []
+        R_0_ep::Vector{F} = []
+        R_0_em::Vector{F} = []
+        ω_0::Vector{F} = []
+        ω_0_ep::Vector{F} = []
+        ω_0_em::Vector{F} = []
+        A::Vector{F} = []
+        A_ep::Vector{F} = []
+        A_em::Vector{F} = []
+        U_sun::Vector{F} = []
+        U_sun_ep::Vector{F} = []
+        U_sun_em::Vector{F} = []
+        V_sun::Vector{F} = []
+        V_sun_ep::Vector{F} = []
+        V_sun_em::Vector{F} = []
+        W_sun::Vector{F} = []
+        W_sun_ep::Vector{F} = []
+        W_sun_em::Vector{F} = []
+        σ_R::Vector{F} = []
+        σ_R_ep::Vector{F} = []
+        σ_R_em::Vector{F} = []
+        σ_θ::Vector{F} = []
+        σ_θ_ep::Vector{F} = []
+        σ_θ_em::Vector{F} = []
+        σ_Z::Vector{F} = []
+        σ_Z_ep::Vector{F} = []
+        σ_Z_em::Vector{F} = []
+        θ_2::Vector{F} = []
+        θ_2_ep::Vector{F} = []
+        θ_2_em::Vector{F} = []
+        θ_3::Vector{F} = []
+        θ_3_ep::Vector{F} = []
+        θ_3_em::Vector{F} = []
+        θ_4::Vector{F} = []
+        θ_4_ep::Vector{F} = []
+        θ_4_em::Vector{F} = []
+        θ_5::Vector{F} = []
+        θ_5_ep::Vector{F} = []
+        θ_5_em::Vector{F} = []
+        θ_6::Vector{F} = []
+        θ_6_ep::Vector{F} = []
+        θ_6_em::Vector{F} = []
+        θ_7::Vector{F} = []
+        θ_7_ep::Vector{F} = []
+        θ_7_em::Vector{F} = []
+        θ_8::Vector{F} = []
+        θ_8_ep::Vector{F} = []
+        θ_8_em::Vector{F} = []
+        θ_0::Vector{F} = []
+        θ_1::Vector{F} = []
+        θ_sun::Vector{F} = []
+        ω_sun::Vector{F} = []
+        ω_sun_ep::Vector{F} = []
+        ω_sun_em::Vector{F} = []
     end
 
     struct Profile{F}

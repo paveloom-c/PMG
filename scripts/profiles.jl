@@ -23,7 +23,6 @@ end
 
 # Define default values for the arguments
 N = nothing
-PLOT_TEST = false
 INPUT_DIR = ""
 OUTPUT_DIR = ""
 POSTFIX = ""
@@ -378,7 +377,7 @@ if isfile(FIT_PARAMS_DATA_PATH)
             param = profile_data.param
             cost = profile_data.cost
 
-            ylabel = prefix == "conditional" ? L"L_c" : L"L_f"
+            ylabel = prefix == "conditional" ? L"\mathcal{L}^{(1)}_c" : L"\mathcal{L}^{(1)}_f"
 
             push!(tasks, @spawn begin
                 lock(print_lock) do

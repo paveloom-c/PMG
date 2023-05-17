@@ -8,6 +8,7 @@ result
 *.log
 *.zip
 diploma/*.pdf
+diploma/tables
 public
 results*
 target
