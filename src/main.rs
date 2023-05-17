@@ -231,6 +231,8 @@ pub fn main() -> Result<()> {
                         }
                     }
 
+                    errors_log_writer.borrow_mut().flush()?;
+
                     if l_stroke == 1 {
                         model.post_fit();
                         model.write_fit_data()?;

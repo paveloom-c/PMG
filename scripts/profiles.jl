@@ -304,7 +304,10 @@ if isfile(FIT_PARAMS_DATA_PATH)
         "theta_6",
         "theta_7",
         "theta_8",
+        "omega_sun",
     ]
+
+    PARAMS_N = length(PARAMS_NAMES) - 1
 
     PARAMS_LATEX_NAMES = [
         L"R_0",
@@ -323,6 +326,7 @@ if isfile(FIT_PARAMS_DATA_PATH)
         L"\theta_6",
         L"\theta_7",
         L"\theta_8",
+        L"\omega_\odot",
     ]
 
     PARAMS_LATEX_UNITS = [
@@ -342,12 +346,13 @@ if isfile(FIT_PARAMS_DATA_PATH)
         L"\; \mathrm{[km/s/kpc^6]}",
         L"\; \mathrm{[km/s/kpc^7]}",
         L"\; \mathrm{[km/s/kpc^8]}",
+        L"\; \mathrm{[km/s/kpc]}",
     ]
 
     fit_params_vec = map(i -> getfield(fit_params_data, i)[1], 1:fieldcount(ParamsData))
-    fit_params = fit_params_vec[1:3:end]
-    fit_params_ep = fit_params_vec[2:3:end]
-    fit_params_em = fit_params_vec[3:3:end]
+    fit_params = push!(fit_params_vec[1:3:PARAMS_N*3], fit_params_data.ω_sun[1])
+    fit_params_ep = push!(fit_params_vec[2:3:PARAMS_N*3], fit_params_data.ω_sun_ep[1])
+    fit_params_em = push!(fit_params_vec[3:3:PARAMS_N*3], fit_params_data.ω_sun_em[1])
 
     prefixes = ["conditional", "frozen"]
 

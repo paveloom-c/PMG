@@ -140,6 +140,9 @@ module Types
         θ_0::Vector{F}
         θ_1::Vector{F}
         θ_sun::Vector{F}
+        ω_sun::Vector{F}
+        ω_sun_ep::Vector{F}
+        ω_sun_em::Vector{F}
     end
 
     struct Profile{F}

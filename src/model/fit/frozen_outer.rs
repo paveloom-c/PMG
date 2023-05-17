@@ -25,10 +25,16 @@ use numeric_literals::replace_float_literals;
 /// A problem for the outer optimization, but with a frozen parameter
 #[allow(clippy::missing_docs_in_private_items)]
 #[allow(clippy::type_complexity)]
-pub struct FrozenOuterOptimizationProblem<'a, F> {
+pub struct FrozenOuterOptimizationProblem<'a, F, FN>
+where
+    FN: Fn(F, &[F]) -> F,
+{
     pub l_stroke: usize,
     pub index: usize,
     pub param: F,
+    /// Allow to compute the frozen parameter
+    /// from the free (N - 1) parameters
+    pub compute_param: FN,
     pub objects: &'a Objects<F>,
     pub params: &'a Params<F>,
     pub fit_params: &'a Params<F>,
@@ -36,7 +42,7 @@ pub struct FrozenOuterOptimizationProblem<'a, F> {
     pub output_dir: &'a PathBuf,
 }
 
-impl<'a, F> CostFunction for FrozenOuterOptimizationProblem<'a, F>
+impl<'a, F, FN> CostFunction for FrozenOuterOptimizationProblem<'a, F, FN>
 where
     F: Float
         + Debug
@@ -65,6 +71,7 @@ where
     Vec<F>: ArgminDot<Vec<F>, F>,
     Vec<F>: ArgminL2Norm<F>,
     Vec<F>: FiniteDiff<F>,
+    FN: Fn(F, &[F]) -> F,
 {
     type Param = Param<F>;
     type Output = Output<F>;
@@ -102,14 +109,14 @@ where
             };
             // Prepare the parameter vector
             let mut new_p = p.clone();
-            new_p.insert(self.index, self.param);
+            new_p.insert(self.index, (self.compute_param)(self.param, &new_p));
             // Compute the cost
             outer_problem.cost(&new_p)
         }
     }
 }
 
-impl<'a, F> Gradient for FrozenOuterOptimizationProblem<'a, F>
+impl<'a, F, FN> Gradient for FrozenOuterOptimizationProblem<'a, F, FN>
 where
     F: Float
         + Debug
@@ -138,6 +145,7 @@ where
     Vec<F>: ArgminDot<Vec<F>, F>,
     Vec<F>: ArgminL2Norm<F>,
     Vec<F>: FiniteDiff<F>,
+    FN: Fn(F, &[F]) -> F,
 {
     type Param = Vec<F>;
     type Gradient = Vec<F>;

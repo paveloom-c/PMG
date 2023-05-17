@@ -191,9 +191,11 @@ impl<F> Model<F> {
         self.params.theta_0 = self.params.r_0 * self.params.omega_0;
         self.params.theta_1 = self.params.omega_0 - 2. * self.params.a;
         self.params.theta_sun = self.params.theta_0 + self.params.v_sun;
+        self.params.omega_sun = self.params.omega_0 + self.params.v_sun / self.params.r_0;
         fit_params.theta_0 = fit_params.r_0 * fit_params.omega_0;
         fit_params.theta_1 = fit_params.omega_0 - 2. * fit_params.a;
         fit_params.theta_sun = fit_params.theta_0 + fit_params.v_sun;
+        fit_params.omega_sun = fit_params.omega_0 + fit_params.v_sun / fit_params.r_0;
         // Save the results
         self.n = Some(n);
         self.best_cost = Some(best_cost);

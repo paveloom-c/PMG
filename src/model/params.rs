@@ -161,6 +161,12 @@ pub struct Params<F> {
     pub theta_1: F,
     /// Linear rotation velocity of the Sun (km/s)
     pub theta_sun: F,
+    /// Circular rotation velocity of the Sun (km/s/kpc)
+    pub omega_sun: F,
+    /// Plus uncertainty in `omega_sun`
+    pub omega_sun_ep: F,
+    /// Minus uncertainty in `omega_sun`
+    pub omega_sun_em: F,
     /// The right ascension of the north galactic pole (radians)
     #[serde(skip)]
     pub alpha_ngp: F,
@@ -423,7 +429,8 @@ const DESCRIPTIONS: &str = indoc!(
     # 48 theta_8_em: Minus uncertainty in `theta_8` [km/s/kpc^8]
     # 49 theta_0: The constant term of the rotation curve [km/s]
     # 50 theta_1: The first derivative of the linear rotation velocity [km/s/kpc]
-    # 51 theta_sun: Linear rotation velocity of the Sun [km/s]"
+    # 51 theta_sun: Linear rotation velocity of the Sun [km/s]
+    # 52 omega_sun: Circular rotation velocity of the Sun [km/s]"
 );
 
 impl<F> Model<F> {
@@ -761,14 +768,19 @@ impl<F> Model<F> {
             {s:4}theta_0: {theta_0:>21.15} -> {fit_theta_0:>21.15}
             {s:4}theta_1: {theta_1:>21.15} -> {fit_theta_1:>21.15}
             {s:2}theta_sun: {theta_sun:>21.15} -> {fit_theta_sun:>21.15}
+            {s:2}omega_sun: {omega_sun:>21.15} -> {fit_omega_sun:>21.15}  + {fit_omega_sun_ep:>18.15}  - {fit_omega_sun_em:>18.15}
             ",
                 s = " ",
                 theta_0 = params.theta_0,
                 theta_1 = params.theta_1,
                 theta_sun = params.theta_sun,
+                omega_sun = params.omega_sun,
                 fit_theta_0 = fit_params.theta_0,
                 fit_theta_1 = fit_params.theta_1,
                 fit_theta_sun = fit_params.theta_sun,
+                fit_omega_sun = fit_params.omega_sun,
+                fit_omega_sun_ep = fit_params.omega_sun_ep,
+                fit_omega_sun_em = fit_params.omega_sun_em,
             )
         )?;
         Ok(())

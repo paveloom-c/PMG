@@ -3,7 +3,7 @@
 extern crate alloc;
 
 use super::io::output;
-use super::{ConfidenceIntervalProblem, OuterOptimizationProblem, Triple};
+use super::{ConfidenceIntervalProblem, OuterOptimizationProblem, Triple, Triples};
 use super::{Model, Params, PARAMS_N, PARAMS_NAMES};
 use crate::utils::FiniteDiff;
 
@@ -107,37 +107,130 @@ impl<F> Model<F> {
             let fit_param_ep = fit_params_ep[index];
             let fit_param_em = fit_params_em[index];
 
-            let coeff = 1.1;
-            let start = fit_param - 3. * fit_param_em * coeff;
-            let end = fit_param + 3. * fit_param_ep * coeff;
-            let h = (end - start) / F::from(POINTS_N).unwrap();
+            let compute_param = |x: F, _: &[F]| x;
 
-            let mut profile = Vec::<ProfilePoint<F>>::with_capacity(POINTS_N);
+            let profile = self.try_compute_conditional_profile(
+                l_stroke,
+                index,
+                compute_param,
+                fit_param,
+                fit_param_ep,
+                fit_param_em,
+                &triples,
+            )?;
 
-            for j in 0..=POINTS_N {
-                let param = start + F::from(j).unwrap() * h;
+            self.serialize_to_profile(&ProfileType::Conditional, &profile, PARAMS_NAMES[index])
+                .with_context(|| "Couldn't write a conditional profile to a file")?;
+        }
 
-                let problem = ConfidenceIntervalProblem {
-                    l_stroke,
-                    n,
-                    index,
-                    best_outer_cost: F::zero(),
-                    objects: &self.objects,
-                    params: &self.params,
-                    fit_params: self.fit_params.as_ref().unwrap(),
-                    triples: &Rc::clone(&triples),
-                    output_dir: &self.output_dir,
-                };
-                let cost = problem.inner_cost(&param)?;
+        // Compute the conditional profile for `omega_sun`, too,
+        // mimicking under `omega_0`
+        if l_stroke == 1 {
+            eprintln!("omega_sun conditional profile");
+            let fit_param = self.fit_params.as_ref().unwrap().omega_sun;
+            let fit_param_ep = self.fit_params.as_ref().unwrap().omega_sun_ep;
+            let fit_param_em = self.fit_params.as_ref().unwrap().omega_sun_em;
 
-                profile.push(ProfilePoint { param, cost });
-            }
+            // Compute `omega_0` from `omega_sun` = `v_sun` / `R_0`
+            //
+            // The index is 3 and not 4 because the
+            // frozen parameter (index 1) is removed
+            let compute_param = |omega_sun: F, p: &[F]| omega_sun - p[3] / p[0];
 
-            self.serialize_to_profile(&ProfileType::Conditional, &profile, index)
+            let profile = self.try_compute_conditional_profile(
+                l_stroke,
+                1,
+                compute_param,
+                fit_param,
+                fit_param_ep,
+                fit_param_em,
+                &triples,
+            )?;
+
+            self.serialize_to_profile(&ProfileType::Conditional, &profile, "omega_sun")
                 .with_context(|| "Couldn't write a conditional profile to a file")?;
         }
 
         Ok(())
+    }
+    /// Try to compute a conditional profile
+    #[allow(clippy::indexing_slicing)]
+    #[allow(clippy::print_stderr)]
+    #[allow(clippy::similar_names)]
+    #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::unwrap_in_result)]
+    #[allow(clippy::unwrap_used)]
+    #[replace_float_literals(F::from(literal).unwrap())]
+    fn try_compute_conditional_profile<FN>(
+        &mut self,
+        l_stroke: usize,
+        index: usize,
+        compute_param: FN,
+        fit_param: F,
+        fit_param_ep: F,
+        fit_param_em: F,
+        triples: &Rc<RefCell<Vec<Triples<F>>>>,
+    ) -> Result<Vec<ProfilePoint<F>>>
+    where
+        F: Float
+            + Debug
+            + Default
+            + Display
+            + Sync
+            + Send
+            + Sum
+            + ArgminFloat
+            + ArgminL2Norm<F>
+            + ArgminSub<F, F>
+            + ArgminAdd<F, F>
+            + ArgminDot<F, F>
+            + ArgminMul<F, F>
+            + ArgminZeroLike
+            + ArgminMul<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminSub<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminSub<F, Vec<F>>,
+        Vec<F>: ArgminAdd<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminAdd<F, Vec<F>>,
+        Vec<F>: ArgminMul<F, Vec<F>>,
+        Vec<F>: ArgminMul<Vec<F>, Vec<F>>,
+        Vec<F>: ArgminL1Norm<F>,
+        Vec<F>: ArgminSignum,
+        Vec<F>: ArgminMinMax,
+        Vec<F>: ArgminDot<Vec<F>, F>,
+        Vec<F>: ArgminL2Norm<F>,
+        Vec<F>: FiniteDiff<F>,
+        FN: Fn(F, &[F]) -> F,
+    {
+        let n = self.n.unwrap();
+
+        let coeff = 1.1;
+        let start = fit_param - 3. * fit_param_em * coeff;
+        let end = fit_param + 3. * fit_param_ep * coeff;
+        let h = (end - start) / F::from(POINTS_N).unwrap();
+
+        let mut profile = Vec::<ProfilePoint<F>>::with_capacity(POINTS_N);
+
+        for j in 0..=POINTS_N {
+            let param = start + F::from(j).unwrap() * h;
+
+            let problem = ConfidenceIntervalProblem {
+                l_stroke,
+                n,
+                index,
+                best_outer_cost: F::zero(),
+                objects: &self.objects,
+                params: &self.params,
+                compute_param: &compute_param,
+                fit_params: self.fit_params.as_ref().unwrap(),
+                triples: &Rc::clone(triples),
+                output_dir: &self.output_dir,
+            };
+            let cost = problem.inner_cost(&param)?;
+
+            profile.push(ProfilePoint { param, cost });
+        }
+
+        Ok(profile)
     }
     /// Try to compute the frozen profiles
     #[allow(clippy::indexing_slicing)]
@@ -231,7 +324,7 @@ impl<F> Model<F> {
                 profile.push(ProfilePoint { param, cost });
             }
 
-            self.serialize_to_profile(&ProfileType::Frozen, &profile, index)
+            self.serialize_to_profile(&ProfileType::Frozen, &profile, PARAMS_NAMES[index])
                 .with_context(|| "Couldn't write a frozen profile to a file")?;
         }
 
@@ -246,7 +339,7 @@ impl<F> Model<F> {
         &self,
         profile_type: &ProfileType,
         profile: &Profile<F>,
-        index: usize,
+        param_name: &str,
     ) -> Result<()>
     where
         F: Float + Debug + Display + Serialize,
@@ -264,7 +357,6 @@ impl<F> Model<F> {
         let params = &self.params;
         let fit_params = self.fit_params.as_ref().unwrap();
         let records = &profile;
-        let param_name = PARAMS_NAMES[index];
 
         let header = formatdoc!(
             "
