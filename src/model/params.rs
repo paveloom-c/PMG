@@ -12,6 +12,9 @@ use indoc::{formatdoc, indoc};
 use num::Float;
 use serde::Serialize;
 
+/// Maximum degree of the model supported
+pub const N_MAX: usize = 8;
+
 /// Number of the optimized parameters
 pub const PARAMS_N: usize = 16;
 
@@ -246,7 +249,7 @@ impl<F> Params<F> {
             self.theta_7,
             self.theta_8,
         ];
-        let slice = &array[0..=8 + (n - 1)];
+        let slice = &array[0..(PARAMS_N - N_MAX) + n];
         let mut vec = slice.to_vec();
         if remove_sigmas {
             for i in (6..9).rev() {
@@ -309,7 +312,7 @@ impl<F> Params<F> {
             self.theta_7_ep,
             self.theta_8_ep,
         ];
-        let slice = &array[0..=8 + (n - 1)];
+        let slice = &array[0..(PARAMS_N - N_MAX) + n];
         slice.to_vec()
     }
     /// Update the minus uncertainties of the parameters
@@ -366,7 +369,7 @@ impl<F> Params<F> {
             self.theta_7_em,
             self.theta_8_em,
         ];
-        let slice = &array[0..=8 + (n - 1)];
+        let slice = &array[0..(PARAMS_N - N_MAX) + n];
         slice.to_vec()
     }
     /// Should you run computations for this parameter with this L'?
@@ -739,7 +742,7 @@ impl<F> Model<F> {
                 fit_sigma_z_em = fit_params.sigma_z_em,
         ))?;
 
-        for i in 9..=(8 + (n - 1)) {
+        for i in (PARAMS_N - N_MAX + 1)..(PARAMS_N - N_MAX + n) {
             let initial = params_vec[i];
             let fit = fit_params_vec[i];
             let fit_ep = fit_ep_vec[i];
