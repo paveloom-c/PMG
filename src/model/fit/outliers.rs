@@ -221,12 +221,8 @@ impl<F> Model<F> {
                         }
                     }
 
-                    // Mark the rest as outliers
-                    let mut objects = self.objects.borrow_mut();
+                    // Save the outliers
                     for (i, rel_discrepancy) in &m_outliers {
-                        objects[*i].outlier = true;
-
-                        // Save the outliers
                         all_outliers.push((m, *i, *rel_discrepancy));
                     }
                 }
@@ -315,13 +311,6 @@ impl<F> Model<F> {
                         outliers.swap_remove(j);
                     }
                 }
-
-                // Mark the rest as outliers
-                let mut objects = self.objects.borrow_mut();
-                for (i, _) in &outliers {
-                    let object = &mut objects[*i];
-                    object.outlier = true;
-                }
             }
 
             FourDimensionalOutliers {
@@ -330,6 +319,15 @@ impl<F> Model<F> {
                 k_005,
             }
         };
+
+        // Mark the outliers
+        let objects = &mut self.objects.borrow_mut();
+        for (_, i, _) in &one_dimensional_outliers.vec {
+            objects[*i].outlier = true;
+        }
+        for (i, _) in &four_dimensional_outliers.vec {
+            objects[*i].outlier = true;
+        }
 
         Ok((one_dimensional_outliers, four_dimensional_outliers))
     }
