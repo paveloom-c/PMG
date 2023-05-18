@@ -35,9 +35,6 @@ pub const BACKTRACKING_PARAM: f64 = 0.9;
 /// Memory length of the L-BFGS algorithm
 pub const LBFGS_M: usize = 300;
 
-/// Tolerance of the L-BFGS algorithm
-pub const LBFGS_TOLERANCE: f64 = 1e-15;
-
 /// Tolerance of the L-BFGS algorithm for the errors
 pub const LBFGS_TOLERANCE_ERRORS: f64 = 1e-11;
 
@@ -105,6 +102,7 @@ impl<F> Model<F> {
         let (best_cost, mut fit_params) = if l_stroke == 3 {
             // Define the problem of the outer optimization
             let problem = OuterOptimizationProblem {
+                disable_inner: self.disable_inner,
                 objects: &self.objects,
                 params: &self.params,
                 triples: &Rc::clone(&self.triples),
@@ -116,7 +114,7 @@ impl<F> Model<F> {
             let linesearch =
                 BacktrackingLineSearch::new(cond).rho(F::from(BACKTRACKING_PARAM).unwrap())?;
             let solver = LBFGS::new(linesearch, LBFGS_M)
-                .with_tolerance_cost(F::from(LBFGS_TOLERANCE).unwrap())?;
+                .with_tolerance_cost(F::from(self.lbfgs_tolerance).unwrap())?;
             let res = Executor::new(problem, solver)
                 .configure(|state| state.param(init_param).max_iters(MAX_ITERS))
                 .timer(false)
@@ -146,6 +144,7 @@ impl<F> Model<F> {
             let mut fit_params = self.fit_params.as_ref().unwrap().clone();
             // Define the problem of the outer optimization
             let problem = SigmaOuterOptimizationProblem {
+                disable_inner: self.disable_inner,
                 objects: &self.objects,
                 fit_params: &fit_params,
                 triples: &Rc::clone(&self.triples),
@@ -157,7 +156,7 @@ impl<F> Model<F> {
             let linesearch =
                 BacktrackingLineSearch::new(cond).rho(F::from(BACKTRACKING_PARAM).unwrap())?;
             let solver = LBFGS::new(linesearch, LBFGS_M)
-                .with_tolerance_cost(F::from(LBFGS_TOLERANCE).unwrap())?;
+                .with_tolerance_cost(F::from(self.lbfgs_tolerance).unwrap())?;
             let res = Executor::new(problem, solver)
                 .configure(|state| state.param(init_param).max_iters(MAX_ITERS))
                 .timer(false)

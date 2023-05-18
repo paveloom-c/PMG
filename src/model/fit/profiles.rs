@@ -212,6 +212,7 @@ impl<F> Model<F> {
             let param = start + F::from(j).unwrap() * h;
 
             let problem = ConfidenceIntervalProblem {
+                disable_inner: self.disable_inner,
                 l_stroke,
                 n,
                 index,
@@ -309,6 +310,7 @@ impl<F> Model<F> {
                 let param = start + F::from(j).unwrap() * h;
 
                 let problem = OuterOptimizationProblem {
+                    disable_inner: self.disable_inner,
                     objects: &objects,
                     params: &self.params,
                     triples: &Rc::clone(&triples),

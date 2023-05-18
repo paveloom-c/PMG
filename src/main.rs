@@ -131,14 +131,14 @@ pub fn main() -> Result<()> {
                         if !one_dimensional_outliers.vec.is_empty() {
                             writeln!(
                                 outliers_log_writer,
-                                "\none-dimensional:\nm{s:1}rel_discrepancy{s:3}kappa{s:13}k_005{s:13}i{s:3}source name",
+                                "\none-dimensional:\nm{s:4}rel_discrepancy{s:1}kappa{s:13}k_005{s:13}i{s:3}source name",
                                 s = " "
                             )?;
                             for &(m, i, rel_discrepancy) in &one_dimensional_outliers.vec {
                                 let object = &objects[i];
                                 writeln!(
                                     outliers_log_writer,
-                                    "{} {rel_discrepancy:<17.15} {:<17.15} {:<17.15} {:<3} {:6} {}",
+                                    "{} {rel_discrepancy:>18.15} {:<17.15} {:<17.15} {:<3} {:6} {}",
                                     m + 1,
                                     one_dimensional_outliers.kappa,
                                     one_dimensional_outliers.k_005,
@@ -151,14 +151,14 @@ pub fn main() -> Result<()> {
                         if !four_dimensional_outliers.vec.is_empty() {
                             writeln!(
                                 outliers_log_writer,
-                                "\nfour-dimensional:\nz{s:18}kappa{s:14}k_005{s:14}i{s:3}source name",
+                                "\nfour-dimensional:\n{s:18}z{s:1}kappa{s:14}k_005{s:14}i{s:3}source name",
                                 s = " "
                             )?;
                             for &(i, rel_discrepancy) in &four_dimensional_outliers.vec {
                                 let object = &objects[i];
                                 writeln!(
                                     outliers_log_writer,
-                                    "{rel_discrepancy:<17.15} {:<18.15} {:<18.15} {:<3} {:6} {}",
+                                    "{rel_discrepancy:>19.15} {:<18.15} {:<18.15} {:<3} {:6} {}",
                                     four_dimensional_outliers.kappa,
                                     four_dimensional_outliers.k_005,
                                     i + 1,
@@ -231,7 +231,7 @@ pub fn main() -> Result<()> {
                         model.post_fit();
                         model.write_fit_data()?;
 
-                        if n == best_n {
+                        if !args.disable_inner && n == best_n {
                             model.analyze_inner_profiles().with_context(|| {
                                 "Couldn't compute the profiles of the inner targer function"
                             })?;

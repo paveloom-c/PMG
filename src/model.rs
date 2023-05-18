@@ -34,6 +34,10 @@ pub struct Model<F> {
     /// Data objects
     pub objects: Objects<F>,
 
+    /// Disable the inner optimization?
+    pub disable_inner: bool,
+    /// Tolerance of the L-BFGS algorithm
+    pub lbfgs_tolerance: F,
     /// The degree of the polynomial of the rotation curve
     pub n: Option<usize>,
     /// Number of the objects after the L' = 3 run
@@ -141,6 +145,8 @@ impl<F> Model<F> {
                 ..Default::default()
             },
             output_dir,
+            disable_inner: args.disable_inner,
+            lbfgs_tolerance: utils::cast(args.lbfgs_tolerance)?,
             ..Default::default()
         };
 

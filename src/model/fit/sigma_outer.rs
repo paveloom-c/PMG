@@ -26,6 +26,7 @@ use numeric_literals::replace_float_literals;
 #[allow(clippy::missing_docs_in_private_items)]
 #[allow(clippy::type_complexity)]
 pub struct SigmaOuterOptimizationProblem<'a, F> {
+    pub disable_inner: bool,
     pub objects: &'a Objects<F>,
     pub fit_params: &'a Params<F>,
     pub triples: &'a Rc<RefCell<Vec<Triples<F>>>>,
@@ -76,6 +77,7 @@ where
     fn cost(&self, p: &Self::Param) -> Result<Self::Output> {
         // Create an outer problem
         let outer_problem = OuterOptimizationProblem {
+            disable_inner: self.disable_inner,
             objects: self.objects,
             params: self.fit_params,
             triples: self.triples,

@@ -28,6 +28,7 @@ use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelI
 #[allow(clippy::missing_docs_in_private_items)]
 #[allow(clippy::type_complexity)]
 pub struct OuterOptimizationProblem<'a, F> {
+    pub disable_inner: bool,
     pub objects: &'a Objects<F>,
     pub params: &'a Params<F>,
     pub triples: &'a Rc<RefCell<Vec<Triples<F>>>>,
@@ -83,6 +84,7 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
     {
         // Unpack the problem
         let mut fit_params = self.params.clone();
+        let disable_inner = self.disable_inner;
         // Update the parameters
         fit_params.update_with(p);
         // Prepare storage for the costs
@@ -107,46 +109,53 @@ impl<'a, F> OuterOptimizationProblem<'a, F> {
                 // Define a problem of the inner optimization
                 let problem = prepare_inner_problem(object, &fit_params);
 
-                // Scan the vicinity of the observed parallax via subintervals
+                let (best_par_r, best_sum) = if disable_inner {
+                    let sum = problem.cost(&par)?;
+                    (par, sum)
+                } else {
+                    // Scan the vicinity of the observed parallax via subintervals
 
-                let mut pars = Vec::with_capacity(5);
-                let mut sums = Vec::with_capacity(5);
+                    let mut pars = Vec::with_capacity(5);
+                    let mut sums = Vec::with_capacity(5);
 
-                let n_subintervals = 50;
-                for coeff in [1., 2., 3.] {
-                    find_minima(
-                        &problem,
-                        &mut pars,
-                        &mut sums,
-                        par + (coeff - 1.) * 3. * par_e,
-                        par + coeff * 3. * par_e,
-                        n_subintervals,
-                    )?;
-                    find_minima(
-                        &problem,
-                        &mut pars,
-                        &mut sums,
-                        F::max(F::epsilon(), par - coeff * 3. * par_e),
-                        par - (coeff - 1.) * 3. * par_e,
-                        n_subintervals,
-                    )?;
-                    if !pars.is_empty() {
-                        break;
+                    let n_subintervals = 50;
+                    for coeff in [1., 2., 3.] {
+                        find_minima(
+                            &problem,
+                            &mut pars,
+                            &mut sums,
+                            par + (coeff - 1.) * 3. * par_e,
+                            par + coeff * 3. * par_e,
+                            n_subintervals,
+                        )?;
+                        find_minima(
+                            &problem,
+                            &mut pars,
+                            &mut sums,
+                            F::max(F::epsilon(), par - coeff * 3. * par_e),
+                            par - (coeff - 1.) * 3. * par_e,
+                            n_subintervals,
+                        )?;
+                        if !pars.is_empty() {
+                            break;
+                        }
                     }
-                }
 
-                // Find the result closest to the observed parallax
-                //
-                // The default values are like this because of
-                // the initialization stage of the executor
-                let mut best_par_r = 0.;
-                let mut best_sum = if pars.is_empty() { 0. } else { F::infinity() };
-                for (par_r, sum) in izip!(&pars, &sums) {
-                    if *sum < best_sum {
-                        best_par_r = *par_r;
-                        best_sum = *sum;
+                    // Find the result closest to the observed parallax
+                    //
+                    // The default values are like this because of
+                    // the initialization stage of the executor
+                    let mut best_par_r = 0.;
+                    let mut best_sum = if pars.is_empty() { 0. } else { F::infinity() };
+                    for (par_r, sum) in izip!(&pars, &sums) {
+                        if *sum < best_sum {
+                            best_par_r = *par_r;
+                            best_sum = *sum;
+                        }
                     }
-                }
+
+                    (best_par_r, best_sum)
+                };
 
                 *cost = F::ln(problem.v_r_error)
                     + F::ln(problem.mu_l_cos_b_error)

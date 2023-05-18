@@ -29,6 +29,7 @@ pub struct FrozenOuterOptimizationProblem<'a, F, FN>
 where
     FN: Fn(F, &[F]) -> F,
 {
+    pub disable_inner: bool,
     pub l_stroke: usize,
     pub index: usize,
     pub param: F,
@@ -89,6 +90,7 @@ where
         if self.l_stroke == 3 {
             // Create an outer problem
             let outer_problem = OuterOptimizationProblem {
+                disable_inner: self.disable_inner,
                 objects: self.objects,
                 params: self.params,
                 triples: self.triples,
@@ -102,6 +104,7 @@ where
         } else {
             // Create an outer problem
             let outer_problem = SigmaOuterOptimizationProblem {
+                disable_inner: self.disable_inner,
                 objects: self.objects,
                 fit_params: self.fit_params,
                 triples: self.triples,

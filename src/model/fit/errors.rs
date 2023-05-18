@@ -36,6 +36,7 @@ pub struct ConfidenceIntervalProblem<'a, F, FN>
 where
     FN: Fn(F, &[F]) -> F,
 {
+    pub disable_inner: bool,
     pub l_stroke: usize,
     pub n: usize,
     pub index: usize,
@@ -101,6 +102,7 @@ where
         init_param.remove(index);
         // Define the problem of the outer optimization with a frozen parameter
         let problem = FrozenOuterOptimizationProblem {
+            disable_inner: self.disable_inner,
             l_stroke: self.l_stroke,
             index,
             param: *param,
@@ -331,6 +333,7 @@ where
         // parameters are varied differently here
         let best_frozen_cost = {
             let problem = ConfidenceIntervalProblem {
+                disable_inner: self.disable_inner,
                 l_stroke,
                 n,
                 index,
@@ -355,6 +358,7 @@ where
             writeln!(errors_log_writer.borrow_mut(), "\nto the right:")?;
 
             let problem = ConfidenceIntervalProblem {
+                disable_inner: self.disable_inner,
                 l_stroke,
                 n,
                 index,
@@ -412,6 +416,7 @@ where
             writeln!(errors_log_writer.borrow_mut(), "\nto the left:")?;
 
             let problem = ConfidenceIntervalProblem {
+                disable_inner: self.disable_inner,
                 l_stroke,
                 n,
                 index,
