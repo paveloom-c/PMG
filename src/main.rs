@@ -231,10 +231,14 @@ pub fn main() -> Result<()> {
                         model.post_fit();
                         model.write_fit_data()?;
 
-                        if !args.disable_inner && n == best_n {
-                            model.analyze_inner_profiles().with_context(|| {
-                                "Couldn't compute the profiles of the inner targer function"
-                            })?;
+                        if !model.disable_inner {
+                            model.compute_delta_varpi()?;
+
+                            if n == best_n {
+                                model.analyze_inner_profiles().with_context(|| {
+                                    "Couldn't compute the profiles of the inner targer function"
+                                })?;
+                            }
                         }
 
                         write_fit_rotcurve_to_plain(&args, &models)

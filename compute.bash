@@ -126,7 +126,7 @@ echo -e "${PAD}HMSFRs (test):"
 
 echo "${PAD}Step 6. Plot the profiles"
 
-echo -e "${PAD}Near the solar circle (disabled inner optimization):\n"
+echo -e "\n${PAD}Near the solar circle (disabled inner optimization):\n"
 
 for i in $(seq 1 "${N_MAX_SOLAR}"); do
   echo -e "${PAD}n = $i"
