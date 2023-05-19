@@ -118,12 +118,12 @@ pub fn main() -> Result<()> {
                         writeln!(outliers_log_writer, "best_n: {best_n}")?;
                         writeln!(outliers_log_writer, "l_stroke: {l_stroke}")?;
 
-                        let (one_dimensional_outliers, four_dimensional_outliers) = best_model
+                        let (one_dimensional_outliers, multi_dimensional_outliers) = best_model
                             .find_outliers(l_stroke)
                             .with_context(|| "Couldn't check for outliers")?;
 
                         if one_dimensional_outliers.vec.is_empty()
-                            && four_dimensional_outliers.vec.is_empty()
+                            && multi_dimensional_outliers.vec.is_empty()
                         {
                             break 'samples;
                         }
@@ -149,19 +149,24 @@ pub fn main() -> Result<()> {
                                 )?;
                             }
                         }
-                        if !four_dimensional_outliers.vec.is_empty() {
+                        if !multi_dimensional_outliers.vec.is_empty() {
                             writeln!(
                                 outliers_log_writer,
-                                "\nfour-dimensional:\n{s:18}z{s:1}kappa{s:14}k_005{s:14}i{s:3}source name",
-                                s = " "
+                                "\n{}:\n{s:18}z{s:1}kappa{s:14}k_005{s:14}i{s:3}source name",
+                                if best_model.disable_inner {
+                                    "three-dimensional"
+                                } else {
+                                    "four-dimensional"
+                                },
+                                s = " ",
                             )?;
-                            for &(i, rel_discrepancy) in &four_dimensional_outliers.vec {
+                            for &(i, rel_discrepancy) in &multi_dimensional_outliers.vec {
                                 let object = &objects[i];
                                 writeln!(
                                     outliers_log_writer,
                                     "{rel_discrepancy:>19.15} {:<18.15} {:<18.15} {:<3} {:6} {}",
-                                    four_dimensional_outliers.kappa,
-                                    four_dimensional_outliers.k_005,
+                                    multi_dimensional_outliers.kappa,
+                                    multi_dimensional_outliers.k_005,
                                     i + 1,
                                     object.source.as_ref().unwrap(),
                                     object.name.as_ref().unwrap(),
