@@ -113,6 +113,7 @@ I = UInt64
 
 println('\n', pad, "> Loading the packages...")
 
+using Base.Threads
 using CSV
 using ColorSchemes
 using LaTeXStrings
@@ -179,11 +180,12 @@ function scatter(
     x_e,
     y,
     xlabel,
-    ylabel,
+    ylabel;
+    stricter_limits = false,
 )
     # Compute the limits
-    x_max, x_min = (1, 0)
-    y_max, y_min = (1, 0)
+    x_max, x_min = stricter_limits ? (1, 0) : max_min(x)
+    y_max, y_min = stricter_limits ? (1, 0) : max_min(y)
     # Define the markers set
     marks = ["x", "+", "asterisk", "star", "10-pointed star"]
     # Create a plot
@@ -268,16 +270,48 @@ function scatter(
     )
 end
 
-p = scatter(
-    par,
-    par_e,
-    par_r,
-    L"\varpi",
-    L"\varpi_0",
-)
-pgfsave(joinpath(OUTPUT_DIR, "Parallaxes$(POSTFIX).pdf"), p)
+print_lock = ReentrantLock()
+tasks = Task[]
+
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "full...")
+    end
+    p = scatter(
+        par,
+        par_e,
+        par_r,
+        L"\varpi",
+        L"\varpi_0",
+    )
+    pgfsave(joinpath(OUTPUT_DIR, "Parallaxes$(POSTFIX).pdf"), p)
+end)
+
+push!(tasks, @spawn begin
+    lock(print_lock) do
+        println(pad, pad, "under 1 mas...")
+    end
+    p = scatter(
+        par,
+        par_e,
+        par_r,
+        L"\varpi",
+        L"\varpi_0",
+        stricter_limits=true,
+    )
+    pgfsave(joinpath(OUTPUT_DIR, "Parallaxes (under 1 mas)$(POSTFIX).pdf"), p)
+end)
+
+for task in tasks
+    try
+        wait(task)
+    catch err
+        showerror(stdout, err.task.exception)
+    end
+end
 
 # Mark data for garbage collection
-data = nothing
+parallaxes_data = nothing
+delta_varpi_data = nothing
 
 println()
