@@ -3,10 +3,10 @@
 use crate::Model;
 
 use core::fmt::{Debug, Display};
-use std::fs::File;
 use std::io::Write;
+use std::{fs::File, io::BufWriter};
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use indoc::formatdoc;
 use itertools::izip;
 use num::Float;
@@ -18,11 +18,20 @@ impl<F> Model<F> {
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
-    pub fn compute_delta_varpi(&self) -> Result<()>
+    pub fn write_delta_varpi(
+        &self,
+        plain_writer: &mut BufWriter<File>,
+        dat_writer: &mut BufWriter<File>,
+    ) -> Result<()>
     where
         F: Float + Debug + Display,
     {
-        let n = F::from(self.l_stroke_1_n.unwrap()).unwrap();
+        if self.fit_params.is_none() {
+            return Ok(());
+        }
+
+        let n = self.n.unwrap();
+        let n_objects = F::from(self.l_stroke_1_n.unwrap()).unwrap();
 
         let a = 0.;
 
@@ -45,7 +54,7 @@ impl<F> Model<F> {
         }
 
         let x_mean = 1. / p * p_x + a;
-        let sigma = F::sqrt(1. / (n - 1.) * (p_x_sq - p * (x_mean - a).powi(2)));
+        let sigma = F::sqrt(1. / (n_objects - 1.) * (p_x_sq - p * (x_mean - a).powi(2)));
         let sigma_x_mean = sigma / p.sqrt();
 
         let mut p_x_mean_sq = 0.;
@@ -64,27 +73,20 @@ impl<F> Model<F> {
 
         let sigma_stroke = F::sqrt(1. / p * p_x_mean_sq);
 
-        let delta_varpi_log_path = &self.output_dir.join("Delta_varpi.plain");
-        let mut delta_varpi_log_file = File::create(delta_varpi_log_path)
-            .with_context(|| "Couldn't create the `Delta_varpi.plain` file")?;
-
         writeln!(
-            delta_varpi_log_file,
+            plain_writer,
             "{}",
             formatdoc!(
                 "
-                Mean systematical error in the parallaxes
-
-                n: {n}
-                a: {a}
+                {s:25}n:  {n}
 
                 {s:16}\\sum_i p_i: {p:>18.15}
                 {s:7}\\sum_i p_i(x_i - a): {p_x:>18.15}
                 {s:5}\\sum_i p_i(x_i - a)^2: {p_x_sq:>18.15}
 
                 {s:14}\\overline{{x}}: {x_mean:>18.15}
-                {s:20}\\sigma: {sigma:>18.15}
                 {s:7}\\sigma_\\overline{{x}}: {sigma_x_mean:>18.15}
+                {s:20}\\sigma: {sigma:>18.15}
 
                 \\sum_i p_i(x_i - x_mean)^2: {p_x_mean_sq:>18.15}
 
@@ -93,6 +95,8 @@ impl<F> Model<F> {
                 s = " ",
             ),
         )?;
+
+        writeln!(dat_writer, "{n} {x_mean} {sigma_x_mean}")?;
 
         Ok(())
     }

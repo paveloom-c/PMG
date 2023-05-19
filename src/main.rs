@@ -17,6 +17,7 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 
 use anyhow::{Context, Result};
+use indoc::formatdoc;
 use indoc::indoc;
 use num::Float;
 
@@ -231,14 +232,10 @@ pub fn main() -> Result<()> {
                         model.post_fit();
                         model.write_fit_data()?;
 
-                        if !model.disable_inner {
-                            model.compute_delta_varpi()?;
-
-                            if n == best_n {
-                                model.analyze_inner_profiles().with_context(|| {
-                                    "Couldn't compute the profiles of the inner targer function"
-                                })?;
-                            }
+                        if !model.disable_inner && n == best_n {
+                            model.analyze_inner_profiles().with_context(|| {
+                                "Couldn't compute the profiles of the inner targer function"
+                            })?;
                         }
 
                         write_fit_rotcurve_to_plain(&args, &models)
@@ -247,6 +244,10 @@ pub fn main() -> Result<()> {
 
                     write_fit_params_to_plain(&args, &models)
                         .with_context(|| "Couldn't write to the `fit_params.plain` file")?;
+                }
+
+                if !args.disable_inner && l_stroke == 1 {
+                    write_delta_varpi(&args, &models, l_stroke_n)?;
                 }
 
                 let best_model = &mut models[best_i];
@@ -351,6 +352,55 @@ where
     for (i, model) in models.iter().enumerate() {
         let n = i + 1;
         model.write_fit_rotcurve_to_plain(&mut plain_writer, n)?;
+    }
+
+    Ok(())
+}
+
+/// Write all mean systematical errors to a `plain` file
+#[allow(clippy::indexing_slicing)]
+#[allow(clippy::unwrap_used)]
+fn write_delta_varpi<F>(args: &Args, models: &[Model<F>], l_stroke_1_n: usize) -> Result<()>
+where
+    F: Float + Debug + Display,
+{
+    let plain_path = &args.output_dir.join("Delta_varpi.plain");
+    let plain_file =
+        File::create(plain_path).with_context(|| "Couldn't create the `Delta_varpi.plain` file")?;
+    let mut plain_writer = BufWriter::new(plain_file);
+
+    let dat_path = &args.output_dir.join("Delta_varpi.dat");
+    let dat_file =
+        File::create(dat_path).with_context(|| "Couldn't create the `Delta_varpi.dat` file")?;
+    let mut dat_writer = BufWriter::new(dat_file);
+
+    writeln!(
+        plain_writer,
+        "{}",
+        formatdoc!(
+            "
+            Mean systematical error in the parallaxes
+
+            N: {l_stroke_1_n}
+            a: 0",
+        ),
+    )?;
+
+    writeln!(
+        dat_writer,
+        "{}",
+        formatdoc!(
+            "
+            # Mean systematical error in the parallaxes
+            #
+            # N: {l_stroke_1_n}
+            # a: 0
+            n Delta_varpi sigma_Delta_varpi",
+        ),
+    )?;
+
+    for model in models.iter() {
+        model.write_delta_varpi(&mut plain_writer, &mut dat_writer)?;
     }
 
     Ok(())
