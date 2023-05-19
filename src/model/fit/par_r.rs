@@ -1,4 +1,4 @@
-//! Compute the systematical error in parallaxes
+//! Do something with reduced parallaxes
 
 use crate::Model;
 
@@ -6,13 +6,55 @@ use core::fmt::{Debug, Display};
 use std::io::Write;
 use std::{fs::File, io::BufWriter};
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use indoc::formatdoc;
 use itertools::izip;
 use num::Float;
 use numeric_literals::replace_float_literals;
 
 impl<F> Model<F> {
+    /// Write the parallaxes (original and reduced ones)
+    #[allow(clippy::indexing_slicing)]
+    #[allow(clippy::unwrap_in_result)]
+    #[allow(clippy::unwrap_used)]
+    pub fn write_parallaxes(&self) -> Result<()>
+    where
+        F: Float + Debug + Display,
+    {
+        if self.fit_params.is_none() {
+            return Ok(());
+        }
+
+        let parallaxes_path = &self.output_dir.join("parallaxes.dat");
+        let parallaxes_file = File::create(parallaxes_path)
+            .with_context(|| "Couldn't create the `parallaxes.dat` file")?;
+        let mut parallaxes_writer = BufWriter::new(parallaxes_file);
+
+        writeln!(parallaxes_writer, "# Parallaxes")?;
+        writeln!(parallaxes_writer, "i par par_e par_r name source")?;
+
+        for (i, (object, triples)) in
+            izip!(self.objects.borrow().iter(), self.triples.borrow().iter()).enumerate()
+        {
+            if object.outlier {
+                continue;
+            }
+            let triple = &triples[3];
+
+            writeln!(
+                parallaxes_writer,
+                "{} {} {} {} \"{}\" \"{}\"",
+                i + 1,
+                triple.observed,
+                triple.error,
+                triple.model,
+                object.name.as_ref().unwrap(),
+                object.source.as_ref().unwrap(),
+            )?;
+        }
+
+        Ok(())
+    }
     /// Compute the systematical error in parallaxes
     #[allow(clippy::indexing_slicing)]
     #[allow(clippy::unwrap_in_result)]
@@ -46,7 +88,7 @@ impl<F> Model<F> {
             let triple = &triples[3];
 
             let x_i = triple.model - triple.observed;
-            let p_i = triple.error.powi(2);
+            let p_i = 1. / triple.error.powi(2);
 
             p = p + p_i;
             p_x = p_x + p_i * (x_i - a);
@@ -66,7 +108,7 @@ impl<F> Model<F> {
             let triple = &triples[3];
 
             let x_i = triple.model - triple.observed;
-            let p_i = triple.error.powi(2);
+            let p_i = 1. / triple.error.powi(2);
 
             p_x_mean_sq = p_x_mean_sq + p_i * (x_i - x_mean).powi(2);
         }
@@ -80,17 +122,17 @@ impl<F> Model<F> {
                 "
                 {s:25}n:  {n}
 
-                {s:16}\\sum_i p_i: {p:>18.15}
-                {s:7}\\sum_i p_i(x_i - a): {p_x:>18.15}
-                {s:5}\\sum_i p_i(x_i - a)^2: {p_x_sq:>18.15}
+                {s:16}\\sum_i p_i: {p:>23.15}
+                {s:7}\\sum_i p_i(x_i - a): {p_x:>23.15}
+                {s:5}\\sum_i p_i(x_i - a)^2: {p_x_sq:>23.15}
 
-                {s:14}\\overline{{x}}: {x_mean:>18.15}
-                {s:7}\\sigma_\\overline{{x}}: {sigma_x_mean:>18.15}
-                {s:20}\\sigma: {sigma:>18.15}
+                {s:14}\\overline{{x}}: {x_mean:>23.15}
+                {s:7}\\sigma_\\overline{{x}}: {sigma_x_mean:>23.15}
+                {s:20}\\sigma: {sigma:>23.15}
 
-                \\sum_i p_i(x_i - x_mean)^2: {p_x_mean_sq:>18.15}
+                \\sum_i p_i(x_i - x_mean)^2: {p_x_mean_sq:>23.15}
 
-                {s:19}\\sigma': {sigma_stroke:>18.15}
+                {s:19}\\sigma': {sigma_stroke:>23.15}
                 ",
                 s = " ",
             ),

@@ -217,7 +217,23 @@ echo -e "${PAD}Step 8. Plot the inner profiles and odd objects"
 "${JULIA}" "${ODD_OBJECTS}" -i "'${R_SOLAR}'" -o "'${R_SOLAR}'" -n "${N_BEST_SOLAR}"
 "${JULIA}" "${ODD_OBJECTS}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'" -n "${N_BEST_HMSFRS}"
 
-echo -e "${PAD}Step 9. Zip the results\n"
+echo -e "${PAD}Step 9. Plot the parallaxes"
+
+echo -e "\n${PAD}Near the solar circle:\n"
+
+for i in $(seq 1 "${N_MAX_SOLAR}"); do
+  echo -e "${PAD}n = $i"
+  "${JULIA}" "${PARALLAXES}" -i "'${R_SOLAR}'" -o "'${R_SOLAR}'" -n "$i"
+done
+
+echo -e "${PAD}HMSFRs:\n"
+
+for i in $(seq 1 "${N_MAX_HMSFRS}"); do
+  echo -e "${PAD}n = $i"
+  "${JULIA}" "${PARALLAXES}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'" -n "$i"
+done
+
+echo -e "${PAD}Step 10. Zip the results\n"
 
 rm -f results.zip
 zip -rq results.zip results

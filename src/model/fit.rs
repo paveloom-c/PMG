@@ -2,7 +2,6 @@
 
 #![allow(clippy::module_name_repetitions)]
 
-mod delta_varpi;
 mod errors;
 mod errors_logger;
 mod fit_logger;
@@ -10,6 +9,7 @@ mod frozen_outer;
 mod inner;
 mod outer;
 mod outliers;
+mod par_r;
 pub mod params;
 mod profiles;
 pub mod rotcurve;
