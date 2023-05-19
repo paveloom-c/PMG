@@ -54,6 +54,20 @@ echo -e "${PAD}> Fit HMSFRs (with errors and profiles)..."
   --n-max "${N_MAX_HMSFRS}" \
   --with-errors \
   --with-conditional-profiles 2>/dev/null
+echo -e "${PAD}> Fit near the solar circle (self-consistency check, with errors and profiles)..."
+"${PMG}" -i "${I_SOLAR}" -o "${R_SOLAR_SC}" --goal fit \
+  --r-0 7.949 \
+  --n-best "${N_BEST_SOLAR}" \
+  --n-max "${N_MAX_SOLAR_SC}" \
+  --with-errors \
+  --with-conditional-profiles 2>/dev/null
+echo -e "${PAD}> Fit HMSFRs (self-consistency check, with errors and profiles)..."
+"${PMG}" -i "${I_HMSFRS}" -o "${R_HMSFRS_SC}" --goal fit \
+  --r-0 7.920 \
+  --n-best "${N_BEST_HMSFRS}" \
+  --n-max "${N_MAX_HMSFRS_SC}" \
+  --with-errors \
+  --with-conditional-profiles 2>/dev/null
 
 echo -e "
 ${PAD}Step 3. Plot the comparison charts for the objects that are
@@ -124,6 +138,24 @@ qpdf --empty --pages "${R_HMSFRS}"/*/"Fitted rotation curve (errors).pdf" -- "${
 echo -e "${PAD}HMSFRs (test):"
 "${JULIA}" "${ROTCURVE}" -i "'${R_HMSFRS_TEST}/objects'" -o "'${R_HMSFRS_TEST}/objects'" -s --with-test
 
+echo -e "${PAD}Near the solar circle (self-consistency check):\n"
+
+for i in $(seq 1 "${N_MAX_SOLAR_SC}"); do
+  echo -e "${PAD}n = $i"
+  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_SOLAR_SC}'" -o "'${R_SOLAR_SC}'" -s -n "$i"
+done
+qpdf --empty --pages "${R_SOLAR_SC}"/*/"Fitted rotation curve.pdf" -- "${R_SOLAR_SC}/Fitted rotation curves.pdf"
+qpdf --empty --pages "${R_SOLAR_SC}"/*/"Fitted rotation curve (errors).pdf" -- "${R_SOLAR_SC}/Fitted rotation curves (errors).pdf"
+
+echo -e "${PAD}HMSFRs (self-consistency check):\n"
+
+for i in $(seq 1 "${N_MAX_HMSFRS_SC}"); do
+  echo -e "${PAD}n = $i"
+  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_HMSFRS_SC}'" -o "'${R_HMSFRS_SC}'" -s -n "$i"
+done
+qpdf --empty --pages "${R_HMSFRS_SC}"/*/"Fitted rotation curve.pdf" -- "${R_HMSFRS_SC}/Fitted rotation curves.pdf"
+qpdf --empty --pages "${R_HMSFRS_SC}"/*/"Fitted rotation curve (errors).pdf" -- "${R_HMSFRS_SC}/Fitted rotation curves (errors).pdf"
+
 echo "${PAD}Step 6. Plot the profiles"
 
 echo -e "\n${PAD}Near the solar circle (disabled inner optimization):\n"
@@ -154,12 +186,28 @@ for i in $(seq 1 "${N_MAX_HMSFRS}"); do
   "${JULIA}" "${PROFILES}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'" -n "$i"
 done
 
+echo -e "${PAD}Near the solar circle (self-consistency check):\n"
+
+for i in $(seq 1 "${N_MAX_SOLAR_SC}"); do
+  echo -e "${PAD}n = $i"
+  "${JULIA}" "${PROFILES}" -i "'${R_SOLAR_SC}'" -o "'${R_SOLAR_SC}'" -n "$i"
+done
+
+echo -e "${PAD}HMSFRs (self-consistency check):\n"
+
+for i in $(seq 1 "${N_MAX_HMSFRS_SC}"); do
+  echo -e "${PAD}n = $i"
+  "${JULIA}" "${PROFILES}" -i "'${R_HMSFRS_SC}'" -o "'${R_HMSFRS_SC}'" -n "$i"
+done
+
 echo -e "${PAD}Step 7. Plot the \`n\` plots"
 
 "${JULIA}" "${N}" -i "'${R_SOLAR_DI}'" -o "'${R_SOLAR_DI}'"
 "${JULIA}" "${N}" -i "'${R_HMSFRS_DI}'" -o "'${R_HMSFRS_DI}'"
 "${JULIA}" "${N}" -i "'${R_SOLAR}'" -o "'${R_SOLAR}'"
 "${JULIA}" "${N}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'"
+"${JULIA}" "${N}" -i "'${R_SOLAR_SC}'" -o "'${R_SOLAR_SC}'"
+"${JULIA}" "${N}" -i "'${R_HMSFRS_SC}'" -o "'${R_HMSFRS_SC}'"
 
 echo -e "${PAD}Step 8. Plot the inner profiles and odd objects"
 
