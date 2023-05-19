@@ -395,7 +395,7 @@ where
             #
             # N: {l_stroke_1_n}
             # a: 0
-            n Delta_varpi sigma_Delta_varpi",
+            n x_mean sigma_x_mean sigma sigma_stroke",
         ),
     )?;
 

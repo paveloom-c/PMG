@@ -96,7 +96,10 @@ impl<F> Model<F> {
             ),
         )?;
 
-        writeln!(dat_writer, "{n} {x_mean} {sigma_x_mean}")?;
+        writeln!(
+            dat_writer,
+            "{n} {x_mean} {sigma_x_mean} {sigma} {sigma_stroke}"
+        )?;
 
         Ok(())
     }
