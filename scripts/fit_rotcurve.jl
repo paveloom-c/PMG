@@ -28,6 +28,7 @@ LEGEND_SHOW_SOURCES = false
 INPUT_DIR = ""
 OUTPUT_DIR = ""
 POSTFIX = ""
+NO_DISTANCE_ERRORS = false
 
 # Parse the options
 for i in eachindex(ARGS)
@@ -71,6 +72,10 @@ for i in eachindex(ARGS)
             exit(1)
         end
     end
+    # Don't plot distance errors
+    if ARGS[i] == "--no-distance-errors"
+        global NO_DISTANCE_ERRORS = true
+    end
 end
 
 # Prepare color codes
@@ -89,7 +94,8 @@ if "--help" in ARGS
             $(GREEN)-s$(RESET)                     Show sources on the legend instead of types
             $(GREEN)-i <INPUT_DIR>$(RESET)         Input directory
             $(GREEN)-o <OUTPUT_DIR>$(RESET)        Output directory
-            $(GREEN)--postfix <POSTFIX>$(RESET)    A postfix for the names of output files"""
+            $(GREEN)--postfix <POSTFIX>$(RESET)    A postfix for the names of output files
+            $(GREEN)--no-distance-errors$(RESET)   Don't plot distance errors"""
     )
     exit(1)
 end
@@ -343,7 +349,7 @@ function plot(
         Legend(keys),
     )
     # Add the error lines if additional data sets are specified
-    if !isempty(x_p) && !isempty(x_m) && !isempty(y_p) && !isempty(y_m)
+    if !NO_DISTANCE_ERRORS && !isempty(x_p) && !isempty(x_m) && !isempty(y_p) && !isempty(y_m)
         for (x, y, x_p, x_m, y_p, y_m) in zip(x, y, x_p, x_m, y_p, y_m)
             push!(p, @pgf Plot(
                 {

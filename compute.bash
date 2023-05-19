@@ -101,7 +101,7 @@ echo -e "${PAD}Near the solar circle (disabled inner optimization):\n"
 
 for i in $(seq 1 "${N_MAX_SOLAR}"); do
   echo -e "${PAD}n = $i"
-  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_SOLAR_DI}'" -o "'${R_SOLAR_DI}'" -s -n "$i"
+  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_SOLAR_DI}'" -o "'${R_SOLAR_DI}'" -s --no-distance-errors -n "$i"
 done
 qpdf --empty --pages "${R_SOLAR_DI}"/*/"Fitted rotation curve.pdf" -- "${R_SOLAR_DI}/Fitted rotation curves.pdf"
 qpdf --empty --pages "${R_SOLAR_DI}"/*/"Fitted rotation curve (errors).pdf" -- "${R_SOLAR_DI}/Fitted rotation curves (errors).pdf"
@@ -110,7 +110,7 @@ echo -e "${PAD}HMSFRs (disabled inner optimization):\n"
 
 for i in $(seq 1 "${N_MAX_HMSFRS}"); do
   echo -e "${PAD}n = $i"
-  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_HMSFRS_DI}'" -o "'${R_HMSFRS_DI}'" -s -n "$i"
+  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_HMSFRS_DI}'" -o "'${R_HMSFRS_DI}'" -s --no-distance-errors -n "$i"
 done
 qpdf --empty --pages "${R_HMSFRS_DI}"/*/"Fitted rotation curve.pdf" -- "${R_HMSFRS_DI}/Fitted rotation curves.pdf"
 qpdf --empty --pages "${R_HMSFRS_DI}"/*/"Fitted rotation curve (errors).pdf" -- "${R_HMSFRS_DI}/Fitted rotation curves (errors).pdf"
