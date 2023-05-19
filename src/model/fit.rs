@@ -9,7 +9,7 @@ mod frozen_outer;
 mod inner;
 mod outer;
 mod outliers;
-mod par_r;
+mod parallaxes;
 pub mod params;
 mod profiles;
 pub mod rotcurve;

@@ -406,7 +406,7 @@ where
             #
             # N: {l_stroke_1_n}
             # a: 0
-            n x_mean sigma_x_mean sigma sigma_stroke",
+            n x_mean sigma_x_mean sigma sigma_sigma sigma_r sigma_sigma_r sigma_stroke sigma_par_mean",
         ),
     )?;
 

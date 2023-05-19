@@ -98,6 +98,11 @@ impl<F> Model<F> {
         let x_mean = 1. / p * p_x + a;
         let sigma = F::sqrt(1. / (n_objects - 1.) * (p_x_sq - p * (x_mean - a).powi(2)));
         let sigma_x_mean = sigma / p.sqrt();
+        let sigma_sigma = sigma / F::sqrt(2. * (n_objects - 1.));
+
+        // Fun fact: it's called reciprocal
+        let sigma_r = 1. / sigma;
+        let sigma_sigma_r = sigma_sigma / sigma.powi(2);
 
         let mut p_x_mean_sq = 0.;
 
@@ -115,6 +120,19 @@ impl<F> Model<F> {
 
         let sigma_stroke = F::sqrt(1. / p * p_x_mean_sq);
 
+        let mut sum_sigma_par_sq = 0.;
+
+        for (object, triples) in izip!(self.objects.borrow().iter(), self.triples.borrow().iter()) {
+            if object.outlier {
+                continue;
+            }
+            let triple = &triples[3];
+
+            sum_sigma_par_sq = sum_sigma_par_sq + triple.error.powi(2);
+        }
+
+        let sigma_par_mean = F::sqrt(1. / n_objects * sum_sigma_par_sq);
+
         writeln!(
             plain_writer,
             "{}",
@@ -129,10 +147,14 @@ impl<F> Model<F> {
                 {s:14}\\overline{{x}}: {x_mean:>23.15}
                 {s:7}\\sigma_\\overline{{x}}: {sigma_x_mean:>23.15}
                 {s:20}\\sigma: {sigma:>23.15}
+                {s:13}\\sigma_\\sigma: {sigma_sigma:>23.15}
+                {s:16}1 / \\sigma: {sigma_r:>23.15}
+                {s:7}\\sigma_{{1 / \\sigma}}: {sigma_sigma_r:>23.15}
 
                 \\sum_i p_i(x_i - x_mean)^2: {p_x_mean_sq:>23.15}
 
                 {s:19}\\sigma': {sigma_stroke:>23.15}
+                {s:2}\\overline{{\\sigma_\\varpi}}: {sigma_par_mean:>23.15}
                 ",
                 s = " ",
             ),
@@ -140,7 +162,7 @@ impl<F> Model<F> {
 
         writeln!(
             dat_writer,
-            "{n} {x_mean} {sigma_x_mean} {sigma} {sigma_stroke}"
+            "{n} {x_mean} {sigma_x_mean} {sigma} {sigma_sigma} {sigma_r} {sigma_sigma_r} {sigma_stroke} {sigma_par_mean}"
         )?;
 
         Ok(())
