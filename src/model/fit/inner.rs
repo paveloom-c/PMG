@@ -11,7 +11,7 @@ use std::io::{BufWriter, Write};
 
 use anyhow::Result;
 use argmin::core::CostFunction;
-use indoc::indoc;
+use indoc::formatdoc;
 use itertools::izip;
 use num::Float;
 use numeric_literals::replace_float_literals;
@@ -358,13 +358,22 @@ impl<F> Model<F> {
         let odd_objects_file = File::create(odd_objects_path)?;
         let mut odd_objects_writer = BufWriter::new(odd_objects_file);
 
+        let n_total = self.l_stroke_1_n.unwrap();
+        let n_odd_objects = odd_objects.iter().filter(|&&x| x).count();
+
         writeln!(
             &mut odd_objects_writer,
-            indoc!(
+            "{}",
+            formatdoc!(
                 "
                 # Coordinates of the objects that have more than one local
                 # minima in their profile of the inner target function
-                i name source X X_p X_m Y Y_p Y_m"
+                #
+                # N (total): {n_total}
+                # N (one minimum): {}
+                # N (several minima): {n_odd_objects}
+                i name source X X_p X_m Y Y_p Y_m",
+                n_total - n_odd_objects
             ),
         )?;
 
