@@ -184,8 +184,9 @@ function scatter(
     stricter_limits = false,
 )
     # Compute the limits
-    x_max, x_min = stricter_limits ? (1, 0) : max_min(x)
-    y_max, y_min = stricter_limits ? (1, 0) : max_min(y)
+    x_max, x_min = stricter_limits ? (1, 0) : max_min(x, factor=0.05)
+    y_max, y_min = stricter_limits ? (1, 0) : max_min(y, factor=0.05)
+    x_min = y_min = 0
     # Define the markers set
     marks = ["x", "+", "asterisk", "star", "10-pointed star"]
     # Create a plot
@@ -221,6 +222,7 @@ function scatter(
                 legend_pos = "outer north east",
                 legend_style = { line_width = 1, name = "leg" },
                 mark_size = 0.5,
+                clip_mode = "individual",
                 line_width = 0.15,
                 "scatter/classes" = {
                     a = {mark = marks[1], color = colors[1]},
@@ -250,16 +252,16 @@ function scatter(
                 ),
             ),
             Legend(keys),
-            Plot({ no_marks, opacity = 0.75}, Expression("x")),
+            Plot({ no_marks}, Expression("x")),
             [raw"\label{bisector}"],
-            Plot({ no_marks, opacity = 0.75, color = colors[3]}, Expression("x + $(x_mean)")),
+            Plot({ no_marks, color = colors[3]}, Expression("x + $(x_mean)")),
             [raw"\label{x_mean}"],
-            Plot({ no_marks, opacity = 0.75, color = colors[2]}, Expression("x + $(x_mean) + $(sigma_x_mean)")),
+            Plot({ no_marks, color = colors[2]}, Expression("x + $(x_mean) + $(sigma_x_mean)")),
             [raw"\label{sigma_x_mean}"],
-            Plot({ no_marks, opacity = 0.75, color = colors[2]}, Expression("x + $(x_mean) - $(sigma_x_mean)")),
-            Plot({ no_marks, opacity = 0.75, color = colors[1]}, Expression("x + $(x_mean) + $(sigma_stroke)")),
+            Plot({ no_marks, color = colors[2]}, Expression("x + $(x_mean) - $(sigma_x_mean)")),
+            Plot({ no_marks, color = colors[1]}, Expression("x + $(x_mean) + $(sigma_stroke)")),
             [raw"\label{sigma_stroke}"],
-            Plot({ no_marks, opacity = 0.75, color = colors[1]}, Expression("x + $(x_mean) - $(sigma_stroke)")),
+            Plot({ no_marks, color = colors[1]}, Expression("x + $(x_mean) - $(sigma_stroke)")),
         ),
         raw"""
         \node [draw,fill=white,line width=1,below,outer sep=1cm] at (leg) {\shortstack[l]{
