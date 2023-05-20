@@ -27,14 +27,14 @@ echo -e "\n${PAD}> Compute per-object data..."
 "${PMG}" -i "${I_HMSFRS_TEST}" -o "${R_HMSFRS_TEST}" --goal objects \
   --u-sun 11 --theta-sun 255 --r-0 8.34
 
-echo -e "${PAD}> Fit near the solar circle (disabled inner optimization, with errors and profiles)..."
+echo -e "${PAD}> Fit near the solar circle (disabled inner optimization)..."
 "${PMG}" -i "${I_SOLAR}" -o "${R_SOLAR_DI}" --goal fit \
   --n-best "${N_BEST_SOLAR}" \
   --n-max "${N_MAX_SOLAR}" \
   --with-errors \
   --with-conditional-profiles \
   --disable-inner 2>/dev/null
-echo -e "${PAD}> Fit HMSFRs (disabled inner optimization, with errors and profiles)..."
+echo -e "${PAD}> Fit HMSFRs (disabled inner optimization)..."
 "${PMG}" -i "${I_HMSFRS}" -o "${R_HMSFRS_DI}" --goal fit \
   --n-best "${N_BEST_HMSFRS}" \
   --n-max "${N_MAX_HMSFRS}" \
@@ -42,26 +42,35 @@ echo -e "${PAD}> Fit HMSFRs (disabled inner optimization, with errors and profil
   --with-conditional-profiles \
   --disable-inner \
   --lbfgs-tolerance 1e-12 2>/dev/null
-echo -e "${PAD}> Fit near the solar circle (with errors and profiles)..."
+echo -e "${PAD}> Fit HMSFRs (optimal sample, disabled inner optimization and outliers checks)..."
+"${PMG}" -i "${I_HMSFRS_OPTIMAL}" -o "${R_HMSFRS_OPTIMAL}" --goal fit \
+  --n-best "${N_BEST_HMSFRS}" \
+  --n-max "${N_MAX_HMSFRS}" \
+  --with-errors \
+  --with-conditional-profiles \
+  --disable-inner \
+  --disable-outliers \
+  --lbfgs-tolerance 1e-12 2>/dev/null
+echo -e "${PAD}> Fit near the solar circle..."
 "${PMG}" -i "${I_SOLAR}" -o "${R_SOLAR}" --goal fit \
   --n-best "${N_BEST_SOLAR}" \
   --n-max "${N_MAX_SOLAR}" \
   --with-errors \
   --with-conditional-profiles 2>/dev/null
-echo -e "${PAD}> Fit HMSFRs (with errors and profiles)..."
+echo -e "${PAD}> Fit HMSFRs..."
 "${PMG}" -i "${I_HMSFRS}" -o "${R_HMSFRS}" --goal fit \
   --n-best "${N_BEST_HMSFRS}" \
   --n-max "${N_MAX_HMSFRS}" \
   --with-errors \
   --with-conditional-profiles 2>/dev/null
-echo -e "${PAD}> Fit near the solar circle (self-consistency check, with errors and profiles)..."
+echo -e "${PAD}> Fit near the solar circle (self-consistency check)..."
 "${PMG}" -i "${I_SOLAR}" -o "${R_SOLAR_SC}" --goal fit \
   --r-0 7.949 \
   --n-best "${N_BEST_SOLAR}" \
   --n-max "${N_MAX_SOLAR_SC}" \
   --with-errors \
   --with-conditional-profiles 2>/dev/null
-echo -e "${PAD}> Fit HMSFRs (self-consistency check, with errors and profiles)..."
+echo -e "${PAD}> Fit HMSFRs (self-consistency check)..."
 "${PMG}" -i "${I_HMSFRS}" -o "${R_HMSFRS_SC}" --goal fit \
   --r-0 7.920 \
   --n-best "${N_BEST_HMSFRS}" \
@@ -114,6 +123,15 @@ for i in $(seq 1 "${N_MAX_HMSFRS}"); do
 done
 qpdf --empty --pages "${R_HMSFRS_DI}"/*/"Fitted rotation curve.pdf" -- "${R_HMSFRS_DI}/Fitted rotation curves.pdf"
 qpdf --empty --pages "${R_HMSFRS_DI}"/*/"Fitted rotation curve (errors).pdf" -- "${R_HMSFRS_DI}/Fitted rotation curves (errors).pdf"
+
+echo -e "${PAD}HMSFRs (optimal sample, disabled inner optimization and outliers checks):\n"
+
+for i in $(seq 1 "${N_MAX_HMSFRS}"); do
+  echo -e "${PAD}n = $i"
+  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_HMSFRS_OPTIMAL}'" -o "'${R_HMSFRS_OPTIMAL}'" -s --no-distance-errors -n "$i"
+done
+qpdf --empty --pages "${R_HMSFRS_OPTIMAL}"/*/"Fitted rotation curve.pdf" -- "${R_HMSFRS_OPTIMAL}/Fitted rotation curves.pdf"
+qpdf --empty --pages "${R_HMSFRS_OPTIMAL}"/*/"Fitted rotation curve (errors).pdf" -- "${R_HMSFRS_OPTIMAL}/Fitted rotation curves (errors).pdf"
 
 echo -e "${PAD}Near the solar circle:"
 
@@ -172,6 +190,13 @@ for i in $(seq 1 "${N_MAX_HMSFRS}"); do
   "${JULIA}" "${PROFILES}" -i "'${R_HMSFRS_DI}'" -o "'${R_HMSFRS_DI}'" -n "$i"
 done
 
+echo -e "${PAD}HMSFRs (optimal sample, disabled inner optimization and outliers checks):\n"
+
+for i in $(seq 1 "${N_MAX_HMSFRS}"); do
+  echo -e "${PAD}n = $i"
+  "${JULIA}" "${PROFILES}" -i "'${R_HMSFRS_OPTIMAL}'" -o "'${R_HMSFRS_OPTIMAL}'" -n "$i"
+done
+
 echo -e "${PAD}Near the solar circle:\n"
 
 for i in $(seq 1 "${N_MAX_SOLAR}"); do
@@ -204,6 +229,7 @@ echo -e "${PAD}Step 7. Plot the \`n\` plots"
 
 "${JULIA}" "${N}" -i "'${R_SOLAR_DI}'" -o "'${R_SOLAR_DI}'"
 "${JULIA}" "${N}" -i "'${R_HMSFRS_DI}'" -o "'${R_HMSFRS_DI}'"
+"${JULIA}" "${N}" -i "'${R_HMSFRS_OPTIMAL}'" -o "'${R_HMSFRS_OPTIMAL}'"
 "${JULIA}" "${N}" -i "'${R_SOLAR}'" -o "'${R_SOLAR}'"
 "${JULIA}" "${N}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'"
 "${JULIA}" "${N}" -i "'${R_SOLAR_SC}'" -o "'${R_SOLAR_SC}'"

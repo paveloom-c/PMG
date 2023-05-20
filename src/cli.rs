@@ -192,6 +192,7 @@ impl TypedValueParser for PathBufParser {
 }
 
 /// Command-line interface arguments
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Parser)]
 #[command(author, version, about)]
 #[command(help_template(
@@ -229,6 +230,9 @@ pub struct Args {
     /// Disable the inner optimization (fit goal only)
     #[arg(long)]
     pub disable_inner: bool,
+    /// Disable checks for outliers
+    #[arg(long)]
+    pub disable_outliers: bool,
     /// Tolerance of the L-BFGS algorithm
     #[arg(long, default_value_t = 1e-15)]
     pub lbfgs_tolerance: f64,

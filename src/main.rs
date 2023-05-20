@@ -118,6 +118,10 @@ pub fn main() -> Result<()> {
                         writeln!(outliers_log_writer, "best_n: {best_n}")?;
                         writeln!(outliers_log_writer, "l_stroke: {l_stroke}")?;
 
+                        if args.disable_outliers {
+                            break 'samples;
+                        }
+
                         let (one_dimensional_outliers, multi_dimensional_outliers) = best_model
                             .find_outliers(l_stroke)
                             .with_context(|| "Couldn't check for outliers")?;
