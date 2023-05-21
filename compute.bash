@@ -16,8 +16,13 @@ echo -e "\n${PAD}Step 2. Perform computations"
 
 mkdir -p "${R_ALL}" && cp "${I_ALL}" "${R_ALL}/input.dat"
 mkdir -p "${R_SOLAR}" && cp "${I_SOLAR}" "${R_SOLAR}/input.dat"
+mkdir -p "${R_SOLAR_DI}" && cp "${I_SOLAR}" "${R_SOLAR_DI}/input.dat"
+mkdir -p "${R_SOLAR_SC}" && cp "${I_SOLAR}" "${R_SOLAR_SC}/input.dat"
 mkdir -p "${R_HMSFRS}" && cp "${I_HMSFRS}" "${R_HMSFRS}/input.dat"
+mkdir -p "${R_HMSFRS_OPTIMAL}" && cp "${I_HMSFRS_OPTIMAL}" "${R_HMSFRS_OPTIMAL}/input.dat"
 mkdir -p "${R_HMSFRS_TEST}" && cp "${I_HMSFRS_TEST}" "${R_HMSFRS_TEST}/input.dat"
+mkdir -p "${R_HMSFRS_DI}" && cp "${I_HMSFRS}" "${R_HMSFRS_DI}/input.dat"
+mkdir -p "${R_HMSFRS_SC}" && cp "${I_HMSFRS}" "${R_HMSFRS_SC}/input.dat"
 mkdir -p "${R_VERA_REID}" && cp "${I_VERA_REID}" "${R_VERA_REID}/input.dat"
 
 echo -e "\n${PAD}> Compute per-object data..."
