@@ -12,12 +12,12 @@
 #  3 delta: Declination [DMS angle]
 #  4 par: Trigonometric parallax [mas]
 #  5 par_e: Uncertainty in `par` [mas]
-#  6 v_lsr: Local Standard of Rest velocity [km/s]
-#  7 v_lsr_e: Uncertainty in `v_lsr` [km/s]
-#  8 mu_x: Eastward proper motion (1) [mas/yr]
-#  9 mu_x_e: Uncertainty in `mu_x` [mas/yr]
-# 10 mu_y: Northward proper motion [mas/yr]
-# 11 mu_y_e: Uncertainty in `mu_y` [mas/yr]
+#  6 mu_x: Eastward proper motion (1) [mas/yr]
+#  7 mu_x_e: Uncertainty in `mu_x` [mas/yr]
+#  8 mu_y: Northward proper motion [mas/yr]
+#  9 mu_y_e: Uncertainty in `mu_y` [mas/yr]
+# 10 v_lsr: Local Standard of Rest velocity [km/s]
+# 11 v_lsr_e: Uncertainty in `v_lsr` [km/s]
 # 12 type: Type of the object (3)
 # 13 source: Source of the data (2)
 # 14 reference: Reference(s)

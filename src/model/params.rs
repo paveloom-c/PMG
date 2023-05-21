@@ -433,7 +433,7 @@ const DESCRIPTIONS: &str = indoc!(
     # 49 theta_0: The constant term of the rotation curve [km/s]
     # 50 theta_1: The first derivative of the linear rotation velocity [km/s/kpc]
     # 51 theta_sun: Linear rotation velocity of the Sun [km/s]
-    # 52 omega_sun: Circular rotation velocity of the Sun [km/s]"
+    # 52 omega_sun: Circular rotation velocity of the Sun [km/s/kpc]"
 );
 
 impl<F> Model<F> {
