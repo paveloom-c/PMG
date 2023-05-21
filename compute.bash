@@ -81,7 +81,8 @@ echo -e "${PAD}> Fit HMSFRs (self-consistency check)..."
   --n-best "${N_BEST_HMSFRS}" \
   --n-max "${N_MAX_HMSFRS_SC}" \
   --with-errors \
-  --with-conditional-profiles 2>/dev/null
+  --with-conditional-profiles \
+  --lbfgs-tolerance 1e-12 2>/dev/null
 
 echo -e "
 ${PAD}Step 3. Plot the comparison charts for the objects that are
