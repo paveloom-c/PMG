@@ -17,18 +17,20 @@ echo -e "\n${PAD}Step 2. Perform computations"
 mkdir -p "${R_ALL}" && cp "${I_ALL}" "${R_ALL}/input.dat"
 mkdir -p "${R_SOLAR}" && cp "${I_SOLAR}" "${R_SOLAR}/input.dat"
 mkdir -p "${R_SOLAR_DI}" && cp "${I_SOLAR}" "${R_SOLAR_DI}/input.dat"
-mkdir -p "${R_SOLAR_SC}" && cp "${I_SOLAR}" "${R_SOLAR_SC}/input.dat"
+mkdir -p "${R_SOLAR_SC_1}" && cp "${I_SOLAR_SC}" "${R_SOLAR_SC_1}/input.dat"
+mkdir -p "${R_SOLAR_SC_2}" && cp "${I_SOLAR_SC}" "${R_SOLAR_SC_2}/input.dat"
 mkdir -p "${R_HMSFRS}" && cp "${I_HMSFRS}" "${R_HMSFRS}/input.dat"
 mkdir -p "${R_HMSFRS_OPTIMAL}" && cp "${I_HMSFRS_OPTIMAL}" "${R_HMSFRS_OPTIMAL}/input.dat"
 mkdir -p "${R_HMSFRS_TEST}" && cp "${I_HMSFRS_TEST}" "${R_HMSFRS_TEST}/input.dat"
 mkdir -p "${R_HMSFRS_DI}" && cp "${I_HMSFRS}" "${R_HMSFRS_DI}/input.dat"
-mkdir -p "${R_HMSFRS_SC}" && cp "${I_HMSFRS}" "${R_HMSFRS_SC}/input.dat"
 mkdir -p "${R_VERA_REID}" && cp "${I_VERA_REID}" "${R_VERA_REID}/input.dat"
 
 echo -e "\n${PAD}> Compute per-object data..."
 "${PMG}" -i "${I_ALL}" -o "${R_ALL}" --goal objects
 "${PMG}" -i "${I_SOLAR}" -o "${R_SOLAR}" --goal objects
 "${PMG}" -i "${I_HMSFRS}" -o "${R_HMSFRS}" --goal objects
+"${PMG}" -i "${I_HMSFRS}" -o "${R_SOLAR_SC_1}" --goal objects --r-0 7.949308338373424
+"${PMG}" -i "${I_HMSFRS}" -o "${R_SOLAR_SC_2}" --goal objects --r-0 7.939483675907391
 "${PMG}" -i "${I_HMSFRS_TEST}" -o "${R_HMSFRS_TEST}" --goal objects \
   --u-sun 11 --theta-sun 255 --r-0 8.34
 
@@ -68,21 +70,20 @@ echo -e "${PAD}> Fit HMSFRs..."
   --n-max "${N_MAX_HMSFRS}" \
   --with-errors \
   --with-conditional-profiles 2>/dev/null
-echo -e "${PAD}> Fit near the solar circle (self-consistency check)..."
-"${PMG}" -i "${I_SOLAR}" -o "${R_SOLAR_SC}" --goal fit \
-  --r-0 7.949 \
+echo -e "${PAD}> Fit near the solar circle (self-consistency check, iter 1)..."
+"${PMG}" -i "${I_SOLAR_SC}" -o "${R_SOLAR_SC_1}" --goal fit \
+  --r-0 7.949308338373424 \
   --n-best "${N_BEST_SOLAR}" \
   --n-max "${N_MAX_SOLAR_SC}" \
   --with-errors \
   --with-conditional-profiles 2>/dev/null
-echo -e "${PAD}> Fit HMSFRs (self-consistency check)..."
-"${PMG}" -i "${I_HMSFRS}" -o "${R_HMSFRS_SC}" --goal fit \
-  --r-0 7.920 \
-  --n-best "${N_BEST_HMSFRS}" \
-  --n-max "${N_MAX_HMSFRS_SC}" \
+echo -e "${PAD}> Fit near the solar circle (self-consistency check, iter 2)..."
+"${PMG}" -i "${I_SOLAR_SC}" -o "${R_SOLAR_SC_2}" --goal fit \
+  --r-0 7.939483675907391 \
+  --n-best "${N_BEST_SOLAR}" \
+  --n-max "${N_MAX_SOLAR_SC}" \
   --with-errors \
-  --with-conditional-profiles \
-  --lbfgs-tolerance 1e-12 2>/dev/null
+  --with-conditional-profiles 2>/dev/null
 
 echo -e "
 ${PAD}Step 3. Plot the comparison charts for the objects that are
@@ -162,23 +163,23 @@ qpdf --empty --pages "${R_HMSFRS}"/*/"Fitted rotation curve (errors).pdf" -- "${
 echo -e "${PAD}HMSFRs (test):"
 "${JULIA}" "${ROTCURVE}" -i "'${R_HMSFRS_TEST}/objects'" -o "'${R_HMSFRS_TEST}/objects'" -s --with-test
 
-echo -e "${PAD}Near the solar circle (self-consistency check):\n"
+echo -e "${PAD}Near the solar circle (self-consistency check, iter 1):\n"
 
 for i in $(seq 1 "${N_MAX_SOLAR_SC}"); do
   echo -e "${PAD}n = $i"
-  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_SOLAR_SC}'" -o "'${R_SOLAR_SC}'" -s -n "$i"
+  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_SOLAR_SC_1}'" -o "'${R_SOLAR_SC_1}'" -s -n "$i"
 done
-qpdf --empty --pages "${R_SOLAR_SC}"/*/"Fitted rotation curve.pdf" -- "${R_SOLAR_SC}/Fitted rotation curves.pdf"
-qpdf --empty --pages "${R_SOLAR_SC}"/*/"Fitted rotation curve (errors).pdf" -- "${R_SOLAR_SC}/Fitted rotation curves (errors).pdf"
+qpdf --empty --pages "${R_SOLAR_SC_1}"/*/"Fitted rotation curve.pdf" -- "${R_SOLAR_SC_1}/Fitted rotation curves.pdf"
+qpdf --empty --pages "${R_SOLAR_SC_1}"/*/"Fitted rotation curve (errors).pdf" -- "${R_SOLAR_SC_1}/Fitted rotation curves (errors).pdf"
 
-echo -e "${PAD}HMSFRs (self-consistency check):\n"
+echo -e "${PAD}Near the solar circle (self-consistency check, iter 2):\n"
 
-for i in $(seq 1 "${N_MAX_HMSFRS_SC}"); do
+for i in $(seq 1 "${N_MAX_SOLAR_SC}"); do
   echo -e "${PAD}n = $i"
-  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_HMSFRS_SC}'" -o "'${R_HMSFRS_SC}'" -s -n "$i"
+  "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_SOLAR_SC_2}'" -o "'${R_SOLAR_SC_2}'" -s -n "$i"
 done
-qpdf --empty --pages "${R_HMSFRS_SC}"/*/"Fitted rotation curve.pdf" -- "${R_HMSFRS_SC}/Fitted rotation curves.pdf"
-qpdf --empty --pages "${R_HMSFRS_SC}"/*/"Fitted rotation curve (errors).pdf" -- "${R_HMSFRS_SC}/Fitted rotation curves (errors).pdf"
+qpdf --empty --pages "${R_SOLAR_SC_2}"/*/"Fitted rotation curve.pdf" -- "${R_SOLAR_SC_2}/Fitted rotation curves.pdf"
+qpdf --empty --pages "${R_SOLAR_SC_2}"/*/"Fitted rotation curve (errors).pdf" -- "${R_SOLAR_SC_2}/Fitted rotation curves (errors).pdf"
 
 echo "${PAD}Step 6. Plot the profiles"
 
@@ -217,18 +218,18 @@ for i in $(seq 1 "${N_MAX_HMSFRS}"); do
   "${JULIA}" "${PROFILES}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'" -n "$i"
 done
 
-echo -e "${PAD}Near the solar circle (self-consistency check):\n"
+echo -e "${PAD}Near the solar circle (self-consistency check, iter 1):\n"
 
 for i in $(seq 1 "${N_MAX_SOLAR_SC}"); do
   echo -e "${PAD}n = $i"
-  "${JULIA}" "${PROFILES}" -i "'${R_SOLAR_SC}'" -o "'${R_SOLAR_SC}'" -n "$i"
+  "${JULIA}" "${PROFILES}" -i "'${R_SOLAR_SC_1}'" -o "'${R_SOLAR_SC_1}'" -n "$i"
 done
 
-echo -e "${PAD}HMSFRs (self-consistency check):\n"
+echo -e "${PAD}Near the solar circle (self-consistency check, iter 2):\n"
 
-for i in $(seq 1 "${N_MAX_HMSFRS_SC}"); do
+for i in $(seq 1 "${N_MAX_SOLAR_SC}"); do
   echo -e "${PAD}n = $i"
-  "${JULIA}" "${PROFILES}" -i "'${R_HMSFRS_SC}'" -o "'${R_HMSFRS_SC}'" -n "$i"
+  "${JULIA}" "${PROFILES}" -i "'${R_SOLAR_SC_2}'" -o "'${R_SOLAR_SC_2}'" -n "$i"
 done
 
 echo -e "${PAD}Step 7. Plot the \`n\` plots"
@@ -238,8 +239,8 @@ echo -e "${PAD}Step 7. Plot the \`n\` plots"
 "${JULIA}" "${N}" -i "'${R_HMSFRS_OPTIMAL}'" -o "'${R_HMSFRS_OPTIMAL}'"
 "${JULIA}" "${N}" -i "'${R_SOLAR}'" -o "'${R_SOLAR}'"
 "${JULIA}" "${N}" -i "'${R_HMSFRS}'" -o "'${R_HMSFRS}'"
-"${JULIA}" "${N}" -i "'${R_SOLAR_SC}'" -o "'${R_SOLAR_SC}'"
-"${JULIA}" "${N}" -i "'${R_HMSFRS_SC}'" -o "'${R_HMSFRS_SC}'"
+"${JULIA}" "${N}" -i "'${R_SOLAR_SC_1}'" -o "'${R_SOLAR_SC_1}'"
+"${JULIA}" "${N}" -i "'${R_SOLAR_SC_2}'" -o "'${R_SOLAR_SC_2}'"
 
 echo -e "${PAD}Step 8. Plot the inner profiles and odd objects"
 
