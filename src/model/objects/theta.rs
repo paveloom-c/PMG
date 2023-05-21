@@ -1,5 +1,7 @@
 //! Azimuthal velocity
 
+use crate::model::fit::params::VEL_TERM;
+
 use super::{Object, Params};
 
 use core::fmt::Debug;
@@ -99,6 +101,9 @@ impl<F> Object<F> {
         let mu_x_e = self.mu_x_e.unwrap();
         let mu_y = self.mu_y.unwrap();
         let mu_y_e = self.mu_y_e.unwrap();
+        let r_h = self.r_h.unwrap();
+        // Get the parameters
+        let k = params.k;
         // Compute the partial derivative of the azimuthal
         // velocity by the Local Standard of Rest velocity
         let mut object = Object {
@@ -145,11 +150,28 @@ impl<F> Object<F> {
         object.compute_u_v_w_nominal();
         object.compute_theta_nominal(params);
         let deriv_theta_mu_y = object.theta.as_ref().unwrap().deriv();
+
+        let mut d_v_lsr = v_lsr_e.powi(2);
+        let mut d_mu_x = mu_x_e.powi(2);
+        let mut d_mu_y = mu_y_e.powi(2);
+        // We account for the uncertainty in transferring the
+        // maser motions to that of the central star by adding
+        // an error term here for non-Reid objects.
+        //
+        // See Reid et al. (2019)
+        if !self.from_reid.as_ref().unwrap() {
+            let extra_term_v = F::from(VEL_TERM).unwrap().powi(2);
+            let extra_term_mu = extra_term_v / k.powi(2) / r_h.powi(2);
+            d_v_lsr = d_v_lsr + extra_term_v;
+            d_mu_x = d_mu_x + extra_term_mu;
+            d_mu_y = d_mu_y + extra_term_mu;
+        }
+
         // Compute the uncertainty
         self.theta_evel = Some(F::sqrt(
-            deriv_theta_v_lsr.powi(2) * v_lsr_e.powi(2)
-                + deriv_theta_mu_x.powi(2) * mu_x_e.powi(2)
-                + deriv_theta_mu_y.powi(2) * mu_y_e.powi(2),
+            deriv_theta_v_lsr.powi(2) * d_v_lsr
+                + deriv_theta_mu_x.powi(2) * d_mu_x
+                + deriv_theta_mu_y.powi(2) * d_mu_y,
         ));
     }
 }

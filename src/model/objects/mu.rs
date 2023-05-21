@@ -1,5 +1,7 @@
 //! Proper motions in Galactic coordinates
 
+use crate::model::fit::params::VEL_TERM;
+
 use super::{Object, Params};
 
 use core::fmt::Debug;
@@ -64,6 +66,9 @@ impl<F> Object<F> {
         let mu_y = self.mu_y.unwrap();
         let mu_x_e = self.mu_x_e.unwrap();
         let mu_y_e = self.mu_y_e.unwrap();
+        let r_h = self.r_h.unwrap();
+        // Get the parameters
+        let k = params.k;
         // Compute the partial derivatives of
         // `mu_l * cos(b)` by `mu_alpha * cos(delta)`
         // and `mu_b` by `mu_alpha * cos(delta)`
@@ -88,8 +93,19 @@ impl<F> Object<F> {
         let deriv_mu_l_cos_b_mu_y_sq = object.mu_l_cos_b.unwrap().deriv().powi(2);
         let deriv_mu_b_mu_y_sq = object.mu_b.unwrap().deriv().powi(2);
         // Compute the observed dispersions
-        let d_mu_x = mu_x_e.powi(2);
-        let d_mu_y = mu_y_e.powi(2);
+        let mut d_mu_x = mu_x_e.powi(2);
+        let mut d_mu_y = mu_y_e.powi(2);
+        // We account for the uncertainty in transferring the
+        // maser motions to that of the central star by adding
+        // an error term here for non-Reid objects.
+        //
+        // See Reid et al. (2019)
+        if !self.from_reid.as_ref().unwrap() {
+            let extra_term_v = F::from(VEL_TERM).unwrap().powi(2);
+            let extra_term_mu = extra_term_v / k.powi(2) / r_h.powi(2);
+            d_mu_x = d_mu_x + extra_term_mu;
+            d_mu_y = d_mu_y + extra_term_mu;
+        }
         // Compute the dispersion of `mu_l * cos(b)`
         let d_mu_l_cos_b = deriv_mu_l_cos_b_mu_x_sq * d_mu_x + deriv_mu_l_cos_b_mu_y_sq * d_mu_y;
         // Compute the dispersion of `mu_b`

@@ -41,6 +41,9 @@ pub const LBFGS_TOLERANCE_ERRORS: f64 = 1e-11;
 /// Maximum number of iterations
 pub const MAX_ITERS: u64 = 500;
 
+/// A term to add to the velocities of non-from-Reid objects
+pub const VEL_TERM: f64 = 10.;
+
 impl<F> Model<F> {
     /// Try to fit the model of the Galaxy to the data
     #[allow(clippy::as_conversions)]

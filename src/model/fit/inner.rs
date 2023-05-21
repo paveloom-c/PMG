@@ -1,5 +1,6 @@
 //! Inner optimization problem
 
+use super::params::VEL_TERM;
 use super::rotcurve::compute_rot_curve_series;
 use super::{Model, Object, Params};
 use crate::utils;
@@ -241,18 +242,16 @@ where
     let (d_mu_l_cos_b_observed, d_mu_b_observed) = object.compute_d_mu_l_cos_b_mu_b(fit_params);
     // Compute the full errors
     let mut d_v_r = v_r_e.powi(2) + d_v_r_natural;
-    let mut d_mu_l_cos_b = d_mu_l_cos_b_observed + d_mu_l_cos_b_natural;
-    let mut d_mu_b = d_mu_b_observed + d_mu_b_natural;
+    let d_mu_l_cos_b = d_mu_l_cos_b_observed + d_mu_l_cos_b_natural;
+    let d_mu_b = d_mu_b_observed + d_mu_b_natural;
     // We account for the uncertainty in transferring the
     // maser motions to that of the central star by adding
     // an error term here for non-Reid objects.
     //
     // See Reid et al. (2019)
     if !object.from_reid.as_ref().unwrap() {
-        let term = 10.;
-        d_v_r = d_v_r + term.powi(2);
-        d_mu_l_cos_b = d_mu_l_cos_b + term.powi(2) / delim;
-        d_mu_b = d_mu_b + term.powi(2) / delim;
+        let extra_term_v = F::from(VEL_TERM).unwrap().powi(2);
+        d_v_r = d_v_r + extra_term_v;
     }
     let v_r_error = F::sqrt(d_v_r);
     let mu_l_cos_b_error = F::sqrt(d_mu_l_cos_b);
