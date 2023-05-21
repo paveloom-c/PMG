@@ -114,7 +114,7 @@ using LaTeXStrings
 using PGFPlotsX
 
 # Choose a color scheme
-colors = ColorSchemes.tol_bright[2:end]
+colors = ColorSchemes.tol_bright
 
 # Define the paths
 CURRENT_DIR = @__DIR__
@@ -180,13 +180,15 @@ keys = unique(group)
 counts = Dict([(k, count(==(k), group)) for k in keys])
 I = sortperm(group, by=k -> counts[k], rev=true)
 group = group[I]
+source = objects_data.source[I]
 R = objects_data.R[I]
 R_p = objects_data.R_p[I]
 R_m = objects_data.R_m[I]
 Θ = objects_data.Θ[I]
 Θ_p = objects_data.Θ_p[I]
 Θ_m = objects_data.Θ_m[I]
-Θ_evel = objects_data.Θ_evel[I]
+θ_evel = objects_data.θ_evel[I]
+θ_evel_corrected = objects_data.θ_evel_corrected[I]
 
 # Get the position of the Sun (initial parameters)
 R_0 = params_data.R_0[1]
@@ -196,6 +198,9 @@ R_0 = params_data.R_0[1]
 markers = ["a", "b", "c", "d", "e", "g"]
 dictionary = Dict([(k, markers[i]) for (i, k) in enumerate(keys)])
 label = [dictionary[k] for k in group]
+
+# Compute a mask for the non-from-Reid objects
+NR = findall(s -> s != "Reid", source)
 
 println(pad, "> Plotting the rotations curves...")
 
@@ -220,36 +225,13 @@ function scatter(
     y_p=F[],
     y_m=F[],
     evel=F[],
+    evel_corrected=F[],
 )
     # Compute the limits
     x_max, x_min = max_min(x)
     y_max, y_min = max_min(y)
     # Define the X tick distance
     xtick_distance = (x_max - x_min) > 10 ? 4 : 2
-    # Prepare a table
-    table =
-        if isempty(evel)
-            @pgf Table(
-                {
-                    meta = "label",
-                },
-                x=x,
-                y=y,
-                label=label,
-            )
-        else
-            @pgf Table(
-                {
-                    meta = "label",
-                    y_error_plus = "evel",
-                    y_error_minus = "evel",
-                },
-                x=x,
-                y=y,
-                label=label,
-                evel=evel,
-            )
-        end
     # Create a plot
     p = @pgf Axis(
         {
@@ -270,13 +252,6 @@ function scatter(
             major_grid_style = {opacity = 0.5},
             tick_label_style = {font = "\\small"},
             tick_style = {line_width = 0.4, color = "black"},
-            "error bars/error bar style" = {line_width = 0.1, opacity = 0.25},
-            "error bars/error mark options" = {
-                rotate = 90,
-                mark_size = 0.5,
-                line_width = 0.1,
-                opacity = 0.25,
-            },
             axis_line_style = {line_width = 1},
             axis_on_top = true,
             "axis_lines*" = "left",
@@ -286,13 +261,43 @@ function scatter(
             mark_size = 0.5,
             line_width = 0.15,
             "scatter/classes" = {
-                a = {mark = "x", color = colors[1]},
-                b = {mark = "+", color = colors[2]},
-                c = {mark = "asterisk", color = colors[3]},
-                d = {mark = "star", color = colors[4]},
-                e = {mark = "10-pointed star", color = colors[5]},
+                a = {mark = "x", color = colors[2]},
+                b = {mark = "+", color = colors[3]},
+                c = {mark = "asterisk", color = colors[4]},
+                d = {mark = "star", color = colors[5]},
+                e = {mark = "10-pointed star", color = colors[6]},
             },
         },
+    )
+    # Add second pair of bars to the non-from-Reid objects
+    if !isempty(evel_corrected)
+        push!(p, @pgf Plot(
+            {
+                scatter,
+                only_marks,
+                mark="none",
+                color = colors[1],
+                "error bars/y dir=both",
+                "error bars/y explicit",
+                "error bars/error bar style" = {line_width = 0.1, opacity = 0.75},
+                "error bars/error mark options" = {
+                    rotate = 90,
+                    mark_size = 0.5,
+                    line_width = 0.1,
+                    opacity = 0.75,
+                },
+            },
+            Table(
+                {
+                    y_error = "evel_corrected",
+                },
+                x=x[NR],
+                y=y[NR],
+                evel_corrected=evel_corrected[NR],
+            ),
+        ))
+    end
+    push!(p, @pgf [
         Plot(
             {
                 scatter,
@@ -300,12 +305,39 @@ function scatter(
                 scatter_src = "explicit symbolic",
                 "error bars/y dir=both",
                 "error bars/y explicit",
+                "error bars/error bar style" = {line_width = 0.1, opacity = 0.25},
+                "error bars/error mark options" = {
+                    rotate = 90,
+                    mark_size = 0.5,
+                    line_width = 0.1,
+                    opacity = 0.25,
+                },
             },
-            table,
+            if isempty(evel)
+                Table(
+                    {
+                        meta = "label",
+                    },
+                    x=x,
+                    y=y,
+                    label=label,
+                )
+            else
+                Table(
+                    {
+                        meta = "label",
+                        y_error = "evel",
+                    },
+                    x=x,
+                    y=y,
+                    label=label,
+                    evel=evel,
+                )
+            end,
         ),
         [raw"\node[font=\fontsize{1}{0}\selectfont] at ", Coordinate(R_0, θ_sun), raw"{$\odot$};"],
         Legend(keys),
-    )
+    ])
     # Add the error lines if additional data sets are specified
     if !isempty(x_p) && !isempty(x_m) && !isempty(y_p) && !isempty(y_m)
         for (x, y, x_p, x_m, y_p, y_m) in zip(x, y, x_p, x_m, y_p, y_m)
@@ -351,7 +383,8 @@ push!(tasks, @spawn begin
         x_m=R_m,
         y_p=Θ_p,
         y_m=Θ_m,
-        evel=Θ_evel,
+        evel=θ_evel,
+        evel_corrected=θ_evel_corrected,
     )
     pgfsave(joinpath(OUTPUT_DIR, "Rotation curve (errors)$(POSTFIX).pdf"), p)
 end)

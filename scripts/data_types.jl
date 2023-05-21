@@ -55,7 +55,8 @@ module Types
         Θ_em::Vector{F}
         Θ_p::Vector{F}
         Θ_m::Vector{F}
-        Θ_evel::Vector{F}
+        θ_evel::Vector{F}
+        θ_evel_corrected::Vector{F}
         V_r::Vector{F}
         V_r_e::Vector{F}
         V_l::Vector{F}

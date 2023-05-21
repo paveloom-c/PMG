@@ -200,6 +200,7 @@ keys = unique(group)
 counts = Dict([(k, count(==(k), group)) for k in keys])
 I = sortperm(group, by=k -> counts[k], rev=true)
 group = group[I]
+source = objects_data.source[I]
 outliers = objects_data.outlier[I]
 R = objects_data.R[I]
 R_p = objects_data.R_p[I]
@@ -207,7 +208,8 @@ R_m = objects_data.R_m[I]
 Θ = objects_data.Θ[I]
 Θ_p = objects_data.Θ_p[I]
 Θ_m = objects_data.Θ_m[I]
-Θ_evel = objects_data.Θ_evel[I]
+θ_evel = objects_data.θ_evel[I]
+θ_evel_corrected = objects_data.θ_evel_corrected[I]
 
 # Unpack the fit data
 R_fit = fit_rotcurve_data.R
@@ -221,6 +223,9 @@ outliers_markers = ["f", "g", "h", "i", "j"]
 dictionary = Dict([(k, markers[i]) for (i, k) in enumerate(keys)])
 outliers_dictionary = Dict([(k, outliers_markers[i]) for (i, k) in enumerate(keys)])
 label = [o ? outliers_dictionary[k] : dictionary[k] for (k, o) in zip(group, outliers)]
+
+# Compute a mask for the non-from-Reid objects
+NR = findall(s -> s != "Reid", source)
 
 println(pad, "> Plotting the fitted rotation curves...")
 
@@ -246,6 +251,7 @@ function plot(
     y_p=F[],
     y_m=F[],
     evel=F[],
+    evel_corrected=F[],
 )
     # Compute the limits
     x_max, x_min = max_min(x)
@@ -300,13 +306,6 @@ function plot(
             major_grid_style = {opacity = 0.5},
             tick_label_style = {font = "\\small"},
             tick_style = {line_width = 0.4, color = "black"},
-            "error bars/error bar style" = {line_width = 0.1, opacity = 0.25},
-            "error bars/error mark options" = {
-                rotate = 90,
-                mark_size = 0.5,
-                line_width = 0.1,
-                opacity = 0.25,
-            },
             axis_line_style = {line_width = 1},
             axis_on_top = true,
             "axis_lines*" = "left",
@@ -328,6 +327,36 @@ function plot(
                 j = {mark = "o", color = colors[6], mark_size = 0.85 },
             },
         },
+    )
+    # Add second pair of bars to the non-from-Reid objects
+    if !isempty(evel_corrected)
+        push!(p, @pgf Plot(
+            {
+                scatter,
+                only_marks,
+                mark="none",
+                color = colors[1],
+                "error bars/y dir=both",
+                "error bars/y explicit",
+                "error bars/error bar style" = {line_width = 0.1, opacity = 0.75},
+                "error bars/error mark options" = {
+                    rotate = 90,
+                    mark_size = 0.5,
+                    line_width = 0.1,
+                    opacity = 0.75,
+                },
+            },
+            Table(
+                {
+                    y_error = "evel_corrected",
+                },
+                x=x[NR],
+                y=y[NR],
+                evel_corrected=evel_corrected[NR],
+            ),
+        ))
+    end
+    push!(p, @pgf [
         Plot(
             {
                 scatter,
@@ -335,6 +364,13 @@ function plot(
                 scatter_src = "explicit symbolic",
                 "error bars/y dir=both",
                 "error bars/y explicit",
+                "error bars/error bar style" = {line_width = 0.1, opacity = 0.25},
+                "error bars/error mark options" = {
+                    rotate = 90,
+                    mark_size = 0.5,
+                    line_width = 0.1,
+                    opacity = 0.25,
+                },
             },
             objects_table,
         ),
@@ -347,7 +383,7 @@ function plot(
         ),
         [raw"\node[font=\fontsize{1}{0}\selectfont] at ", Coordinate(R_0, θ_sun), raw"{$\odot$};"],
         Legend(keys),
-    )
+    ])
     # Add the error lines if additional data sets are specified
     if !NO_DISTANCE_ERRORS && !isempty(x_p) && !isempty(x_m) && !isempty(y_p) && !isempty(y_m)
         for (x, y, x_p, x_m, y_p, y_m) in zip(x, y, x_p, x_m, y_p, y_m)
@@ -397,7 +433,8 @@ push!(tasks, @spawn begin
         x_m=R_m,
         y_p=Θ_p,
         y_m=Θ_m,
-        evel=Θ_evel,
+        evel=θ_evel,
+        evel_corrected=θ_evel_corrected,
     )
     pgfsave(joinpath(OUTPUT_DIR, "Fitted rotation curve (errors)$(POSTFIX).pdf"), p)
 end)

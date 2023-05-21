@@ -154,6 +154,12 @@ impl<F> Object<F> {
         let mut d_v_lsr = v_lsr_e.powi(2);
         let mut d_mu_x = mu_x_e.powi(2);
         let mut d_mu_y = mu_y_e.powi(2);
+        // Compute the uncertainty
+        self.theta_evel = Some(F::sqrt(
+            deriv_theta_v_lsr.powi(2) * d_v_lsr
+                + deriv_theta_mu_x.powi(2) * d_mu_x
+                + deriv_theta_mu_y.powi(2) * d_mu_y,
+        ));
         // We account for the uncertainty in transferring the
         // maser motions to that of the central star by adding
         // an error term here for non-Reid objects.
@@ -166,9 +172,8 @@ impl<F> Object<F> {
             d_mu_x = d_mu_x + extra_term_mu;
             d_mu_y = d_mu_y + extra_term_mu;
         }
-
-        // Compute the uncertainty
-        self.theta_evel = Some(F::sqrt(
+        // Compute the corrected uncertainty
+        self.theta_evel_corrected = Some(F::sqrt(
             deriv_theta_v_lsr.powi(2) * d_v_lsr
                 + deriv_theta_mu_x.powi(2) * d_mu_x
                 + deriv_theta_mu_y.powi(2) * d_mu_y,
