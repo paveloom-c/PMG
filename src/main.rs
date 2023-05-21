@@ -72,6 +72,10 @@ pub fn main() -> Result<()> {
                 .with_context(|| "Couldn't create the `errors.log` file")?;
             let errors_log_writer = Rc::new(RefCell::new(BufWriter::new(errors_log_file)));
 
+            let n_data_path = &args.output_dir.join("n.dat");
+            let mut n_data_file =
+                File::create(n_data_path).with_context(|| "Couldn't create the `n.dat` file")?;
+
             writeln!(
                 outliers_log_writer,
                 "{}",
@@ -85,6 +89,9 @@ pub fn main() -> Result<()> {
 
             let best_i = args.n_best - 1;
             let best_n = args.n_best;
+
+            writeln!(n_data_file, "# Progression of the number of the objects\nn")?;
+            writeln!(n_data_file, "{}", models[best_i].objects.borrow().len())?;
 
             let mut sample_iteration = 0;
             for l_stroke in [3, 1] {
@@ -199,6 +206,7 @@ pub fn main() -> Result<()> {
                 }
 
                 let l_stroke_n = models[best_i].count_non_outliers();
+                writeln!(n_data_file, "{l_stroke_n}")?;
 
                 for i in 0..args.n_max {
                     let n = i + 1;
