@@ -9,8 +9,10 @@ use std::{fs::File, io::BufWriter};
 use anyhow::{Context, Result};
 use indoc::formatdoc;
 use itertools::izip;
-use num::Float;
+use num::{Float, Integer};
 use numeric_literals::replace_float_literals;
+
+use super::Triple;
 
 impl<F> Model<F> {
     /// Write the parallaxes (original and reduced ones)
@@ -57,6 +59,7 @@ impl<F> Model<F> {
     }
     /// Compute the systematical error in parallaxes
     #[allow(clippy::indexing_slicing)]
+    #[allow(clippy::integer_division)]
     #[allow(clippy::unwrap_in_result)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
@@ -75,18 +78,25 @@ impl<F> Model<F> {
         let n = self.n.unwrap();
         let n_objects = F::from(self.l_stroke_1_n.unwrap()).unwrap();
 
+        let triples: Vec<Triple<F>> =
+            izip!(self.objects.borrow().iter(), self.triples.borrow().iter())
+                .filter_map(|(object, triples)| {
+                    if object.outlier {
+                        None
+                    } else {
+                        let triple = &triples[3];
+                        Some(triple.clone())
+                    }
+                })
+                .collect();
+
         let a = 0.;
 
         let mut p = 0.;
         let mut p_x = 0.;
         let mut p_x_sq = 0.;
 
-        for (object, triples) in izip!(self.objects.borrow().iter(), self.triples.borrow().iter()) {
-            if object.outlier {
-                continue;
-            }
-            let triple = &triples[3];
-
+        for triple in &triples {
             let x_i = triple.model - triple.observed;
             let p_i = 1. / triple.error.powi(2);
 
@@ -106,12 +116,7 @@ impl<F> Model<F> {
 
         let mut p_x_mean_sq = 0.;
 
-        for (object, triples) in izip!(self.objects.borrow().iter(), self.triples.borrow().iter()) {
-            if object.outlier {
-                continue;
-            }
-            let triple = &triples[3];
-
+        for triple in &triples {
             let x_i = triple.model - triple.observed;
             let p_i = 1. / triple.error.powi(2);
 
@@ -122,16 +127,22 @@ impl<F> Model<F> {
 
         let mut sum_sigma_par_sq = 0.;
 
-        for (object, triples) in izip!(self.objects.borrow().iter(), self.triples.borrow().iter()) {
-            if object.outlier {
-                continue;
-            }
-            let triple = &triples[3];
-
+        for triple in &triples {
             sum_sigma_par_sq = sum_sigma_par_sq + triple.error.powi(2);
         }
 
         let sigma_par_mean = F::sqrt(1. / n_objects * sum_sigma_par_sq);
+
+        let mut errors: Vec<F> = triples.iter().map(|triple| triple.error).collect();
+        errors.sort_by(|i, j| i.partial_cmp(j).unwrap());
+        let errors_len = errors.len();
+        let sigma_par_median = if errors_len.is_odd() {
+            errors[(errors_len / 2)]
+        } else {
+            let ind_left = errors_len / 2 - 1;
+            let ind_right = errors_len / 2;
+            (errors[ind_left] + errors[ind_right]) / 2.
+        };
 
         writeln!(
             plain_writer,
@@ -155,6 +166,7 @@ impl<F> Model<F> {
 
                 {s:19}\\sigma': {sigma_stroke:>23.15}
                 {s:2}\\overline{{\\sigma_\\varpi}}: {sigma_par_mean:>23.15}
+                {s:5}\\tilde{{\\sigma_\\varpi}}: {sigma_par_median:>23.15}
                 ",
                 s = " ",
             ),
@@ -162,7 +174,7 @@ impl<F> Model<F> {
 
         writeln!(
             dat_writer,
-            "{n} {x_mean} {sigma_x_mean} {sigma} {sigma_sigma} {sigma_r} {sigma_sigma_r} {sigma_stroke} {sigma_par_mean}"
+            "{n} {x_mean} {sigma_x_mean} {sigma} {sigma_sigma} {sigma_r} {sigma_sigma_r} {sigma_stroke} {sigma_par_mean} {sigma_par_median}"
         )?;
 
         Ok(())
