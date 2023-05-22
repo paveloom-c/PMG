@@ -36,6 +36,9 @@
             (texlive.combine {
               inherit
                 (texlive)
+                babel-russian
+                cm-unicode
+                fontspec
                 luatex85
                 pgf
                 pgfplots

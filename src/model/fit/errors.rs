@@ -264,34 +264,111 @@ where
             fit_params.update_em_with(&fit_params_em);
         }
 
-        // Compute errors for `omega_sun`, too, by
+        // Compute errors for derived values, too, by
         // temporarily changing the parametrization
         if l_stroke == 1 {
-            writeln!(
-                errors_log_writer.borrow_mut(),
-                "errors for `omega_sun` while mimicking under `omega_0`",
-            )?;
+            {
+                writeln!(
+                    errors_log_writer.borrow_mut(),
+                    "errors for `theta_0` while mimicking under `omega_0`",
+                )?;
 
-            let param = self.fit_params.as_ref().unwrap().omega_sun;
+                let param = self.fit_params.as_ref().unwrap().theta_0;
 
-            // Compute `omega_0` from `omega_sun` = `v_sun` / `R_0`
-            //
-            // The index is 3 and not 4 because the
-            // frozen parameter (index 1) is removed
-            let compute_param = |omega_sun: F, p: &[F]| omega_sun - p[3] / p[0];
+                // `omega_0` = `theta_0` / `R_0`
+                let compute_param = |theta_0: F, p: &[F]| theta_0 / p[0];
 
-            let (diff_p, diff_m) = self.try_fit_errors_pair(
-                l_stroke,
-                1,
-                param,
-                compute_param,
-                errors_log_writer,
-                &triples,
-            )?;
+                let (diff_p, diff_m) = self.try_fit_errors_pair(
+                    l_stroke,
+                    1,
+                    param,
+                    compute_param,
+                    errors_log_writer,
+                    &triples,
+                )?;
 
-            let fit_params = self.fit_params.as_mut().unwrap();
-            fit_params.omega_sun_ep = diff_p;
-            fit_params.omega_sun_em = diff_m;
+                let fit_params = self.fit_params.as_mut().unwrap();
+                fit_params.theta_0_ep = diff_p;
+                fit_params.theta_0_em = diff_m;
+            }
+            {
+                writeln!(
+                    errors_log_writer.borrow_mut(),
+                    "errors for `theta_1` while mimicking under `omega_0`",
+                )?;
+
+                let param = self.fit_params.as_ref().unwrap().theta_1;
+
+                // `omega_0` = `theta_1` + 2 * `A`
+                //
+                // The index is 1 and not 2 because the
+                // frozen parameter (index 1) is removed
+                let compute_param = |theta_1: F, p: &[F]| theta_1 + 2. * p[1];
+
+                let (diff_p, diff_m) = self.try_fit_errors_pair(
+                    l_stroke,
+                    1,
+                    param,
+                    compute_param,
+                    errors_log_writer,
+                    &triples,
+                )?;
+
+                let fit_params = self.fit_params.as_mut().unwrap();
+                fit_params.theta_1_ep = diff_p;
+                fit_params.theta_1_em = diff_m;
+            }
+            {
+                writeln!(
+                    errors_log_writer.borrow_mut(),
+                    "errors for `theta_sun` while mimicking under `v_sun`",
+                )?;
+
+                let param = self.fit_params.as_ref().unwrap().theta_sun;
+
+                // `v_sun` = `theta_sun` - `R_0` * `omega_0`
+                let compute_param = |theta_sun: F, p: &[F]| theta_sun - p[0] * p[1];
+
+                let (diff_p, diff_m) = self.try_fit_errors_pair(
+                    l_stroke,
+                    4,
+                    param,
+                    compute_param,
+                    errors_log_writer,
+                    &triples,
+                )?;
+
+                let fit_params = self.fit_params.as_mut().unwrap();
+                fit_params.theta_sun_ep = diff_p;
+                fit_params.theta_sun_em = diff_m;
+            }
+            {
+                writeln!(
+                    errors_log_writer.borrow_mut(),
+                    "errors for `omega_sun` while mimicking under `omega_0`",
+                )?;
+
+                let param = self.fit_params.as_ref().unwrap().omega_sun;
+
+                // `omega_0` = `omega_sun` - `v_sun` / `R_0`
+                //
+                // The index is 3 and not 4 because the
+                // frozen parameter (index 1) is removed
+                let compute_param = |omega_sun: F, p: &[F]| omega_sun - p[3] / p[0];
+
+                let (diff_p, diff_m) = self.try_fit_errors_pair(
+                    l_stroke,
+                    1,
+                    param,
+                    compute_param,
+                    errors_log_writer,
+                    &triples,
+                )?;
+
+                let fit_params = self.fit_params.as_mut().unwrap();
+                fit_params.omega_sun_ep = diff_p;
+                fit_params.omega_sun_em = diff_m;
+            }
         }
 
         Ok(())

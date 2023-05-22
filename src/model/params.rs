@@ -160,10 +160,22 @@ pub struct Params<F> {
     pub theta_8_em: F,
     /// The constant term of the rotation curve (km/s)
     pub theta_0: F,
+    /// Plus uncertainty in `theta_0`
+    pub theta_0_ep: F,
+    /// Minus uncertainty in `theta_0`
+    pub theta_0_em: F,
     /// The first derivative of the linear rotation velocity (km/s/kpc)
     pub theta_1: F,
+    /// Plus uncertainty in `theta_1`
+    pub theta_1_ep: F,
+    /// Minus uncertainty in `theta_1`
+    pub theta_1_em: F,
     /// Linear rotation velocity of the Sun (km/s)
     pub theta_sun: F,
+    /// Plus uncertainty in `theta_sun`
+    pub theta_sun_ep: F,
+    /// Minus uncertainty in `theta_sun`
+    pub theta_sun_em: F,
     /// Circular rotation velocity of the Sun (km/s/kpc)
     pub omega_sun: F,
     /// Plus uncertainty in `omega_sun`
@@ -431,9 +443,17 @@ const DESCRIPTIONS: &str = indoc!(
     # 47 theta_8_ep: Plus uncertainty in `theta_8` [km/s/kpc^8]
     # 48 theta_8_em: Minus uncertainty in `theta_8` [km/s/kpc^8]
     # 49 theta_0: The constant term of the rotation curve [km/s]
-    # 50 theta_1: The first derivative of the linear rotation velocity [km/s/kpc]
-    # 51 theta_sun: Linear rotation velocity of the Sun [km/s]
-    # 52 omega_sun: Circular rotation velocity of the Sun [km/s/kpc]"
+    # 50 theta_0_ep: Plus uncertainty in `theta_0` [km/s]
+    # 51 theta_0_em: Minus uncertainty in `theta_0` [km/s]
+    # 52 theta_1: The first derivative of the linear rotation velocity [km/s/kpc]
+    # 53 theta_1_ep: Plus uncertainty in `theta_1` [km/s]
+    # 54 theta_1_em: Minus uncertainty in `theta_1` [km/s]
+    # 55 theta_sun: Linear rotation velocity of the Sun [km/s]
+    # 56 theta_sun_ep: Plus uncertainty in `theta_sun` [km/s]
+    # 57 theta_sun_em: Minus uncertainty in `theta_sun` [km/s]
+    # 58 omega_sun: Circular rotation velocity of the Sun [km/s/kpc]
+    # 59 omega_sun_ep: Plus uncertainty in `omega_sun` [km/s/kpc]
+    # 60 omega_sun_em: Minus uncertainty in `omega_sun` [km/s/kpc]"
 );
 
 impl<F> Model<F> {
@@ -768,9 +788,9 @@ impl<F> Model<F> {
             formatdoc!(
                 "
 
-            {s:4}theta_0: {theta_0:>21.15} -> {fit_theta_0:>21.15}
-            {s:4}theta_1: {theta_1:>21.15} -> {fit_theta_1:>21.15}
-            {s:2}theta_sun: {theta_sun:>21.15} -> {fit_theta_sun:>21.15}
+            {s:4}theta_0: {theta_0:>21.15} -> {fit_theta_0:>21.15}  + {fit_theta_0_ep:>18.15}  - {fit_theta_0_em:>18.15}
+            {s:4}theta_1: {theta_1:>21.15} -> {fit_theta_1:>21.15}  + {fit_theta_1_ep:>18.15}  - {fit_theta_1_em:>18.15}
+            {s:2}theta_sun: {theta_sun:>21.15} -> {fit_theta_sun:>21.15}  + {fit_theta_sun_ep:>18.15}  - {fit_theta_sun_em:>18.15}
             {s:2}omega_sun: {omega_sun:>21.15} -> {fit_omega_sun:>21.15}  + {fit_omega_sun_ep:>18.15}  - {fit_omega_sun_em:>18.15}
             ",
                 s = " ",
@@ -779,8 +799,14 @@ impl<F> Model<F> {
                 theta_sun = params.theta_sun,
                 omega_sun = params.omega_sun,
                 fit_theta_0 = fit_params.theta_0,
+                fit_theta_0_ep = fit_params.theta_0_ep,
+                fit_theta_0_em = fit_params.theta_0_em,
                 fit_theta_1 = fit_params.theta_1,
+                fit_theta_1_ep = fit_params.theta_1_ep,
+                fit_theta_1_em = fit_params.theta_1_em,
                 fit_theta_sun = fit_params.theta_sun,
+                fit_theta_sun_ep = fit_params.theta_sun_ep,
+                fit_theta_sun_em = fit_params.theta_sun_em,
                 fit_omega_sun = fit_params.omega_sun,
                 fit_omega_sun_ep = fit_params.omega_sun_ep,
                 fit_omega_sun_em = fit_params.omega_sun_em,

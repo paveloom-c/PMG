@@ -122,31 +122,99 @@ impl<F> Model<F> {
                 .with_context(|| "Couldn't write a conditional profile to a file")?;
         }
 
-        // Compute the conditional profile for `omega_sun`, too,
-        // mimicking under `omega_0`
+        // Compute the conditional profile for derived values,
+        // too, by temporarily changing the parametrization
         if l_stroke == 1 {
-            let fit_param = self.fit_params.as_ref().unwrap().omega_sun;
-            let fit_param_ep = self.fit_params.as_ref().unwrap().omega_sun_ep;
-            let fit_param_em = self.fit_params.as_ref().unwrap().omega_sun_em;
+            {
+                let fit_param = self.fit_params.as_ref().unwrap().theta_0;
+                let fit_param_ep = self.fit_params.as_ref().unwrap().theta_0_ep;
+                let fit_param_em = self.fit_params.as_ref().unwrap().theta_0_em;
 
-            // Compute `omega_0` from `omega_sun` = `v_sun` / `R_0`
-            //
-            // The index is 3 and not 4 because the
-            // frozen parameter (index 1) is removed
-            let compute_param = |omega_sun: F, p: &[F]| omega_sun - p[3] / p[0];
+                // `omega_0` = `theta_0` / `R_0`
+                let compute_param = |theta_0: F, p: &[F]| theta_0 / p[0];
 
-            let profile = self.try_compute_conditional_profile(
-                l_stroke,
-                1,
-                compute_param,
-                fit_param,
-                fit_param_ep,
-                fit_param_em,
-                &triples,
-            )?;
+                let profile = self.try_compute_conditional_profile(
+                    l_stroke,
+                    1,
+                    compute_param,
+                    fit_param,
+                    fit_param_ep,
+                    fit_param_em,
+                    &triples,
+                )?;
 
-            self.serialize_to_profile(&ProfileType::Conditional, &profile, "omega_sun")
-                .with_context(|| "Couldn't write a conditional profile to a file")?;
+                self.serialize_to_profile(&ProfileType::Conditional, &profile, "theta_0")
+                    .with_context(|| "Couldn't write a conditional profile to a file")?;
+            }
+            {
+                let fit_param = self.fit_params.as_ref().unwrap().theta_1;
+                let fit_param_ep = self.fit_params.as_ref().unwrap().theta_1_ep;
+                let fit_param_em = self.fit_params.as_ref().unwrap().theta_1_em;
+
+                // `omega_0` = `theta_1` + 2 * `A`
+                //
+                // The index is 1 and not 2 because the
+                // frozen parameter (index 1) is removed
+                let compute_param = |theta_1: F, p: &[F]| theta_1 + 2. * p[1];
+
+                let profile = self.try_compute_conditional_profile(
+                    l_stroke,
+                    1,
+                    compute_param,
+                    fit_param,
+                    fit_param_ep,
+                    fit_param_em,
+                    &triples,
+                )?;
+
+                self.serialize_to_profile(&ProfileType::Conditional, &profile, "theta_1")
+                    .with_context(|| "Couldn't write a conditional profile to a file")?;
+            }
+            {
+                let fit_param = self.fit_params.as_ref().unwrap().theta_sun;
+                let fit_param_ep = self.fit_params.as_ref().unwrap().theta_sun_ep;
+                let fit_param_em = self.fit_params.as_ref().unwrap().theta_sun_em;
+
+                // `v_sun` = `theta_sun` - `R_0` * `omega_0`
+                let compute_param = |theta_sun: F, p: &[F]| theta_sun - p[0] * p[1];
+
+                let profile = self.try_compute_conditional_profile(
+                    l_stroke,
+                    4,
+                    compute_param,
+                    fit_param,
+                    fit_param_ep,
+                    fit_param_em,
+                    &triples,
+                )?;
+
+                self.serialize_to_profile(&ProfileType::Conditional, &profile, "theta_sun")
+                    .with_context(|| "Couldn't write a conditional profile to a file")?;
+            }
+            {
+                let fit_param = self.fit_params.as_ref().unwrap().omega_sun;
+                let fit_param_ep = self.fit_params.as_ref().unwrap().omega_sun_ep;
+                let fit_param_em = self.fit_params.as_ref().unwrap().omega_sun_em;
+
+                // Compute `omega_0` from `omega_sun` = `v_sun` / `R_0`
+                //
+                // The index is 3 and not 4 because the
+                // frozen parameter (index 1) is removed
+                let compute_param = |omega_sun: F, p: &[F]| omega_sun - p[3] / p[0];
+
+                let profile = self.try_compute_conditional_profile(
+                    l_stroke,
+                    1,
+                    compute_param,
+                    fit_param,
+                    fit_param_ep,
+                    fit_param_em,
+                    &triples,
+                )?;
+
+                self.serialize_to_profile(&ProfileType::Conditional, &profile, "omega_sun")
+                    .with_context(|| "Couldn't write a conditional profile to a file")?;
+            }
         }
 
         Ok(())

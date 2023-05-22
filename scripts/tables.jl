@@ -162,8 +162,6 @@ CAPTIONS = [
     raw"Результаты для оптимальной выборки HMSFRs с отключенными внутренней оптимизацией и проверкой на выбросы (жирным выделен оптимальный порядок).",
 ]
 
-PARAMS_N = 16
-
 PARAMS_NAMES = [
     L"R_0",
     L"\omega_0",
@@ -186,6 +184,8 @@ PARAMS_NAMES = [
     L"\theta_\odot",
     L"\omega_\odot",
 ]
+
+PARAMS_N = length(PARAMS_NAMES)
 
 PARAMS_UNITS = [
     raw"кпк",
@@ -252,13 +252,17 @@ for i in 1:length(SAMPLES)
         digits = 4
         format = Printf.Format("%.$(digits)f")
 
-        for i in 1:(PARAMS_N - (8 - n_max))
+        for i in 1:PARAMS_N
             param_name = PARAMS_NAMES[i]
             param_units = PARAMS_UNITS[i]
 
             params = getfield(all_fit_params_data, 1 + 3 * (i - 1))
             params_ep = getfield(all_fit_params_data, 2 + 3 * (i - 1))
             params_em = getfield(all_fit_params_data, 3 + 3 * (i - 1))
+
+            if i == 17
+                println(io, raw"    \midrule")
+            end
 
             line = "    \\makecell[tc]{ $(param_name) \\\\ \\scriptsize ($(param_units)) } "
 
@@ -277,60 +281,6 @@ for i in 1:length(SAMPLES)
                     line *= " \\scriptsize \$ +$(param_ep_string) \$ \\\\"
                     line *= " \\scriptsize \$ -$(param_em_string) \$ } "
                 end
-            end
-
-            line *= "\\\\"
-
-            println(io, line)
-        end
-
-        println(io, raw"    \midrule")
-
-        for i in 17:19
-            param_name = PARAMS_NAMES[i]
-            param_units = PARAMS_UNITS[i]
-
-            params = getfield(all_fit_params_data, PARAMS_N * 3 + i - 16)
-
-            line = "    \\makecell[tc]{ $(param_name) \\\\ \\scriptsize ($(param_units)) } "
-
-            for (n, param) in enumerate(params)
-                param_string = Printf.format(format, param)
-                if n in best_n
-                    line *= "& \$ \\mathbf{$(param_string)} \$ "
-                else
-                    line *= "& \$ $(param_string) \$ "
-                end
-            end
-
-            line *= "\\\\"
-
-            println(io, line)
-        end
-
-        println(io, raw"    \midrule")
-
-        let i = 20
-            param_name = PARAMS_NAMES[end]
-            param_units = PARAMS_UNITS[end]
-
-            params = getfield(all_fit_params_data, fieldcount(ParamsData) - 2)
-            params_ep = getfield(all_fit_params_data, fieldcount(ParamsData) - 1)
-            params_em = getfield(all_fit_params_data, fieldcount(ParamsData))
-
-            line = "    \\makecell[tc]{ $(param_name) \\\\ \\scriptsize ($(param_units)) } "
-
-            for (n, (param, param_ep, param_em)) in enumerate(zip(params, params_ep, params_em))
-                param_string = Printf.format(format, param)
-                param_ep_string = Printf.format(format, param_ep)
-                param_em_string = Printf.format(format, param_em)
-                if n in best_n
-                    line *= "& \\makecell[tr]{ \$ \\mathbf{$(param_string)} \$ \\\\"
-                else
-                    line *= "& \\makecell[tr]{ \$ $(param_string) \$ \\\\"
-                end
-                line *= " \\scriptsize \$ +$(param_ep_string) \$ \\\\"
-                line *= " \\scriptsize \$ -$(param_em_string) \$ } "
             end
 
             line *= "\\\\"

@@ -117,6 +117,33 @@ using ColorSchemes
 using LaTeXStrings
 using PGFPlotsX
 
+# Add to the preamble
+push!(PGFPlotsX.CUSTOM_PREAMBLE, """
+\\usepackage{fontspec}
+\\defaultfontfeatures{Ligatures={TeX}}
+\\setmainfont{cmun}[
+  Extension=.otf,
+  UprightFont=*rm,
+  ItalicFont=*ti,
+  BoldFont=*bx,
+  BoldItalicFont=*bi,
+]
+\\setsansfont{cmun}[
+  Extension=.otf,
+  UprightFont=*ss,
+  ItalicFont=*si,
+  BoldFont=*sx,
+  BoldItalicFont=*so,
+]
+\\setmonofont{cmun}[
+  Extension=.otf,
+  UprightFont=*btl,
+  ItalicFont=*bto,
+  BoldFont=*tb,
+  BoldItalicFont=*tx,
+]
+\\usepackage[main=russian,english]{babel}""")
+
 # Choose a color scheme
 colors = ColorSchemes.tol_bright[2:end]
 
@@ -205,8 +232,10 @@ if isfile(FIT_PARAMS_DATA_PATH)
             0.1
         elseif x_diff < 5
             0.5
-        else
+        elseif x_diff < 10
             1
+        else
+            5
         end
         # Prepare a table
         table = @pgf Table(
@@ -303,10 +332,13 @@ if isfile(FIT_PARAMS_DATA_PATH)
         "theta_6",
         "theta_7",
         "theta_8",
+        "theta_0",
+        "theta_1",
+        "theta_sun",
         "omega_sun",
     ]
 
-    PARAMS_N = length(PARAMS_NAMES) - 1
+    PARAMS_N = length(PARAMS_NAMES)
 
     PARAMS_LATEX_NAMES = [
         L"R_0",
@@ -325,33 +357,39 @@ if isfile(FIT_PARAMS_DATA_PATH)
         L"\theta_6",
         L"\theta_7",
         L"\theta_8",
+        L"\theta_0",
+        L"\theta_1",
+        L"\theta_\odot",
         L"\omega_\odot",
     ]
 
     PARAMS_LATEX_UNITS = [
-        L"\; \mathrm{[kpc]}",
-        L"\; \mathrm{[km/s/kpc]}",
-        L"\; \mathrm{[km/s/kpc]}",
-        L"\; \mathrm{[km/s]}",
-        L"\; \mathrm{[km/s]}",
-        L"\; \mathrm{[km/s]}",
-        L"\; \mathrm{[km/s]}",
-        L"\; \mathrm{[km/s]}",
-        L"\; \mathrm{[km/s]}",
-        L"\; \mathrm{[km/s/kpc^2]}",
-        L"\; \mathrm{[km/s/kpc^3]}",
-        L"\; \mathrm{[km/s/kpc^4]}",
-        L"\; \mathrm{[km/s/kpc^5]}",
-        L"\; \mathrm{[km/s/kpc^6]}",
-        L"\; \mathrm{[km/s/kpc^7]}",
-        L"\; \mathrm{[km/s/kpc^8]}",
-        L"\; \mathrm{[km/s/kpc]}",
+        L"\; \mathrm{[кпк]}",
+        L"\; \mathrm{[км/с/кпк]}",
+        L"\; \mathrm{[км/с/кпк]}",
+        L"\; \mathrm{[км/с]}",
+        L"\; \mathrm{[км/с]}",
+        L"\; \mathrm{[км/с]}",
+        L"\; \mathrm{[км/с]}",
+        L"\; \mathrm{[км/с]}",
+        L"\; \mathrm{[км/с]}",
+        L"\; \mathrm{[км/с/кпк^2]}",
+        L"\; \mathrm{[км/с/кпк^3]}",
+        L"\; \mathrm{[км/с/кпк^4]}",
+        L"\; \mathrm{[км/с/кпк^5]}",
+        L"\; \mathrm{[км/с/кпк^6]}",
+        L"\; \mathrm{[км/с/кпк^7]}",
+        L"\; \mathrm{[км/с/кпк^8]}",
+        L"\; \mathrm{[км/с]}",
+        L"\; \mathrm{[км/с]}",
+        L"\; \mathrm{[км/с]}",
+        L"\; \mathrm{[км/с/кпк]}",
     ]
 
     fit_params_vec = map(i -> getfield(fit_params_data, i)[1], 1:fieldcount(ParamsData))
-    fit_params = push!(fit_params_vec[1:3:PARAMS_N*3], fit_params_data.ω_sun[1])
-    fit_params_ep = push!(fit_params_vec[2:3:PARAMS_N*3], fit_params_data.ω_sun_ep[1])
-    fit_params_em = push!(fit_params_vec[3:3:PARAMS_N*3], fit_params_data.ω_sun_em[1])
+    fit_params = fit_params_vec[1:3:PARAMS_N*3]
+    fit_params_ep = fit_params_vec[2:3:PARAMS_N*3]
+    fit_params_em = fit_params_vec[3:3:PARAMS_N*3]
 
     prefixes = ["conditional", "frozen"]
 
