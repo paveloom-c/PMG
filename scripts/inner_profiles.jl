@@ -223,7 +223,7 @@ parallaxes_data = CSV.File(PARALLAXES_DATA_PATH, delim=' ', comment="#")
 task_count = 0
 for object in parallaxes_data
     # Pause for this many seconds between the batches
-    if task_count > 15
+    if task_count > 10
         global task_count = 0
         sleep(5)
     end

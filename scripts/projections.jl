@@ -593,8 +593,8 @@ push!(tasks, @spawn begin
     p = scatter(
         l,
         b,
-        L"l \; \mathrm{[\degree]}",
-        L"b \; \mathrm{[\degree]}",
+        L"l \; \mathrm{[°]}",
+        L"b \; \mathrm{[°]}",
         axis_equal=true,
     )
     pgfsave(joinpath(OUTPUT_DIR, "lb$(POSTFIX).pdf"), p)
