@@ -348,7 +348,7 @@ for i in 1:length(SAMPLES)
             end
 
             begin
-                line = raw"    $ \sigma^{-1} $ "
+                line = raw"    $ 1/\sigma $ "
 
                 ns = delta_varpi_data.n
                 params = delta_varpi_data.sigma_r

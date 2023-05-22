@@ -117,7 +117,7 @@ using ColorSchemes
 using LaTeXStrings
 using PGFPlotsX
 
-# Add to the preamble
+# Add support for Russian
 push!(PGFPlotsX.CUSTOM_PREAMBLE, """
 \\usepackage{fontspec}
 \\defaultfontfeatures{Ligatures={TeX}}

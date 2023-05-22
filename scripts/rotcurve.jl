@@ -113,6 +113,33 @@ using ColorSchemes
 using LaTeXStrings
 using PGFPlotsX
 
+# Add support for Russian
+push!(PGFPlotsX.CUSTOM_PREAMBLE, """
+\\usepackage{fontspec}
+\\defaultfontfeatures{Ligatures={TeX}}
+\\setmainfont{cmun}[
+  Extension=.otf,
+  UprightFont=*rm,
+  ItalicFont=*ti,
+  BoldFont=*bx,
+  BoldItalicFont=*bi,
+]
+\\setsansfont{cmun}[
+  Extension=.otf,
+  UprightFont=*ss,
+  ItalicFont=*si,
+  BoldFont=*sx,
+  BoldItalicFont=*so,
+]
+\\setmonofont{cmun}[
+  Extension=.otf,
+  UprightFont=*btl,
+  ItalicFont=*bto,
+  BoldFont=*tb,
+  BoldItalicFont=*tx,
+]
+\\usepackage[main=russian,english]{babel}""")
+
 # Choose a color scheme
 colors = ColorSchemes.tol_bright
 
@@ -364,8 +391,8 @@ push!(tasks, @spawn begin
     p = scatter(
         R,
         Θ,
-        L"R \; \mathrm{[kpc]}",
-        L"\theta \; \mathrm{[km \; s^{-1}]}",
+        L"R \; \mathrm{[кпк]}",
+        L"\theta \; \mathrm{[км/с]}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "Rotation curve$(POSTFIX).pdf"), p)
 end)
@@ -377,8 +404,8 @@ push!(tasks, @spawn begin
     p = scatter(
         R,
         Θ,
-        L"R \; \mathrm{[kpc]}",
-        L"\theta \; \mathrm{[km \; s^{-1}]}",
+        L"R \; \mathrm{[кпк]}",
+        L"\theta \; \mathrm{[км/с]}",
         x_p=R_p,
         x_m=R_m,
         y_p=Θ_p,
@@ -416,8 +443,8 @@ if PLOT_TEST
     p = scatter(
         R_test,
         Θ_test,
-        L"R \; \mathrm{[kpc]}",
-        L"\theta \; \mathrm{[km \; s^{-1}]}",
+        L"R \; \mathrm{[кпк]}",
+        L"\theta \; \mathrm{[км/с]}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "Rotation curve (test)$(POSTFIX).pdf"), p)
     # Mark data for garbage collection

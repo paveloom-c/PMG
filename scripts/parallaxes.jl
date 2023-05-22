@@ -119,6 +119,33 @@ using ColorSchemes
 using LaTeXStrings
 using PGFPlotsX
 
+# Add support for Russian
+push!(PGFPlotsX.CUSTOM_PREAMBLE, """
+\\usepackage{fontspec}
+\\defaultfontfeatures{Ligatures={TeX}}
+\\setmainfont{cmun}[
+  Extension=.otf,
+  UprightFont=*rm,
+  ItalicFont=*ti,
+  BoldFont=*bx,
+  BoldItalicFont=*bi,
+]
+\\setsansfont{cmun}[
+  Extension=.otf,
+  UprightFont=*ss,
+  ItalicFont=*si,
+  BoldFont=*sx,
+  BoldItalicFont=*so,
+]
+\\setmonofont{cmun}[
+  Extension=.otf,
+  UprightFont=*btl,
+  ItalicFont=*bto,
+  BoldFont=*tb,
+  BoldItalicFont=*tx,
+]
+\\usepackage[main=russian,english]{babel}""")
+
 # Choose a color scheme
 colors = ColorSchemes.tol_bright[2:end]
 
@@ -283,8 +310,8 @@ push!(tasks, @spawn begin
         par,
         par_e,
         par_r,
-        L"\varpi",
-        L"\varpi_0",
+        L"\varpi \; \mathrm{[мсд]}",
+        L"\varpi_0 \; \mathrm{[мсд]}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "Parallaxes$(POSTFIX).pdf"), p)
 end)
@@ -297,8 +324,8 @@ push!(tasks, @spawn begin
         par,
         par_e,
         par_r,
-        L"\varpi",
-        L"\varpi_0",
+        L"\varpi \; \mathrm{[мсд]}",
+        L"\varpi_0 \; \mathrm{[мсд]}",
         stricter_limits=true,
     )
     pgfsave(joinpath(OUTPUT_DIR, "Parallaxes (under 1 mas)$(POSTFIX).pdf"), p)

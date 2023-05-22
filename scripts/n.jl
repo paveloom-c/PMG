@@ -106,6 +106,33 @@ using ColorSchemes
 using LaTeXStrings
 using PGFPlotsX
 
+# Add support for Russian
+push!(PGFPlotsX.CUSTOM_PREAMBLE, """
+\\usepackage{fontspec}
+\\defaultfontfeatures{Ligatures={TeX}}
+\\setmainfont{cmun}[
+  Extension=.otf,
+  UprightFont=*rm,
+  ItalicFont=*ti,
+  BoldFont=*bx,
+  BoldItalicFont=*bi,
+]
+\\setsansfont{cmun}[
+  Extension=.otf,
+  UprightFont=*ss,
+  ItalicFont=*si,
+  BoldFont=*sx,
+  BoldItalicFont=*so,
+]
+\\setmonofont{cmun}[
+  Extension=.otf,
+  UprightFont=*btl,
+  ItalicFont=*bto,
+  BoldFont=*tb,
+  BoldItalicFont=*tx,
+]
+\\usepackage[main=russian,english]{babel}""")
+
 # Choose a color scheme
 colors = ColorSchemes.tol_bright[2:end]
 
@@ -196,7 +223,7 @@ push!(tasks, @spawn begin
         sigma_theta_data.n,
         sigma_theta_data.sigma_theta,
         L"n",
-        L"\sigma_\theta \; \mathrm{[km/s]}",
+        L"\sigma_\theta \; \mathrm{[км/с]}",
     )
     pgfsave(
         joinpath(

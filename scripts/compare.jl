@@ -106,6 +106,33 @@ using ColorSchemes
 using LaTeXStrings
 using PGFPlotsX
 
+# Add support for Russian
+push!(PGFPlotsX.CUSTOM_PREAMBLE, """
+\\usepackage{fontspec}
+\\defaultfontfeatures{Ligatures={TeX}}
+\\setmainfont{cmun}[
+  Extension=.otf,
+  UprightFont=*rm,
+  ItalicFont=*ti,
+  BoldFont=*bx,
+  BoldItalicFont=*bi,
+]
+\\setsansfont{cmun}[
+  Extension=.otf,
+  UprightFont=*ss,
+  ItalicFont=*si,
+  BoldFont=*sx,
+  BoldItalicFont=*so,
+]
+\\setmonofont{cmun}[
+  Extension=.otf,
+  UprightFont=*btl,
+  ItalicFont=*bto,
+  BoldFont=*tb,
+  BoldItalicFont=*tx,
+]
+\\usepackage[main=russian,english]{babel}""")
+
 # Choose a color scheme
 colors = ColorSchemes.tol_bright[2:end]
 
@@ -195,8 +222,8 @@ push!(tasks, @spawn begin
     p = scatter(
         μ_x_e[1:2:end],
         μ_x_e[2:2:end],
-        L"\sigma_{\mu_x} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[VERA]}",
-        L"\sigma_{\mu_x} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[Reid]}",
+        L"\sigma_{\mu_x} \; \mathrm{[мсд/г]} \; \mathrm{[VERA]}",
+        L"\sigma_{\mu_x} \; \mathrm{[мсд/г]} \; \mathrm{[Reid]}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "mu_x$(POSTFIX).pdf"), p)
 end)
@@ -208,8 +235,8 @@ push!(tasks, @spawn begin
     p = scatter(
         μ_y_e[1:2:end],
         μ_y_e[2:2:end],
-        L"\sigma_{\mu_y} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[VERA]}",
-        L"\sigma_{\mu_y} \; \mathrm{[mas \; yr^{-1}]} \; \mathrm{[Reid]}",
+        L"\sigma_{\mu_y} \; \mathrm{[мсд/г]} \; \mathrm{[VERA]}",
+        L"\sigma_{\mu_y} \; \mathrm{[мсд/г]} \; \mathrm{[Reid]}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "mu_y$(POSTFIX).pdf"), p)
 end)
@@ -221,8 +248,8 @@ push!(tasks, @spawn begin
     p = scatter(
         v_lsr_e[1:2:end],
         v_lsr_e[2:2:end],
-        L"\sigma_{V_{LSR}} \; \mathrm{[km \; s^{-1}]} \; \mathrm{[VERA]}",
-        L"\sigma_{V_{LSR}} \; \mathrm{[km \; s^{-1}]} \; \mathrm{[Reid]}",
+        L"\sigma_{V_{LSR}} \; \mathrm{[км/с]} \; \mathrm{[VERA]}",
+        L"\sigma_{V_{LSR}} \; \mathrm{[км/с]} \; \mathrm{[Reid]}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "v_lsr$(POSTFIX).pdf"), p)
 end)

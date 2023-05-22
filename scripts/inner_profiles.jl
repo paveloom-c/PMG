@@ -119,6 +119,33 @@ using ColorSchemes
 using LaTeXStrings
 using PGFPlotsX
 
+# Add support for Russian
+push!(PGFPlotsX.CUSTOM_PREAMBLE, """
+\\usepackage{fontspec}
+\\defaultfontfeatures{Ligatures={TeX}}
+\\setmainfont{cmun}[
+  Extension=.otf,
+  UprightFont=*rm,
+  ItalicFont=*ti,
+  BoldFont=*bx,
+  BoldItalicFont=*bi,
+]
+\\setsansfont{cmun}[
+  Extension=.otf,
+  UprightFont=*ss,
+  ItalicFont=*si,
+  BoldFont=*sx,
+  BoldItalicFont=*so,
+]
+\\setmonofont{cmun}[
+  Extension=.otf,
+  UprightFont=*btl,
+  ItalicFont=*bto,
+  BoldFont=*tb,
+  BoldItalicFont=*tx,
+]
+\\usepackage[main=russian,english]{babel}""")
+
 # Choose a color scheme
 colors = ColorSchemes.tol_bright[2:end]
 
@@ -128,13 +155,14 @@ ROOT_DIR = dirname(CURRENT_DIR)
 INPUT_DIR = isabspath(INPUT_DIR) ? joinpath(INPUT_DIR, "n = $(N)") : joinpath(ROOT_DIR, INPUT_DIR, "n = $(N)")
 OUTPUT_DIR = isabspath(OUTPUT_DIR) ? joinpath(OUTPUT_DIR, "n = $(N)") : joinpath(ROOT_DIR, OUTPUT_DIR, "n = $(N)")
 INNER_PROFILES_DIR = joinpath(OUTPUT_DIR, "Inner profiles")
+PARALLAXES_DATA_PATH = joinpath(INPUT_DIR, "parallaxes.dat")
 
 # Make sure the needed directories exist
 mkpath(OUTPUT_DIR)
 
 println(pad, "> Plotting the inner profiles...")
 
-function plot(x, y, xlabel, ylabel)
+function plot(x, y, xlabel, ylabel, par_r, par)
     # Prepare a table
     table = @pgf Table(
         x=x,
@@ -167,28 +195,42 @@ function plot(x, y, xlabel, ylabel)
             },
             table,
         ),
+        VLine(
+            {
+                dashed,
+                no_marks,
+                color = colors[2]
+            },
+            par_r,
+        ),
+        VLine(
+            {
+                dashed,
+                no_marks,
+                color = colors[3]
+            },
+            par,
+        ),
     )
 end
 
 print_lock = ReentrantLock()
 tasks = Task[]
 
+parallaxes_data = CSV.File(PARALLAXES_DATA_PATH, delim=' ', comment="#")
+
 # Create a plot for each profile
 task_count = 0
-for profile_path in readdir(INNER_PROFILES_DIR, join=true)
-    if !endswith(profile_path, ".dat")
-        continue
-    end
-
+for object in parallaxes_data
     # Pause for this many seconds between the batches
     if task_count > 15
         global task_count = 0
         sleep(5)
     end
 
+    number = object.i
+    profile_path = joinpath(INNER_PROFILES_DIR, "$(number).dat")
     profile_data = CSV.File(profile_path, delim=' ', comment="#")
-    profile_name = basename(profile_path)
-    number = replace(profile_name, ".dat" => "")
 
     push!(tasks, @spawn begin
         lock(print_lock) do
@@ -197,16 +239,12 @@ for profile_path in readdir(INNER_PROFILES_DIR, join=true)
         p = plot(
             profile_data.par_r,
             profile_data.sum,
-            L"\varpi_{0,j}",
+            L"\varpi_{0,j} \; \mathrm{[мсд]}",
             L"\sum_m (|\delta_m| / \sigma_m)^2",
+            object.par_r,
+            object.par,
         )
-        pgfsave(
-            joinpath(
-                INNER_PROFILES_DIR,
-                replace(profile_name, ".dat" => ".pdf"),
-            ),
-            p,
-        )
+        pgfsave(joinpath(INNER_PROFILES_DIR, "$(number).pdf"), p)
     end)
 
     task_count += 1
@@ -221,6 +259,6 @@ for task in tasks
 end
 
 # Mark data for garbage collection
-coords_data = nothing
+parallaxes_data = nothing
 
 println()

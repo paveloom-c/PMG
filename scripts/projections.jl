@@ -111,6 +111,33 @@ using ColorSchemes
 using LaTeXStrings
 using PGFPlotsX
 
+# Add support for Russian
+push!(PGFPlotsX.CUSTOM_PREAMBLE, """
+\\usepackage{fontspec}
+\\defaultfontfeatures{Ligatures={TeX}}
+\\setmainfont{cmun}[
+  Extension=.otf,
+  UprightFont=*rm,
+  ItalicFont=*ti,
+  BoldFont=*bx,
+  BoldItalicFont=*bi,
+]
+\\setsansfont{cmun}[
+  Extension=.otf,
+  UprightFont=*ss,
+  ItalicFont=*si,
+  BoldFont=*sx,
+  BoldItalicFont=*so,
+]
+\\setmonofont{cmun}[
+  Extension=.otf,
+  UprightFont=*btl,
+  ItalicFont=*bto,
+  BoldFont=*tb,
+  BoldItalicFont=*tx,
+]
+\\usepackage[main=russian,english]{babel}""")
+
 # Choose a color scheme
 colors = ColorSchemes.tol_bright[2:end]
 
@@ -310,8 +337,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Y,
-        L"X \; \mathrm{[kpc]}",
-        L"Y \; \mathrm{[kpc]}",
+        L"X \; \mathrm{[кпк]}",
+        L"Y \; \mathrm{[кпк]}",
         axis_equal=true,
     )
     pgfsave(joinpath(OUTPUT_DIR, "XY$(POSTFIX).pdf"), p)
@@ -324,8 +351,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Y,
-        L"X \; \mathrm{[kpc]}",
-        L"Y \; \mathrm{[kpc]}",
+        L"X \; \mathrm{[кпк]}",
+        L"Y \; \mathrm{[кпк]}",
         x_p=X_p,
         x_m=X_m,
         y_p=Y_p,
@@ -342,8 +369,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Y,
-        L"X \; \mathrm{[kpc]}",
-        L"Y \; \mathrm{[kpc]}",
+        L"X \; \mathrm{[кпк]}",
+        L"Y \; \mathrm{[кпк]}",
         axis_equal=true,
         crosses=true,
     )
@@ -357,8 +384,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Y,
-        L"X \; \mathrm{[kpc]}",
-        L"Y \; \mathrm{[kpc]}",
+        L"X \; \mathrm{[кпк]}",
+        L"Y \; \mathrm{[кпк]}",
         x_p=X_p,
         x_m=X_m,
         y_p=Y_p,
@@ -376,8 +403,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Z,
-        L"X \; \mathrm{[kpc]}",
-        L"Z \; \mathrm{[kpc]}",
+        L"X \; \mathrm{[кпк]}",
+        L"Z \; \mathrm{[кпк]}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "XZ$(POSTFIX).pdf"), p)
 end)
@@ -389,8 +416,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Z,
-        L"X \; \mathrm{[kpc]}",
-        L"Z \; \mathrm{[kpc]}",
+        L"X \; \mathrm{[кпк]}",
+        L"Z \; \mathrm{[кпк]}",
         axis_equal=true,
     )
     pgfsave(joinpath(OUTPUT_DIR, "XZ (equal axes)$(POSTFIX).pdf"), p)
@@ -403,8 +430,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Z,
-        L"X \; \mathrm{[kpc]}",
-        L"Z \; \mathrm{[kpc]}",
+        L"X \; \mathrm{[кпк]}",
+        L"Z \; \mathrm{[кпк]}",
         x_p=X_p,
         x_m=X_m,
         y_p=Z_p,
@@ -420,8 +447,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Z,
-        L"X \; \mathrm{[kpc]}",
-        L"Z \; \mathrm{[kpc]}",
+        L"X \; \mathrm{[кпк]}",
+        L"Z \; \mathrm{[кпк]}",
         x_p=X_p,
         x_m=X_m,
         y_p=Z_p,
@@ -438,8 +465,8 @@ push!(tasks, @spawn begin
     p = scatter(
         Y,
         Z,
-        L"Y \; \mathrm{[kpc]}",
-        L"Z \; \mathrm{[kpc]}",
+        L"Y \; \mathrm{[кпк]}",
+        L"Z \; \mathrm{[кпк]}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "YZ$(POSTFIX).pdf"), p)
 end)
@@ -451,8 +478,8 @@ push!(tasks, @spawn begin
     p = scatter(
         Y,
         Z,
-        L"Y \; \mathrm{[kpc]}",
-        L"Z \; \mathrm{[kpc]}",
+        L"Y \; \mathrm{[кпк]}",
+        L"Z \; \mathrm{[кпк]}",
         axis_equal=true,
     )
     pgfsave(joinpath(OUTPUT_DIR, "YZ (equal axes)$(POSTFIX).pdf"), p)
@@ -465,8 +492,8 @@ push!(tasks, @spawn begin
     p = scatter(
         Y,
         Z,
-        L"Y \; \mathrm{[kpc]}",
-        L"Z \; \mathrm{[kpc]}",
+        L"Y \; \mathrm{[кпк]}",
+        L"Z \; \mathrm{[кпк]}",
         x_p=Y_p,
         x_m=Y_m,
         y_p=Z_p,
@@ -482,8 +509,8 @@ push!(tasks, @spawn begin
     p = scatter(
         Y,
         Z,
-        L"Y \; \mathrm{[kpc]}",
-        L"Z \; \mathrm{[kpc]}",
+        L"Y \; \mathrm{[кпк]}",
+        L"Z \; \mathrm{[кпк]}",
         x_p=Y_p,
         x_m=Y_m,
         y_p=Z_p,
@@ -500,8 +527,8 @@ push!(tasks, @spawn begin
     p = scatter(
         R,
         Z,
-        L"R \; \mathrm{[kpc]}",
-        L"Z \; \mathrm{[kpc]}",
+        L"R \; \mathrm{[кпк]}",
+        L"Z \; \mathrm{[кпк]}",
         x_is_positive=true,
     )
     pgfsave(joinpath(OUTPUT_DIR, "RZ$(POSTFIX).pdf"), p)
@@ -514,8 +541,8 @@ push!(tasks, @spawn begin
     p = scatter(
         R,
         Z,
-        L"R \; \mathrm{[kpc]}",
-        L"Z \; \mathrm{[kpc]}",
+        L"R \; \mathrm{[кпк]}",
+        L"Z \; \mathrm{[кпк]}",
         axis_equal=true,
         x_is_positive=true,
     )
@@ -529,8 +556,8 @@ push!(tasks, @spawn begin
     p = scatter(
         R,
         Z,
-        L"R \; \mathrm{[kpc]}",
-        L"Z \; \mathrm{[kpc]}",
+        L"R \; \mathrm{[кпк]}",
+        L"Z \; \mathrm{[кпк]}",
         x_p=R_p,
         x_m=R_m,
         y_p=Z_p,
@@ -547,8 +574,8 @@ push!(tasks, @spawn begin
     p = scatter(
         R,
         Z,
-        L"R \; \mathrm{[kpc]}",
-        L"Z \; \mathrm{[kpc]}",
+        L"R \; \mathrm{[кпк]}",
+        L"Z \; \mathrm{[кпк]}",
         x_p=R_p,
         x_m=R_m,
         y_p=Z_p,
@@ -566,8 +593,8 @@ push!(tasks, @spawn begin
     p = scatter(
         l,
         b,
-        L"l \; \mathrm{[deg]}",
-        L"b \; \mathrm{[deg]}",
+        L"l \; \mathrm{[\degree]}",
+        L"b \; \mathrm{[\degree]}",
         axis_equal=true,
     )
     pgfsave(joinpath(OUTPUT_DIR, "lb$(POSTFIX).pdf"), p)

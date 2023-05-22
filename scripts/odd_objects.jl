@@ -127,6 +127,33 @@ using ColorSchemes
 using LaTeXStrings
 using PGFPlotsX
 
+# Add support for Russian
+push!(PGFPlotsX.CUSTOM_PREAMBLE, """
+\\usepackage{fontspec}
+\\defaultfontfeatures{Ligatures={TeX}}
+\\setmainfont{cmun}[
+  Extension=.otf,
+  UprightFont=*rm,
+  ItalicFont=*ti,
+  BoldFont=*bx,
+  BoldItalicFont=*bi,
+]
+\\setsansfont{cmun}[
+  Extension=.otf,
+  UprightFont=*ss,
+  ItalicFont=*si,
+  BoldFont=*sx,
+  BoldItalicFont=*so,
+]
+\\setmonofont{cmun}[
+  Extension=.otf,
+  UprightFont=*btl,
+  ItalicFont=*bto,
+  BoldFont=*tb,
+  BoldItalicFont=*tx,
+]
+\\usepackage[main=russian,english]{babel}""")
+
 # Choose a color scheme
 colors = ColorSchemes.tol_bright[2:end]
 
@@ -272,8 +299,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Y,
-        L"X \; \mathrm{[kpc]}",
-        L"Y \; \mathrm{[kpc]}",
+        L"X \; \mathrm{[кпк]}",
+        L"Y \; \mathrm{[кпк]}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "Odd objects (XY)$(POSTFIX).pdf"), p)
 end)
@@ -285,8 +312,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Y,
-        L"X \; \mathrm{[kpc]}",
-        L"Y \; \mathrm{[kpc]}",
+        L"X \; \mathrm{[кпк]}",
+        L"Y \; \mathrm{[кпк]}",
         x_p=X_p,
         x_m=X_m,
         y_p=Y_p,
