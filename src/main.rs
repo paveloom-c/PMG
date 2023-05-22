@@ -226,7 +226,7 @@ pub fn main() -> Result<()> {
                         .try_compute_frozen_profiles(l_stroke)
                         .with_context(|| "Couldn't compute frozen profiles")?;
 
-                    if n == best_n && args.with_errors {
+                    if args.with_errors {
                         writeln!(errors_log_writer.borrow_mut(), "n: {n}\n")?;
                         let res = model
                             .try_fit_errors(&errors_log_writer, l_stroke)
