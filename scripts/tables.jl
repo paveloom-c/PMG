@@ -127,7 +127,8 @@ SAMPLES = [
     "HMSFRs",
     "Near the solar circle (disabled inner optimization)",
     "HMSFRs (disabled inner optimization)",
-    "HMSFRs (optimal sample, disabled inner optimization and outliers checks)"
+    "HMSFRs (optimal sample, disabled inner optimization and outliers checks)",
+    "Near the solar circle (self-consistency check, iter 2)",
 ]
 
 TABLES = [
@@ -135,7 +136,8 @@ TABLES = [
     "hmsfrs",
     "solar_di",
     "hmsfrs_di",
-    "hmsfrs_optimal"
+    "hmsfrs_optimal",
+    "solar_sc",
 ]
 
 N_MAX = [
@@ -144,6 +146,7 @@ N_MAX = [
     6,
     8,
     8,
+    2,
 ]
 
 BEST_N = [
@@ -152,23 +155,25 @@ BEST_N = [
     [1],
     [3, 4],
     [4],
+    [1],
 ]
 
 CAPTIONS = [
-    raw"Результаты для околосолнечной выборки (жирным выделен оптимальный порядок).",
-    raw"Результаты для выборки HMSFRs (жирным выделен оптимальный порядок).",
-    raw"Результаты для околосолнечной выборки с отключенной внутренней оптимизацией (жирным выделен оптимальный порядок).",
-    raw"Результаты для выборки HMSFRs с отключенной внутренней оптимизацией (жирным выделены оптимальные порядки).",
-    raw"Результаты для оптимальной выборки HMSFRs с отключенными внутренней оптимизацией и проверкой на выбросы (жирным выделен оптимальный порядок).",
+    raw"Результаты для выборки мазеров вблизи солнечного круга",
+    raw"Результаты для полной выборки HMSFRs",
+    raw"Результаты для выборки мазеров вблизи солнечного круга с отключенной внутренней оптимизацией",
+    raw"Результаты для полной выборки HMSFRs с отключенной внутренней оптимизацией",
+    raw"Результаты для оптимальной выборки HMSFRs с отключенными внутренней оптимизацией и проверкой на выбросы",
+    raw"Результаты для самосогласованной выборки мазеров вблизи солнечного круга ($ N = 138 $, $ N_{L' = 3} = 135 $, $ N_{L' = 1} = 133 $)",
 ]
 
 PARAMS_NAMES = [
     L"R_0",
     L"\omega_0",
     L"A",
-    L"U_\odot",
-    L"V_\odot",
-    L"W_\odot",
+    L"u_\odot",
+    L"v_\odot",
+    L"w_\odot",
     L"\sigma_R",
     L"\sigma_\theta",
     L"\sigma_Z",
@@ -220,16 +225,17 @@ for i in 1:length(SAMPLES)
     open(joinpath(OUTPUT_DIR, table * ".tex"), "w") do io
         println(
             io,
-            raw"""
-            \begin{table}[H]
-              \centering
-              \aboverulesep=0ex
-              \belowrulesep=0ex
-              \tabcolsep=5pt
-              \renewcommand{\arraystretch}{1.25}
-              \renewcommand\cellset{\renewcommand{\arraystretch}{0.7}}
-              \begin{tabular}{c|rrrrrrrr}
-                \toprule"""
+            """
+            \\begin{table}[p!]
+              \\centering
+              \\caption{$(caption)}
+              \\aboverulesep=0ex
+              \\belowrulesep=0ex
+              \\tabcolsep=5pt
+              \\renewcommand{\\arraystretch}{1.25}
+              \\renewcommand\\cellset{\\renewcommand{\\arraystretch}{0.7}}
+              \\begin{tabular}{c|rrrrrrrr}
+                \\toprule"""
         )
         println(io, "    \$ n \$ " * join(map(n -> n in best_n ? "& \\textbf{$(n)} " : "& $(n) ", 1:n_max)) * "\\\\")
         println(io, raw"    \midrule")
@@ -249,7 +255,7 @@ for i in 1:length(SAMPLES)
             fit_params_data = nothing
         end
 
-        digits = 4
+        digits = 3
         format = Printf.Format("%.$(digits)f")
 
         for i in 1:PARAMS_N
@@ -260,6 +266,10 @@ for i in 1:length(SAMPLES)
             params_ep = getfield(all_fit_params_data, 2 + 3 * (i - 1))
             params_em = getfield(all_fit_params_data, 3 + 3 * (i - 1))
 
+            if i > 9 && i < 17 && i - 8 > n_max
+                continue
+            end
+
             if i == 17
                 println(io, raw"    \midrule")
             end
@@ -267,12 +277,25 @@ for i in 1:length(SAMPLES)
             line = "    \\makecell[tc]{ $(param_name) \\\\ \\scriptsize ($(param_units)) } "
 
             for (n, (param, param_ep, param_em)) in enumerate(zip(params, params_ep, params_em))
-                if i > 9 + (n - 1)
+                if i > 9 + (n - 1) && i < 17
                     line *= "& --- "
                 else
+                    param_ep_string = Printf.format(format, param_ep)
+
+                    dot_index = findfirst(".", param_ep_string).start
+                    number_index = findfirst(c -> c != '0', param_ep_string[dot_index+1:end])
+                    new_digits = if number_index == nothing
+                        2
+                    else
+                        number = param_ep_string[dot_index + number_index]
+                        number == '1' ? 3 : 2
+                    end
+                    format = Printf.Format("%.$(new_digits)f")
+
                     param_string = Printf.format(format, param)
                     param_ep_string = Printf.format(format, param_ep)
                     param_em_string = Printf.format(format, param_em)
+
                     if n in best_n
                         line *= "& \\makecell[tr]{ \$ \\mathbf{$(param_string)} \$ \\\\"
                     else
@@ -400,7 +423,7 @@ for i in 1:length(SAMPLES)
             comment="#",
         )
 
-        if length(unique(n_data.n)) > 1
+        if length(unique(n_data.n)) > 1 && sample != "Near the solar circle (self-consistency check, iter 2)"
             println(io, raw"    \midrule")
             println(io, "    & \\multicolumn{$(n_max)}{c}{\$ N = $(n_data.n[1]) \$ \\hfill \$ N_{L' = 3} = $(n_data.n[2]) \$ \\hfill \$ N_{L' = 1} = $(n_data.n[3]) \$} \\\\")
         end
@@ -412,7 +435,6 @@ for i in 1:length(SAMPLES)
             """
                 \\bottomrule
               \\end{tabular}
-              \\caption{$(caption)}
               \\label{table:$(table)}
             \\end{table}"""
         )
@@ -519,7 +541,7 @@ open(joinpath(OUTPUT_DIR, "parallaxes.tex"), "w") do io
             \midrule"""
     )
 
-    for i in 1:41
+    for i in [1:3..., 6:10...]
         object = parallaxes_data[i]
 
         line = "    "
@@ -547,7 +569,7 @@ open(joinpath(OUTPUT_DIR, "parallaxes.tex"), "w") do io
             \bottomrule
           \end{tabular}
           \caption{Фрагмент каталога приведенных параллаксов для выборки HMSFRs, $ n = 3 $ (смотри полную версию в машинном формате).}
-          \label{table:catalog}
+          \label{table:parallaxes}
         \end{table}"""
     )
 end
