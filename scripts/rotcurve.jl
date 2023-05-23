@@ -391,8 +391,8 @@ push!(tasks, @spawn begin
     p = scatter(
         R,
         Θ,
-        L"R \; \mathrm{[кпк]}",
-        L"\theta \; \mathrm{[км/с]}",
+        L"R, \, \mathrm{кпк}",
+        L"\theta, \, \mathrm{км/с}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "Rotation curve$(POSTFIX).pdf"), p)
 end)
@@ -404,8 +404,8 @@ push!(tasks, @spawn begin
     p = scatter(
         R,
         Θ,
-        L"R \; \mathrm{[кпк]}",
-        L"\theta \; \mathrm{[км/с]}",
+        L"R, \, \mathrm{кпк}",
+        L"\theta, \, \mathrm{км/с}",
         x_p=R_p,
         x_m=R_m,
         y_p=Θ_p,
@@ -443,8 +443,8 @@ if PLOT_TEST
     p = scatter(
         R_test,
         Θ_test,
-        L"R \; \mathrm{[кпк]}",
-        L"\theta \; \mathrm{[км/с]}",
+        L"R, \, \mathrm{кпк}",
+        L"\theta, \, \mathrm{км/с}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "Rotation curve (test)$(POSTFIX).pdf"), p)
     # Mark data for garbage collection

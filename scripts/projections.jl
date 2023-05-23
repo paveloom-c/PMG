@@ -337,8 +337,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Y,
-        L"X \; \mathrm{[кпк]}",
-        L"Y \; \mathrm{[кпк]}",
+        L"X, \, \mathrm{кпк}",
+        L"Y, \, \mathrm{кпк}",
         axis_equal=true,
     )
     pgfsave(joinpath(OUTPUT_DIR, "XY$(POSTFIX).pdf"), p)
@@ -351,8 +351,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Y,
-        L"X \; \mathrm{[кпк]}",
-        L"Y \; \mathrm{[кпк]}",
+        L"X, \, \mathrm{кпк}",
+        L"Y, \, \mathrm{кпк}",
         x_p=X_p,
         x_m=X_m,
         y_p=Y_p,
@@ -369,8 +369,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Y,
-        L"X \; \mathrm{[кпк]}",
-        L"Y \; \mathrm{[кпк]}",
+        L"X, \, \mathrm{кпк}",
+        L"Y, \, \mathrm{кпк}",
         axis_equal=true,
         crosses=true,
     )
@@ -384,8 +384,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Y,
-        L"X \; \mathrm{[кпк]}",
-        L"Y \; \mathrm{[кпк]}",
+        L"X, \, \mathrm{кпк}",
+        L"Y, \, \mathrm{кпк}",
         x_p=X_p,
         x_m=X_m,
         y_p=Y_p,
@@ -403,8 +403,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Z,
-        L"X \; \mathrm{[кпк]}",
-        L"Z \; \mathrm{[кпк]}",
+        L"X, \, \mathrm{кпк}",
+        L"Z, \, \mathrm{кпк}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "XZ$(POSTFIX).pdf"), p)
 end)
@@ -416,8 +416,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Z,
-        L"X \; \mathrm{[кпк]}",
-        L"Z \; \mathrm{[кпк]}",
+        L"X, \, \mathrm{кпк}",
+        L"Z, \, \mathrm{кпк}",
         axis_equal=true,
     )
     pgfsave(joinpath(OUTPUT_DIR, "XZ (equal axes)$(POSTFIX).pdf"), p)
@@ -430,8 +430,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Z,
-        L"X \; \mathrm{[кпк]}",
-        L"Z \; \mathrm{[кпк]}",
+        L"X, \, \mathrm{кпк}",
+        L"Z, \, \mathrm{кпк}",
         x_p=X_p,
         x_m=X_m,
         y_p=Z_p,
@@ -447,8 +447,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Z,
-        L"X \; \mathrm{[кпк]}",
-        L"Z \; \mathrm{[кпк]}",
+        L"X, \, \mathrm{кпк}",
+        L"Z, \, \mathrm{кпк}",
         x_p=X_p,
         x_m=X_m,
         y_p=Z_p,
@@ -465,8 +465,8 @@ push!(tasks, @spawn begin
     p = scatter(
         Y,
         Z,
-        L"Y \; \mathrm{[кпк]}",
-        L"Z \; \mathrm{[кпк]}",
+        L"Y, \, \mathrm{кпк}",
+        L"Z, \, \mathrm{кпк}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "YZ$(POSTFIX).pdf"), p)
 end)
@@ -478,8 +478,8 @@ push!(tasks, @spawn begin
     p = scatter(
         Y,
         Z,
-        L"Y \; \mathrm{[кпк]}",
-        L"Z \; \mathrm{[кпк]}",
+        L"Y, \, \mathrm{кпк}",
+        L"Z, \, \mathrm{кпк}",
         axis_equal=true,
     )
     pgfsave(joinpath(OUTPUT_DIR, "YZ (equal axes)$(POSTFIX).pdf"), p)
@@ -492,8 +492,8 @@ push!(tasks, @spawn begin
     p = scatter(
         Y,
         Z,
-        L"Y \; \mathrm{[кпк]}",
-        L"Z \; \mathrm{[кпк]}",
+        L"Y, \, \mathrm{кпк}",
+        L"Z, \, \mathrm{кпк}",
         x_p=Y_p,
         x_m=Y_m,
         y_p=Z_p,
@@ -509,8 +509,8 @@ push!(tasks, @spawn begin
     p = scatter(
         Y,
         Z,
-        L"Y \; \mathrm{[кпк]}",
-        L"Z \; \mathrm{[кпк]}",
+        L"Y, \, \mathrm{кпк}",
+        L"Z, \, \mathrm{кпк}",
         x_p=Y_p,
         x_m=Y_m,
         y_p=Z_p,
@@ -527,8 +527,8 @@ push!(tasks, @spawn begin
     p = scatter(
         R,
         Z,
-        L"R \; \mathrm{[кпк]}",
-        L"Z \; \mathrm{[кпк]}",
+        L"R, \, \mathrm{кпк}",
+        L"Z, \, \mathrm{кпк}",
         x_is_positive=true,
     )
     pgfsave(joinpath(OUTPUT_DIR, "RZ$(POSTFIX).pdf"), p)
@@ -541,8 +541,8 @@ push!(tasks, @spawn begin
     p = scatter(
         R,
         Z,
-        L"R \; \mathrm{[кпк]}",
-        L"Z \; \mathrm{[кпк]}",
+        L"R, \, \mathrm{кпк}",
+        L"Z, \, \mathrm{кпк}",
         axis_equal=true,
         x_is_positive=true,
     )
@@ -556,8 +556,8 @@ push!(tasks, @spawn begin
     p = scatter(
         R,
         Z,
-        L"R \; \mathrm{[кпк]}",
-        L"Z \; \mathrm{[кпк]}",
+        L"R, \, \mathrm{кпк}",
+        L"Z, \, \mathrm{кпк}",
         x_p=R_p,
         x_m=R_m,
         y_p=Z_p,
@@ -574,8 +574,8 @@ push!(tasks, @spawn begin
     p = scatter(
         R,
         Z,
-        L"R \; \mathrm{[кпк]}",
-        L"Z \; \mathrm{[кпк]}",
+        L"R, \, \mathrm{кпк}",
+        L"Z, \, \mathrm{кпк}",
         x_p=R_p,
         x_m=R_m,
         y_p=Z_p,
@@ -593,8 +593,8 @@ push!(tasks, @spawn begin
     p = scatter(
         l,
         b,
-        L"l \; \mathrm{[°]}",
-        L"b \; \mathrm{[°]}",
+        L"l, \, \mathrm{°}",
+        L"b, \, \mathrm{°}",
         axis_equal=true,
     )
     pgfsave(joinpath(OUTPUT_DIR, "lb$(POSTFIX).pdf"), p)

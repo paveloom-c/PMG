@@ -299,8 +299,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Y,
-        L"X \; \mathrm{[кпк]}",
-        L"Y \; \mathrm{[кпк]}",
+        L"X, \, \mathrm{кпк}",
+        L"Y, \, \mathrm{кпк}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "Odd objects (XY)$(POSTFIX).pdf"), p)
 end)
@@ -312,8 +312,8 @@ push!(tasks, @spawn begin
     p = scatter(
         X,
         Y,
-        L"X \; \mathrm{[кпк]}",
-        L"Y \; \mathrm{[кпк]}",
+        L"X, \, \mathrm{кпк}",
+        L"Y, \, \mathrm{кпк}",
         x_p=X_p,
         x_m=X_m,
         y_p=Y_p,

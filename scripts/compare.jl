@@ -222,8 +222,8 @@ push!(tasks, @spawn begin
     p = scatter(
         μ_x_e[1:2:end],
         μ_x_e[2:2:end],
-        L"\sigma_{\mu_x} \; \mathrm{[мсд/г]} \; \mathrm{[VERA]}",
-        L"\sigma_{\mu_x} \; \mathrm{[мсд/г]} \; \mathrm{[Reid]}",
+        L"\sigma_{\mu_x}, \, \mathrm{мсд/год} \; \mathrm{(VERA)}",
+        L"\sigma_{\mu_x}, \, \mathrm{мсд/год} \; \mathrm{(Reid)}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "mu_x$(POSTFIX).pdf"), p)
 end)
@@ -235,8 +235,8 @@ push!(tasks, @spawn begin
     p = scatter(
         μ_y_e[1:2:end],
         μ_y_e[2:2:end],
-        L"\sigma_{\mu_y} \; \mathrm{[мсд/г]} \; \mathrm{[VERA]}",
-        L"\sigma_{\mu_y} \; \mathrm{[мсд/г]} \; \mathrm{[Reid]}",
+        L"\sigma_{\mu_y}, \, \mathrm{мсд/год} \; \mathrm{(VERA)}",
+        L"\sigma_{\mu_y}, \, \mathrm{мсд/год} \; \mathrm{(Reid)}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "mu_y$(POSTFIX).pdf"), p)
 end)
@@ -248,8 +248,8 @@ push!(tasks, @spawn begin
     p = scatter(
         v_lsr_e[1:2:end],
         v_lsr_e[2:2:end],
-        L"\sigma_{V_{LSR}} \; \mathrm{[км/с]} \; \mathrm{[VERA]}",
-        L"\sigma_{V_{LSR}} \; \mathrm{[км/с]} \; \mathrm{[Reid]}",
+        L"\sigma_{V_{LSR}}, \, \mathrm{км/с} \; \mathrm{(VERA)}",
+        L"\sigma_{V_{LSR}}, \, \mathrm{км/с} \; \mathrm{(Reid)}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "v_lsr$(POSTFIX).pdf"), p)
 end)

@@ -439,8 +439,8 @@ push!(tasks, @spawn begin
         Θ,
         R_fit,
         Θ_fit,
-        L"R \; \mathrm{[кпк]}",
-        L"\theta \; \mathrm{[км/с]}",
+        L"R, \, \mathrm{кпк}",
+        L"\theta, \, \mathrm{км/с}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "Fitted rotation curve$(POSTFIX).pdf"), p)
 end)
@@ -454,8 +454,8 @@ push!(tasks, @spawn begin
         Θ,
         R_fit,
         Θ_fit,
-        L"R \; \mathrm{[кпк]}",
-        L"\theta \; \mathrm{[км/с]}",
+        L"R, \, \mathrm{кпк}",
+        L"\theta, \, \mathrm{км/с}",
         x_p=R_p,
         x_m=R_m,
         y_p=Θ_p,

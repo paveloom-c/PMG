@@ -239,7 +239,7 @@ for object in parallaxes_data
         p = plot(
             profile_data.par_r,
             profile_data.sum,
-            L"\varpi_{0,j} \; \mathrm{[мсд]}",
+            L"\varpi_{0,j}, \, \mathrm{мсд}",
             L"\sum_m (|\delta_m| / \sigma_m)^2",
             object.par_r,
             object.par,

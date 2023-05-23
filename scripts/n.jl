@@ -223,7 +223,7 @@ push!(tasks, @spawn begin
         sigma_theta_data.n,
         sigma_theta_data.sigma_theta,
         L"n",
-        L"\sigma_\theta \; \mathrm{[км/с]}",
+        L"\sigma_\theta, \, \mathrm{км/с}",
     )
     pgfsave(
         joinpath(

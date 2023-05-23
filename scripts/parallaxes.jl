@@ -310,8 +310,8 @@ push!(tasks, @spawn begin
         par,
         par_e,
         par_r,
-        L"\varpi \; \mathrm{[мсд]}",
-        L"\varpi_0 \; \mathrm{[мсд]}",
+        L"\varpi, \, \mathrm{мсд}",
+        L"\varpi_0, \, \mathrm{мсд}",
     )
     pgfsave(joinpath(OUTPUT_DIR, "Parallaxes$(POSTFIX).pdf"), p)
 end)
@@ -324,8 +324,8 @@ push!(tasks, @spawn begin
         par,
         par_e,
         par_r,
-        L"\varpi \; \mathrm{[мсд]}",
-        L"\varpi_0 \; \mathrm{[мсд]}",
+        L"\varpi, \, \mathrm{мсд}",
+        L"\varpi_0, \, \mathrm{мсд}",
         stricter_limits=true,
     )
     pgfsave(joinpath(OUTPUT_DIR, "Parallaxes (under 1 mas)$(POSTFIX).pdf"), p)

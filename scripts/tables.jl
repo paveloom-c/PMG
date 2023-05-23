@@ -215,20 +215,37 @@ PARAMS_UNITS = [
     raw"км/с/кпк",
 ]
 
-function get_new_format(param_e)
-    digits = 3
-    format = Printf.Format("%.$(digits)f")
-
-    param_e_string = Printf.format(format, param_e)
-
+function find_new_digits(param_e_string)
     dot_index = findfirst(".", param_e_string).start
-    number_index = findfirst(c -> c != '0', param_e_string[dot_index+1:end])
-    new_digits = if number_index == nothing
+    integer_index = param_e_string[dot_index-1]
+    significant_index = findfirst(c -> c != '0', param_e_string[dot_index+1:end])
+    return if integer_index == '1'
+        2
+    elseif integer_index != '0'
+        1
+    elseif significant_index == nothing
         2
     else
-        number = param_e_string[dot_index + number_index]
-        number == '1' ? 3 : 2
+        number = param_e_string[dot_index + significant_index]
+        if number == '1'
+            significant_index + 2
+        else
+            significant_index + 1
+        end
     end
+end
+
+function get_new_format(param_ep, param_em)
+    digits = 8
+    format = Printf.Format("%.$(digits)f")
+
+    param_ep_string = Printf.format(format, param_ep)
+    param_em_string = Printf.format(format, param_em)
+
+    new_digits_ep = find_new_digits(param_ep_string)
+    new_digits_em = find_new_digits(param_em_string)
+
+    new_digits = min(new_digits_ep, new_digits_em)
 
     return Printf.Format("%.$(new_digits)f")
 end
@@ -298,7 +315,7 @@ for i in 1:length(SAMPLES)
                 if i > 9 + (n - 1) && i < 17
                     line *= "& --- "
                 else
-                    new_format = get_new_format(param_ep)
+                    new_format = get_new_format(param_ep, param_em)
 
                     param_string = Printf.format(new_format, param)
                     param_ep_string = Printf.format(new_format, param_ep)
@@ -340,7 +357,7 @@ for i in 1:length(SAMPLES)
                 params_e = delta_varpi_data.sigma_x_mean
 
                 for (n, param, param_e) in zip(ns, params, params_e)
-                    new_format = get_new_format(param_e)
+                    new_format = get_new_format(param_e, param_e)
 
                     param_string = Printf.format(new_format, param)
                     param_e_string = Printf.format(new_format, param_e)
@@ -366,7 +383,7 @@ for i in 1:length(SAMPLES)
                 params_e = delta_varpi_data.sigma_sigma
 
                 for (n, param, param_e) in zip(ns, params, params_e)
-                    new_format = get_new_format(param_e)
+                    new_format = get_new_format(param_e, param_e)
 
                     param_string = Printf.format(new_format, param)
                     param_e_string = Printf.format(new_format, param_e)
@@ -392,7 +409,7 @@ for i in 1:length(SAMPLES)
                 params_e = delta_varpi_data.sigma_sigma_r
 
                 for (n, param, param_e) in zip(ns, params, params_e)
-                    new_format = get_new_format(param_e)
+                    new_format = get_new_format(param_e, param_e)
 
                     param_string = Printf.format(new_format, param)
                     param_e_string = Printf.format(new_format, param_e)
@@ -417,7 +434,7 @@ for i in 1:length(SAMPLES)
                 params = delta_varpi_data.sigma_stroke
 
                 for (n, param, param_e) in zip(ns, params, params_e)
-                    new_format = get_new_format(param_e)
+                    new_format = get_new_format(param_e, param_e)
 
                     param_string = Printf.format(new_format, param)
                     param_e_string = Printf.format(new_format, param_e)
@@ -445,7 +462,7 @@ for i in 1:length(SAMPLES)
 
         if length(unique(n_data.n)) > 1
             println(io, raw"    \midrule")
-            println(io, "    & \\multicolumn{$(n_max)}{c}{\$ N = $(n_data.n[1]) \$ \\hfill \$ N_{L' = 3} = $(n_data.n[2]) \$ \\hfill \$ N_{L' = 1} = $(n_data.n[3]) \$} \\\\")
+            println(io, "    & \\multicolumn{$(n_max)}{c}{\$ N = $(n_data.n[1]) \$ \\hfill \$ N \\, (L' = 3) = $(n_data.n[2]) \$ \\hfill \$ N \\, (L' = 1) = $(n_data.n[3]) \$} \\\\")
         end
 
         n_data = nothing
@@ -472,6 +489,7 @@ open(joinpath(OUTPUT_DIR, "catalog.tex"), "w") do io
         io,
         raw"""
         \begin{sidewaystable}
+          \caption{Фрагмент нового каталога мазерных источников, содержащий новые объекты (смотри полную версию в машинном формате)}
           \centering
           \aboverulesep=1ex
           \belowrulesep=1ex
@@ -479,7 +497,7 @@ open(joinpath(OUTPUT_DIR, "catalog.tex"), "w") do io
           \begin{tabular}{lccccccccccccc}
             \toprule
             Имя & $ \alpha $ (J2000.0) & $ \delta $ (J2000.0) & $ \varpi $ & $ \sigma_\varpi $ & $ \mu_x $ & $ \sigma_{\mu_x} $ & $ \mu_y $ & $ \sigma_{\mu_y} $ & $ V_\text{LSR} $ & $ \sigma_{V_\text{LSR}} $ & Тип & Источник & Сноски \\
-            & (${}^\text{h}$ ${}^\text{m}$ ${}^\text{s}$) & ($\degree$ ${}'$ ${}''$) & \multicolumn{2}{c}{(мсд)} & \multicolumn{2}{c}{(мсд/г)} & \multicolumn{2}{c}{(мсд/г)} & \multicolumn{2}{c}{(км/с)} & & & \\
+            & (${}^\text{h}$ ${}^\text{m}$ ${}^\text{s}$) & ($\degree$ ${}'$ ${}''$) & \multicolumn{2}{c}{(мсд)} & \multicolumn{2}{c}{(мсд/год)} & \multicolumn{2}{c}{(мсд/год)} & \multicolumn{2}{c}{(км/с)} & & & \\
             \midrule"""
     )
 
@@ -531,7 +549,6 @@ open(joinpath(OUTPUT_DIR, "catalog.tex"), "w") do io
         raw"""
             \bottomrule
           \end{tabular}
-          \caption{Фрагмент нового каталога мазерных источников, содержащий новые объекты (смотри полную версию в машинном формате).}
           \label{table:catalog}
         \end{sidewaystable}"""
     )
@@ -550,6 +567,7 @@ open(joinpath(OUTPUT_DIR, "parallaxes.tex"), "w") do io
         io,
         raw"""
         \begin{table}[H]
+          \caption{Фрагмент каталога приведенных параллаксов для выборки HMSFRs, $ n = 3 $ (смотри полную версию в машинном формате)}
           \centering
           \aboverulesep=1ex
           \belowrulesep=1ex
@@ -557,11 +575,11 @@ open(joinpath(OUTPUT_DIR, "parallaxes.tex"), "w") do io
           \begin{tabular}{lcccc}
             \toprule
             Имя & $ \varpi $ & $ \sigma_\varpi $ & $ \varpi_0 $ & Источник \\
-            & \multicolumn{3}{c}{(мсд)} & \\
+            & (мсд) & (мсд) & (мсд) & \\
             \midrule"""
     )
 
-    for i in [1:3..., 6:10...]
+    for i in 1:12
         object = parallaxes_data[i]
 
         line = "    "
@@ -588,7 +606,6 @@ open(joinpath(OUTPUT_DIR, "parallaxes.tex"), "w") do io
         raw"""
             \bottomrule
           \end{tabular}
-          \caption{Фрагмент каталога приведенных параллаксов для выборки HMSFRs, $ n = 3 $ (смотри полную версию в машинном формате).}
           \label{table:parallaxes}
         \end{table}"""
     )
