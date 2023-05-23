@@ -74,14 +74,14 @@ echo -e "${PAD}> Fit near the solar circle (self-consistency check, iter 1)..."
 "${PMG}" -i "${I_SOLAR_SC}" -o "${R_SOLAR_SC_1}" --goal fit \
   --r-0 7.949308338373424 \
   --n-best "${N_BEST_SOLAR}" \
-  --n-max "${N_MAX_SOLAR_SC}" \
+  --n-max "${N_MAX_SOLAR_SC_1}" \
   --with-errors \
   --with-conditional-profiles 2>/dev/null
 echo -e "${PAD}> Fit near the solar circle (self-consistency check, iter 2)..."
 "${PMG}" -i "${I_SOLAR_SC}" -o "${R_SOLAR_SC_2}" --goal fit \
   --r-0 7.939483675907391 \
   --n-best "${N_BEST_SOLAR}" \
-  --n-max "${N_MAX_SOLAR_SC}" \
+  --n-max "${N_MAX_SOLAR_SC_2}" \
   --with-errors \
   --with-conditional-profiles 2>/dev/null
 
@@ -165,7 +165,7 @@ echo -e "${PAD}HMSFRs (test):"
 
 echo -e "${PAD}Near the solar circle (self-consistency check, iter 1):\n"
 
-for i in $(seq 1 "${N_MAX_SOLAR_SC}"); do
+for i in $(seq 1 "${N_MAX_SOLAR_SC_1}"); do
   echo -e "${PAD}n = $i"
   "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_SOLAR_SC_1}'" -o "'${R_SOLAR_SC_1}'" -s -n "$i"
 done
@@ -174,7 +174,7 @@ qpdf --empty --pages "${R_SOLAR_SC_1}"/*/"Fitted rotation curve (errors).pdf" --
 
 echo -e "${PAD}Near the solar circle (self-consistency check, iter 2):\n"
 
-for i in $(seq 1 "${N_MAX_SOLAR_SC}"); do
+for i in $(seq 1 "${N_MAX_SOLAR_SC_2}"); do
   echo -e "${PAD}n = $i"
   "${JULIA}" "${FIT_ROTCURVE}" -i "'${R_SOLAR_SC_2}'" -o "'${R_SOLAR_SC_2}'" -s -n "$i"
 done
@@ -220,14 +220,14 @@ done
 
 echo -e "${PAD}Near the solar circle (self-consistency check, iter 1):\n"
 
-for i in $(seq 1 "${N_MAX_SOLAR_SC}"); do
+for i in $(seq 1 "${N_MAX_SOLAR_SC_1}"); do
   echo -e "${PAD}n = $i"
   "${JULIA}" "${PROFILES}" -i "'${R_SOLAR_SC_1}'" -o "'${R_SOLAR_SC_1}'" -n "$i"
 done
 
 echo -e "${PAD}Near the solar circle (self-consistency check, iter 2):\n"
 
-for i in $(seq 1 "${N_MAX_SOLAR_SC}"); do
+for i in $(seq 1 "${N_MAX_SOLAR_SC_2}"); do
   echo -e "${PAD}n = $i"
   "${JULIA}" "${PROFILES}" -i "'${R_SOLAR_SC_2}'" -o "'${R_SOLAR_SC_2}'" -n "$i"
 done

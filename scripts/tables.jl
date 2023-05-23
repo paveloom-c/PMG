@@ -146,7 +146,7 @@ N_MAX = [
     6,
     8,
     8,
-    2,
+    6,
 ]
 
 BEST_N = [
@@ -164,7 +164,7 @@ CAPTIONS = [
     raw"Результаты для выборки мазеров вблизи солнечного круга с отключенной внутренней оптимизацией",
     raw"Результаты для полной выборки HMSFRs с отключенной внутренней оптимизацией",
     raw"Результаты для оптимальной выборки HMSFRs с отключенными внутренней оптимизацией и проверкой на выбросы",
-    raw"Результаты для самосогласованной выборки мазеров вблизи солнечного круга ($ N = 138 $, $ N_{L' = 3} = 135 $, $ N_{L' = 1} = 133 $)",
+    raw"Результаты для самосогласованной выборки мазеров вблизи солнечного круга",
 ]
 
 PARAMS_NAMES = [
@@ -214,6 +214,24 @@ PARAMS_UNITS = [
     raw"км/с",
     raw"км/с/кпк",
 ]
+
+function get_new_format(param_e)
+    digits = 3
+    format = Printf.Format("%.$(digits)f")
+
+    param_e_string = Printf.format(format, param_e)
+
+    dot_index = findfirst(".", param_e_string).start
+    number_index = findfirst(c -> c != '0', param_e_string[dot_index+1:end])
+    new_digits = if number_index == nothing
+        2
+    else
+        number = param_e_string[dot_index + number_index]
+        number == '1' ? 3 : 2
+    end
+
+    return Printf.Format("%.$(new_digits)f")
+end
 
 for i in 1:length(SAMPLES)
     sample = SAMPLES[i]
@@ -280,21 +298,11 @@ for i in 1:length(SAMPLES)
                 if i > 9 + (n - 1) && i < 17
                     line *= "& --- "
                 else
-                    param_ep_string = Printf.format(format, param_ep)
+                    new_format = get_new_format(param_ep)
 
-                    dot_index = findfirst(".", param_ep_string).start
-                    number_index = findfirst(c -> c != '0', param_ep_string[dot_index+1:end])
-                    new_digits = if number_index == nothing
-                        2
-                    else
-                        number = param_ep_string[dot_index + number_index]
-                        number == '1' ? 3 : 2
-                    end
-                    format = Printf.Format("%.$(new_digits)f")
-
-                    param_string = Printf.format(format, param)
-                    param_ep_string = Printf.format(format, param_ep)
-                    param_em_string = Printf.format(format, param_em)
+                    param_string = Printf.format(new_format, param)
+                    param_ep_string = Printf.format(new_format, param_ep)
+                    param_em_string = Printf.format(new_format, param_em)
 
                     if n in best_n
                         line *= "& \\makecell[tr]{ \$ \\mathbf{$(param_string)} \$ \\\\"
@@ -332,8 +340,11 @@ for i in 1:length(SAMPLES)
                 params_e = delta_varpi_data.sigma_x_mean
 
                 for (n, param, param_e) in zip(ns, params, params_e)
-                    param_string = Printf.format(format, param)
-                    param_e_string = Printf.format(format, param_e)
+                    new_format = get_new_format(param_e)
+
+                    param_string = Printf.format(new_format, param)
+                    param_e_string = Printf.format(new_format, param_e)
+
                     if n in best_n
                         line *= "& \\makecell[tr]{ \$ \\mathbf{$(param_string)} \$ \\\\"
                     else
@@ -355,8 +366,11 @@ for i in 1:length(SAMPLES)
                 params_e = delta_varpi_data.sigma_sigma
 
                 for (n, param, param_e) in zip(ns, params, params_e)
-                    param_string = Printf.format(format, param)
-                    param_e_string = Printf.format(format, param_e)
+                    new_format = get_new_format(param_e)
+
+                    param_string = Printf.format(new_format, param)
+                    param_e_string = Printf.format(new_format, param_e)
+
                     if n in best_n
                         line *= "& \\makecell[tr]{ \$ \\mathbf{$(param_string)} \$ \\\\"
                     else
@@ -378,8 +392,11 @@ for i in 1:length(SAMPLES)
                 params_e = delta_varpi_data.sigma_sigma_r
 
                 for (n, param, param_e) in zip(ns, params, params_e)
-                    param_string = Printf.format(format, param)
-                    param_e_string = Printf.format(format, param_e)
+                    new_format = get_new_format(param_e)
+
+                    param_string = Printf.format(new_format, param)
+                    param_e_string = Printf.format(new_format, param_e)
+
                     if n in best_n
                         line *= "& \\makecell[tr]{ \$ \\mathbf{$(param_string)} \$ \\\\"
                     else
@@ -400,8 +417,11 @@ for i in 1:length(SAMPLES)
                 params = delta_varpi_data.sigma_stroke
 
                 for (n, param, param_e) in zip(ns, params, params_e)
-                    param_string = Printf.format(format, param)
-                    param_e_string = Printf.format(format, param_e)
+                    new_format = get_new_format(param_e)
+
+                    param_string = Printf.format(new_format, param)
+                    param_e_string = Printf.format(new_format, param_e)
+
                     if n in best_n
                         line *= "& \$ \\mathbf{$(param_string)} \$ "
                     else
@@ -423,7 +443,7 @@ for i in 1:length(SAMPLES)
             comment="#",
         )
 
-        if length(unique(n_data.n)) > 1 && sample != "Near the solar circle (self-consistency check, iter 2)"
+        if length(unique(n_data.n)) > 1
             println(io, raw"    \midrule")
             println(io, "    & \\multicolumn{$(n_max)}{c}{\$ N = $(n_data.n[1]) \$ \\hfill \$ N_{L' = 3} = $(n_data.n[2]) \$ \\hfill \$ N_{L' = 1} = $(n_data.n[3]) \$} \\\\")
         end
@@ -511,7 +531,7 @@ open(joinpath(OUTPUT_DIR, "catalog.tex"), "w") do io
         raw"""
             \bottomrule
           \end{tabular}
-          \caption{Фрагмент нового каталога, содержащий новые объекты (смотри полную версию в машинном формате).}
+          \caption{Фрагмент нового каталога мазерных источников, содержащий новые объекты (смотри полную версию в машинном формате).}
           \label{table:catalog}
         \end{sidewaystable}"""
     )

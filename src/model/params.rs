@@ -23,9 +23,9 @@ pub const PARAMS_NAMES: [&str; PARAMS_N] = [
     "R_0",
     "omega_0",
     "A",
-    "U_sun",
-    "V_sun",
-    "W_sun",
+    "u_sun",
+    "v_sun",
+    "w_sun",
     "sigma_R",
     "sigma_theta",
     "sigma_Z",
@@ -66,31 +66,22 @@ pub struct Params<F> {
     #[serde(rename = "A_em")]
     pub a_em: F,
     /// Residual motion of the Sun toward GC (km/s)
-    #[serde(rename = "U_sun")]
     pub u_sun: F,
     /// Plus uncertainty in `u_sun`
-    #[serde(rename = "U_sun_ep")]
     pub u_sun_ep: F,
     /// Minus uncertainty in `u_sun`
-    #[serde(rename = "U_sun_em")]
     pub u_sun_em: F,
     /// Residual motion of the Sun toward l = 90 degrees (km/s)
-    #[serde(rename = "V_sun")]
     pub v_sun: F,
     /// Plus uncertainty in `v_sun`
-    #[serde(rename = "V_sun_ep")]
     pub v_sun_ep: F,
     /// Minus uncertainty in `v_sun`
-    #[serde(rename = "V_sun_em")]
     pub v_sun_em: F,
     /// Residual motion of the Sun toward NGP (km/s)
-    #[serde(rename = "W_sun")]
     pub w_sun: F,
     /// Plus uncertainty in `w_sun`
-    #[serde(rename = "W_sun_ep")]
     pub w_sun_ep: F,
     /// Minus uncertainty in `w_sun`
-    #[serde(rename = "W_sun_em")]
     pub w_sun_em: F,
     /// Radial component of the ellipsoid of natural standard deviations (km/s)
     #[serde(rename = "sigma_R")]
@@ -403,15 +394,15 @@ const DESCRIPTIONS: &str = indoc!(
     # 07 A: Oort's A constant [km/s/kpc]
     # 08 A_ep: Plus uncertainty in `A` [km/s/kpc]
     # 09 A_em: Minus uncertainty in `A` [km/s/kpc]
-    # 10 U_sun: Residual motion of the Sun toward GC [km/s]
-    # 11 U_ep: Plus uncertainty in `U` [km/s]
-    # 12 U_em: Minus uncertainty in `U` [km/s]
-    # 13 V_sun: Residual motion of the Sun toward l = 90 degrees [km/s]
-    # 14 V_ep: Plus uncertainty in `V` [km/s]
-    # 15 V_em: Minus uncertainty in `V` [km/s]
-    # 16 W_sun: Residual motion of the Sun toward NGP [km/s]
-    # 17 W_ep: Plus uncertainty in `W` [km/s]
-    # 18 W_em: Minus uncertainty in `W` [km/s]
+    # 10 u_sun: Residual motion of the Sun toward GC [km/s]
+    # 11 u_ep: Plus uncertainty in `U` [km/s]
+    # 12 u_em: Minus uncertainty in `U` [km/s]
+    # 13 v_sun: Residual motion of the Sun toward l = 90 degrees [km/s]
+    # 14 v_ep: Plus uncertainty in `V` [km/s]
+    # 15 v_em: Minus uncertainty in `V` [km/s]
+    # 16 w_sun: Residual motion of the Sun toward NGP [km/s]
+    # 17 w_ep: Plus uncertainty in `W` [km/s]
+    # 18 w_em: Minus uncertainty in `W` [km/s]
     # 19 sigma_R: Radial component of the ellipsoid of natural standard deviations [km/s]
     # 20 sigma_R_ep: Plus uncertainty in `sigma_R` [km/s]
     # 21 sigma_R_em: Minus uncertainty in `sigma_R` [km/s]
@@ -715,9 +706,9 @@ impl<F> Model<F> {
                     R_0: {r_0:>21.15} -> {fit_r_0:>21.15}  + {fit_r_0_ep:>18.15}  - {fit_r_0_em:>18.15}
                 omega_0: {omega_0:>21.15} -> {fit_omega_0:>21.15}  + {fit_omega_0_ep:>18.15}  - {fit_omega_0_em:>18.15}
                       A: {a:>21.15} -> {fit_a:>21.15}  + {fit_a_ep:>18.15}  - {fit_a_em:>18.15}
-                  U_sun: {u_sun:>21.15} -> {fit_u_sun:>21.15}  + {fit_u_sun_ep:>18.15}  - {fit_u_sun_em:>18.15}
-                  V_sun: {v_sun:>21.15} -> {fit_v_sun:>21.15}  + {fit_v_sun_ep:>18.15}  - {fit_v_sun_em:>18.15}
-                  W_sun: {w_sun:>21.15} -> {fit_w_sun:>21.15}  + {fit_w_sun_ep:>18.15}  - {fit_w_sun_em:>18.15}
+                  u_sun: {u_sun:>21.15} -> {fit_u_sun:>21.15}  + {fit_u_sun_ep:>18.15}  - {fit_u_sun_em:>18.15}
+                  v_sun: {v_sun:>21.15} -> {fit_v_sun:>21.15}  + {fit_v_sun_ep:>18.15}  - {fit_v_sun_em:>18.15}
+                  w_sun: {w_sun:>21.15} -> {fit_w_sun:>21.15}  + {fit_w_sun_ep:>18.15}  - {fit_w_sun_em:>18.15}
                 sigma_R: {sigma_r_g:>21.15} -> {fit_sigma_r_g:>21.15}  + {fit_sigma_r_g_ep:>18.15}  - {fit_sigma_r_g_em:>18.15}
             sigma_theta: {sigma_theta:>21.15} -> {fit_sigma_theta:>21.15}  + {fit_sigma_theta_ep:>18.15}  - {fit_sigma_theta_em:>18.15}
                 sigma_Z: {sigma_z:>21.15} -> {fit_sigma_z:>21.15}  + {fit_sigma_z_ep:>18.15}  - {fit_sigma_z_em:>18.15}
