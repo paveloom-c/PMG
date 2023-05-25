@@ -25,35 +25,66 @@ pub struct RotationCurvePoint<F> {
     r_g: F,
     /// Azimuthal velocity [km/s]
     theta: F,
+    /// Confidence interval error
+    sigma: F,
 }
 
 impl<F> Model<F> {
     /// Compute the rotation curve based on the fitted parameters
+    #[allow(clippy::indexing_slicing)]
     #[allow(clippy::unwrap_used)]
     #[replace_float_literals(F::from(literal).unwrap())]
     pub fn compute_fit_rotcurve(&mut self)
     where
-        F: Float,
+        F: Float + Debug,
     {
-        // Unpack some of the parameters
         let fit_params = self.fit_params.as_ref().unwrap();
-        let Params { r_0, omega_0, .. } = *fit_params;
-        // Compute the rotation curve (linear model for now)
-        let n_int = 1000;
-        let n_float = F::from(n_int).unwrap();
+        let n = self.n.unwrap();
+        let m = fit_params.to_vec(n, false).len();
+
+        let n_points_int = 1000;
+        let n_points_float = F::from(n_points_int).unwrap();
         let start = 0.;
         let end = 15.;
-        let h = (end - start) / n_float;
+        let h = (end - start) / n_points_float;
+
         self.fit_rotcurve = Some(
-            (0..=n_int)
+            (0..=n_points_int)
                 .map(|i_int| {
                     let i_float = F::from(i_int).unwrap();
-                    // Compute the Galactocentric distance
+
                     let r_g = start + i_float * h;
-                    // Compute the azimuthal velocity
-                    let delta_r_g = r_g - r_0;
-                    let theta = omega_0 * r_g + compute_rot_curve_series(delta_r_g, fit_params);
-                    RotationCurvePoint { r_g, theta }
+                    let theta = compute_rot_curve(r_g, fit_params);
+
+                    let sigma = if let Some(ref covariance_results) = self.covariance_results {
+                        let covariance = &covariance_results.matrix;
+                        let errors = &covariance_results.errors;
+
+                        let diffs: Vec<F> = (0..m)
+                            .map(|i| compute_rot_curve_partial(r_g, fit_params, n, i))
+                            .collect();
+
+                        let mut first_term = 0.;
+                        for k in 0..m {
+                            first_term = first_term + (diffs[k] * errors[k]).powi(2);
+                        }
+
+                        let mut second_term = 0.;
+                        for k in 0..m {
+                            for l in 0..m {
+                                if l != k {
+                                    second_term =
+                                        second_term + diffs[k] * diffs[l] * covariance[(k, l)];
+                                }
+                            }
+                        }
+
+                        first_term + second_term
+                    } else {
+                        0.
+                    };
+
+                    RotationCurvePoint { r_g, theta, sigma }
                 })
                 .collect(),
         );
@@ -75,6 +106,7 @@ impl<F> Model<F> {
             #
             # 01 R: Galactocentric distance to the Sun [kpc]
             # 02 theta: Azimuthal velocity [km/s]
+            # 03 sigma: Confidence interval error [km/s]
             #
             # Parameters used:
             #
@@ -149,8 +181,42 @@ impl<F> Model<F> {
     }
 }
 
-/// Compute the linear rotation curve approximation
-/// via Taylor series with the specified degree
+/// Compute the model rotation curve
+fn compute_rot_curve<F>(r_g: F, fit_params: &Params<F>) -> F
+where
+    F: Float,
+{
+    let Params { r_0, omega_0, .. } = *fit_params;
+    let delta_r_g = r_g - r_0;
+    omega_0 * r_g + compute_rot_curve_series(delta_r_g, fit_params)
+}
+
+/// Compute a partial derivative of the model rotation curve
+#[allow(clippy::indexing_slicing)]
+#[allow(clippy::many_single_char_names)]
+#[allow(clippy::unwrap_used)]
+#[replace_float_literals(F::from(literal).unwrap())]
+fn compute_rot_curve_partial<F>(r_g: F, fit_params: &Params<F>, n: usize, i: usize) -> F
+where
+    F: Float + Debug,
+{
+    let h = 1e-5;
+
+    let mut new_fit_params = fit_params.clone();
+    let mut p = fit_params.to_vec(n, false);
+
+    p[i] = p[i] + h;
+    new_fit_params.update_with(&p);
+    let plus_f = compute_rot_curve(r_g, &new_fit_params);
+
+    p[i] = p[i] - h;
+    new_fit_params.update_with(&p);
+    let minus_f = compute_rot_curve(r_g, &new_fit_params);
+
+    (plus_f - minus_f) / (2. * h)
+}
+
+/// Compute the linear rotation curve approximation via Taylor series
 #[allow(clippy::as_conversions)]
 #[allow(clippy::cast_possible_truncation)]
 #[allow(clippy::cast_possible_wrap)]

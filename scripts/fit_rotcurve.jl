@@ -241,6 +241,7 @@ R_m = objects_data.R_m[I]
 # Unpack the fit data
 R_fit = fit_rotcurve_data.R
 Θ_fit = fit_rotcurve_data.Θ
+σ_fit = fit_rotcurve_data.σ
 R_0 = fit_params_data.R_0[1]
 θ_sun = fit_params_data.θ_sun[1]
 
@@ -271,6 +272,7 @@ function plot(
     y,
     x_fit,
     y_fit,
+    e_fit,
     xlabel,
     ylabel;
     x_p=F[],
@@ -424,6 +426,31 @@ function plot(
             ))
         end
     end
+    # Add confidence intervals if they were computed
+    if !iszero(e_fit)
+        push!(p, @pgf [
+            Plot(
+                {
+                    color = colors[3],
+                    mark = "none"
+                },
+                Table(
+                    x=x_fit,
+                    y=y_fit .+ e_fit,
+                ),
+            ),
+            Plot(
+                {
+                    color = colors[3],
+                    mark = "none"
+                },
+                Table(
+                    x=x_fit,
+                    y=y_fit .- e_fit,
+                ),
+            ),
+        ])
+    end
     return p
 end
 
@@ -439,6 +466,7 @@ push!(tasks, @spawn begin
         Θ,
         R_fit,
         Θ_fit,
+        σ_fit,
         L"R, \, \mathrm{кпк}",
         L"\theta, \, \mathrm{км/с}",
     )
@@ -454,6 +482,7 @@ push!(tasks, @spawn begin
         Θ,
         R_fit,
         Θ_fit,
+        σ_fit,
         L"R, \, \mathrm{кпк}",
         L"\theta, \, \mathrm{км/с}",
         x_p=R_p,

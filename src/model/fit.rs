@@ -2,6 +2,7 @@
 
 #![allow(clippy::module_name_repetitions)]
 
+mod covariance;
 mod errors;
 mod errors_logger;
 mod fit_logger;
@@ -19,6 +20,7 @@ mod steepest_descent;
 use super::io;
 use super::{Model, Object, Objects, Params, PARAMS_N, PARAMS_NAMES};
 
+pub use covariance::CovarianceResults;
 pub use errors::ConfidenceIntervalProblem;
 pub use errors_logger::ErrorsLogger;
 pub use fit_logger::FitLogger;

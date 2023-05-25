@@ -89,6 +89,7 @@ module Types
     struct FitRotCurveData{F}
         R::Vector{F}
         Θ::Vector{F}
+        σ::Vector{F}
     end
 
     @with_kw struct Params{F}
