@@ -225,7 +225,13 @@ for object in parallaxes_data
     # Pause for this many seconds between the batches
     if task_count > 16
         global task_count = 0
-        sleep(10)
+        for task in tasks
+            try
+                wait(task)
+            catch err
+                showerror(stdout, err.task.exception)
+            end
+        end
     end
 
     number = object.i
