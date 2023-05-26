@@ -79,7 +79,7 @@ impl<F> Model<F> {
                             }
                         }
 
-                        first_term + second_term
+                        F::sqrt(first_term + second_term)
                     } else {
                         0.
                     };
