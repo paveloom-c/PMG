@@ -261,9 +261,6 @@ pub fn main() -> Result<()> {
                                 })?;
                             }
                         }
-
-                        write_fit_rotcurve_to_plain(&args, &models)
-                            .with_context(|| "Couldn't write to the `fit_rotcurve.plain` file")?;
                     }
 
                     write_fit_params_to_plain(&args, &models)
@@ -357,26 +354,6 @@ where
         model.write_fit_params_to_plain(&mut plain_writer, n)?;
     }
     models[0].write_fit_params_footer_to_plain(&mut plain_writer)?;
-
-    Ok(())
-}
-
-/// Write all rotation curves to a `plain` file
-#[allow(clippy::indexing_slicing)]
-fn write_fit_rotcurve_to_plain<F>(args: &Args, models: &[Model<F>]) -> Result<()>
-where
-    F: Float + Debug + Display,
-{
-    let plain_path = &args.output_dir.join("fit_rotcurve.plain");
-    let plain_file = File::create(plain_path)
-        .with_context(|| format!("Couldn't open the file {plain_path:?} in write-only mode",))?;
-    let mut plain_writer = BufWriter::new(plain_file);
-
-    models[0].write_fit_rotcurve_header_to_plain(&mut plain_writer)?;
-    for (i, model) in models.iter().enumerate() {
-        let n = i + 1;
-        model.write_fit_rotcurve_to_plain(&mut plain_writer, n)?;
-    }
 
     Ok(())
 }

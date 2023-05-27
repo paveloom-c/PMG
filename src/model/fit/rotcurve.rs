@@ -4,9 +4,6 @@ use super::io::output;
 use super::{Model, Params};
 
 use core::fmt::{Debug, Display};
-use std::fs::File;
-use std::io::BufWriter;
-use std::io::Write;
 
 use anyhow::Result;
 use indoc::formatdoc;
@@ -127,57 +124,6 @@ impl<F> Model<F> {
         );
         let records = self.fit_rotcurve.as_ref().unwrap();
         output::serialize_to(&self.output_dir, "fit_rotcurve", &header, records)
-    }
-    /// Write the header to the plain file
-    pub fn write_fit_rotcurve_header_to_plain(
-        &self,
-        plain_writer: &mut BufWriter<File>,
-    ) -> Result<()>
-    where
-        F: Display,
-    {
-        write!(
-            plain_writer,
-            "{}",
-            formatdoc!(
-                "
-            Fits of the models (rotation curves)
-            {sample_description}
-            Fitted rotation curves:
-            ",
-                sample_description = self
-                    .format_sample_description()
-                    .replace("# ", "")
-                    .replace('#', ""),
-            )
-        )?;
-        Ok(())
-    }
-    /// Write the rotation curve points to the plain file
-    #[allow(clippy::unwrap_in_result)]
-    #[allow(clippy::unwrap_used)]
-    pub fn write_fit_rotcurve_to_plain(
-        &self,
-        plain_writer: &mut BufWriter<File>,
-        n: usize,
-    ) -> Result<()>
-    where
-        F: Display,
-    {
-        if self.fit_rotcurve.is_none() {
-            return Ok(());
-        }
-
-        let fit_rotcurve = self.fit_rotcurve.as_ref().unwrap();
-        writeln!(plain_writer, "\nn i{s:4}R{s:18}theta", s = " ")?;
-        for (i, point) in fit_rotcurve.iter().enumerate() {
-            writeln!(
-                plain_writer,
-                "{n} {i:<4} {:<18.15} {:<.15}",
-                point.r_g, point.theta,
-            )?;
-        }
-        Ok(())
     }
 }
 
