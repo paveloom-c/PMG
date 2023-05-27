@@ -10,7 +10,7 @@ mod sample_description;
 
 use crate::cli::Args;
 use crate::utils;
-pub use fit::{CovarianceResults, ProfileType, RotationCurve, Triple, Triples};
+pub use fit::{ProfileType, RotationCurve, Triple, Triples};
 pub use objects::{Object, Objects};
 pub use params::{Params, N_MAX, PARAMS_N, PARAMS_NAMES};
 
@@ -23,6 +23,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
+use nalgebra::DMatrix;
 use num::Float;
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -52,8 +53,8 @@ pub struct Model<F> {
     pub fit_rotcurve: Option<RotationCurve<F>>,
     /// Triples
     pub triples: Rc<RefCell<Vec<Triples<F>>>>,
-    /// Covariance results
-    pub covariance_results: Option<CovarianceResults<F>>,
+    /// Covariance matrix
+    pub covariance_matrix: Option<DMatrix<F>>,
 
     /// Sample description
     pub sample_description: Option<String>,

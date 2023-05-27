@@ -53,30 +53,20 @@ impl<F> Model<F> {
                     let r_g = start + i_float * h;
                     let theta = compute_rot_curve(r_g, fit_params);
 
-                    let sigma = if let Some(ref covariance_results) = self.covariance_results {
-                        let covariance = &covariance_results.matrix;
-                        let errors = &covariance_results.errors;
-
+                    let sigma = if let Some(ref covariance_matrix) = self.covariance_matrix {
                         let diffs: Vec<F> = (0..m)
                             .map(|i| compute_rot_curve_partial(r_g, fit_params, n, i))
                             .collect();
 
-                        let mut first_term = 0.;
-                        for k in 0..m {
-                            first_term = first_term + (diffs[k] * errors[k]).powi(2);
-                        }
-
-                        let mut second_term = 0.;
+                        let mut dispersion = 0.;
                         for k in 0..m {
                             for l in 0..m {
-                                if l != k {
-                                    second_term =
-                                        second_term + diffs[k] * diffs[l] * covariance[(k, l)];
-                                }
+                                dispersion =
+                                    dispersion + diffs[k] * diffs[l] * covariance_matrix[(k, l)];
                             }
                         }
 
-                        F::sqrt(first_term + second_term)
+                        F::sqrt(dispersion)
                     } else {
                         0.
                     };
@@ -130,7 +120,7 @@ impl<F> Model<F> {
 /// Compute the model rotation curve
 fn compute_rot_curve<F>(r_g: F, fit_params: &Params<F>) -> F
 where
-    F: Float,
+    F: Float + Debug,
 {
     let Params { r_0, omega_0, .. } = *fit_params;
     let delta_r_g = r_g - r_0;
@@ -146,16 +136,18 @@ fn compute_rot_curve_partial<F>(r_g: F, fit_params: &Params<F>, n: usize, i: usi
 where
     F: Float + Debug,
 {
-    let h = 1e-5;
+    let h = 1e-8;
+
+    let best_p = fit_params.to_vec(n, false);
 
     let mut new_fit_params = fit_params.clone();
-    let mut p = fit_params.to_vec(n, false);
+    let mut p = best_p.clone();
 
-    p[i] = p[i] + h;
+    p[i] = best_p[i] + h;
     new_fit_params.update_with(&p);
     let plus_f = compute_rot_curve(r_g, &new_fit_params);
 
-    p[i] = p[i] - h;
+    p[i] = best_p[i] - h;
     new_fit_params.update_with(&p);
     let minus_f = compute_rot_curve(r_g, &new_fit_params);
 

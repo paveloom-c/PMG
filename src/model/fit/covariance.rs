@@ -21,15 +21,6 @@ use nalgebra::{ComplexField, DMatrix};
 use num::Float;
 use numeric_literals::replace_float_literals;
 
-/// Results of computing the covariance matrix
-#[derive(Clone, Debug)]
-pub struct CovarianceResults<F> {
-    /// Covariance matrix
-    pub matrix: DMatrix<F>,
-    /// Mean errors
-    pub errors: Vec<F>,
-}
-
 impl<F> Model<F> {
     /// Compute the covariance matrix
     #[allow(clippy::indexing_slicing)]
@@ -169,10 +160,7 @@ impl<F> Model<F> {
             writeln!(covariance_plain_writer)?;
         }
 
-        self.covariance_results = Some(CovarianceResults {
-            matrix: covariance_matrix,
-            errors,
-        });
+        self.covariance_matrix = Some(covariance_matrix);
 
         Ok(())
     }
