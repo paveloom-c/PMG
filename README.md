@@ -25,7 +25,6 @@ Repository:
 
 Reference:
 - [GitHub Pages](https://paveloom-c.github.io/PMG)
-- [GitLab Pages](https://paveloom-g.gitlab.io/complex/PMG)
 
 #### Rust
 
