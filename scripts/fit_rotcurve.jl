@@ -244,6 +244,7 @@ R_fit = fit_rotcurve_data.R
 σ_fit = fit_rotcurve_data.σ
 R_0 = fit_params_data.R_0[1]
 θ_sun = fit_params_data.θ_sun[1]
+σ_θ = fit_params_data.σ_θ[1]
 
 # Prepare labels
 markers = ["a", "b", "c", "d", "e"]
@@ -451,6 +452,34 @@ function plot(
             ),
         ])
     end
+    # Add a bar for the azimuthal component of the velocity ellipsoid
+    push!(p, @pgf Plot(
+        {
+            scatter,
+            point_meta="explicit symbolic",
+            nodes_near_coords,
+            nodes_near_coords_style={font = raw"\scriptsize", anchor="west"},
+            "error bars/y dir=both",
+            "error bars/y explicit",
+            "error bars/error bar style" = {line_width = 0.1, opacity = 0.25},
+            "error bars/error mark options" = {
+                rotate = 90,
+                mark_size = 0.5,
+                line_width = 0.1,
+                opacity = 0.25,
+            },
+        },
+        Table(
+            {
+                y_error="yerror",
+                meta="meta",
+            },
+            x=[x_min + (x_max - x_min) * 0.1],
+            y=[300],
+            yerror=[σ_θ],
+            meta=[L"\pm\sigma_\theta"];
+        ),
+    ))
     return p
 end
 
