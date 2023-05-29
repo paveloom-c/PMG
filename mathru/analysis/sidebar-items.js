@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["differential_equation",""],["integral",""],["interpolation",""]],"struct":[["NewtonRaphson","Newton Raphson"]],"trait":[["Function",""],["Hessian",""],["Jacobian",""]]};

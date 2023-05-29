@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["str2vec","Parse a string for a vector of floats, splitting by colons"]]};

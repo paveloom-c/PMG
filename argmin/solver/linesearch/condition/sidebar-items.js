@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["ArmijoCondition","Armijo Condition"],["GoldsteinCondition","Goldstein conditions"],["StrongWolfeCondition","Strong Wolfe conditions"],["WolfeCondition","Wolfe conditions"]],"trait":[["LineSearchCondition","Interface which a condition needs to implement."]]};

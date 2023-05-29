@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"trait":[["Exponential","Exponential function and its inverse"]]};

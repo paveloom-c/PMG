@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["problem",""],["solver",""]],"struct":[["ExplicitInitialValueProblem",""],["ExplicitInitialValueProblemBuilder",""],["ImplicitInitialValueProblem",""],["ImplicitInitialValueProblemBuilder",""]],"trait":[["ExplicitODE","Explicit ordinary differential equation"],["ImplicitODE","Implicit ordinary differential equation"]]};

@@ -1,0 +1,160 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Provides gamma related functions"><meta name="keywords" content="rust, rustlang, rust-lang, Gamma"><title>Gamma in mathru::special::gamma - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../mathru/index.html"><div class="logo-container"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../mathru/index.html"><div class="logo-container"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></div></a><h2 class="location"><a href="#">Gamma</a></h2><div class="sidebar-elems"><section><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.digamma">digamma</a></li><li><a href="#tymethod.gamma">gamma</a></li><li><a href="#tymethod.gamma_l">gamma_l</a></li><li><a href="#tymethod.gamma_lr">gamma_lr</a></li><li><a href="#tymethod.gamma_lr_inv">gamma_lr_inv</a></li><li><a href="#tymethod.gamma_u">gamma_u</a></li><li><a href="#tymethod.gamma_ur">gamma_ur</a></li><li><a href="#tymethod.gamma_ur_inv">gamma_ur_inv</a></li><li><a href="#tymethod.ln_gamma">ln_gamma</a></li></ul><h3><a href="#foreign-impls">Implementations on Foreign Types</a></h3><ul class="block"><li><a href="#impl-Gamma-for-f32">f32</a></li><li><a href="#impl-Gamma-for-f64">f64</a></li></ul><h3><a href="#implementors">Implementors</a></h3></section><h2><a href="index.html">In mathru::special::gamma</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Trait <a href="../../index.html">mathru</a>::<wbr><a href="../index.html">special</a>::<wbr><a href="index.html">gamma</a>::<wbr><a class="trait" href="#">Gamma</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="srclink" href="../../../src/mathru/special/gamma.rs.html#10-232">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><div class="item-decl"><pre class="rust trait"><code>pub trait Gamma {
+    fn <a href="#tymethod.gamma" class="fn">gamma</a>(self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.ln_gamma" class="fn">ln_gamma</a>(self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.digamma" class="fn">digamma</a>(self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.gamma_u" class="fn">gamma_u</a>(self, x: Self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.gamma_ur" class="fn">gamma_ur</a>(self, x: Self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.gamma_l" class="fn">gamma_l</a>(self, x: Self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.gamma_lr" class="fn">gamma_lr</a>(self, x: Self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.gamma_ur_inv" class="fn">gamma_ur_inv</a>(self, p: Self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.gamma_lr_inv" class="fn">gamma_lr_inv</a>(self, p: Self) -&gt; Self;
+}</code></pre></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Provides <a href="https://en.wikipedia.org/wiki/Beta_function">gamma</a> related functions</p>
+</div></details><h2 id="required-methods" class="small-section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.gamma" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#36">source</a><h4 class="code-header">fn <a href="#tymethod.gamma" class="fn">gamma</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Gamma function</p>
+<div class="example-wrap"><pre class="language-math"><code>\Gamma(z) = \int_0^\infty t^{z-1} {\mathrm e}^{-t} \mathrm dt
+</code></pre></div>
+<p>Fore more information:
+<a href="https://en.wikipedia.org/wiki/Gamma_function">https://en.wikipedia.org/wiki/Gamma_function</a></p>
+<h5 id="arguments"><a href="#arguments">Arguments</a></h5>
+<ul>
+<li><code>self</code> &gt; 0.0</li>
+</ul>
+<h5 id="panics"><a href="#panics">Panics</a></h5>
+<p>*<code>self</code> &lt;= 0.0</p>
+<h5 id="example"><a href="#example">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::special::gamma::Gamma;
+
+<span class="kw">let </span>z: f64 = <span class="number">0.3_f64</span>;
+<span class="kw">let </span>gamma: f64 = z.gamma();</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.ln_gamma" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#55">source</a><h4 class="code-header">fn <a href="#tymethod.ln_gamma" class="fn">ln_gamma</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Log-gamma function</p>
+<p>lnΓ(z)
+Fore more information:
+<a href="https://en.wikipedia.org/wiki/Gamma_function#The_log-gamma_function">https://en.wikipedia.org/wiki/Gamma_function#The_log-gamma_function</a></p>
+<h5 id="arguments-1"><a href="#arguments-1">Arguments</a></h5>
+<ul>
+<li><code>self</code></li>
+</ul>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::special::gamma::Gamma;
+
+<span class="kw">let </span>x: f64 = <span class="number">0.3_f64</span>;
+<span class="kw">let </span>ln_gamma: f64 = x.ln_gamma();</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.digamma" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#78">source</a><h4 class="code-header">fn <a href="#tymethod.digamma" class="fn">digamma</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Digamma function</p>
+<div class="example-wrap"><pre class="language-math"><code>\psi(x)=\frac{d}{dx}\ln\big(\Gamma(x)\big)=\frac{\Gamma&#39;(x)}{\Gamma(x)}
+</code></pre></div>
+<p>Fore more information:
+<a href="https://en.wikipedia.org/wiki/Digamma_function">https://en.wikipedia.org/wiki/Digamma_function</a></p>
+<h5 id="arguments-2"><a href="#arguments-2">Arguments</a></h5>
+<ul>
+<li><code>self</code></li>
+</ul>
+<h5 id="example-1"><a href="#example-1">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::special::gamma::Gamma;
+
+<span class="kw">let </span>x: f64 = <span class="number">0.3_f64</span>;
+<span class="kw">let </span>digamma: f64 = x.digamma();</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.gamma_u" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#104">source</a><h4 class="code-header">fn <a href="#tymethod.gamma_u" class="fn">gamma_u</a>(self, x: Self) -&gt; Self</h4></section></summary><div class="docblock"><p>Upper incomplete gamma function</p>
+<div class="example-wrap"><pre class="language-math"><code>\Gamma(a,x) = \int_x^{\infty} t^{a-1}\,\mathrm{e}^{-t}\,{\rm d}t
+</code></pre></div>
+<p>Fore more information:
+<a href="https://en.wikipedia.org/wiki/Incomplete_gamma_function#Upper_incomplete_Gamma_function">https://en.wikipedia.org/wiki/Incomplete_gamma_function#Upper_incomplete_Gamma_function</a></p>
+<h5 id="arguments-3"><a href="#arguments-3">Arguments</a></h5>
+<ul>
+<li><code>self</code></li>
+<li><code>x</code></li>
+</ul>
+<h5 id="example-2"><a href="#example-2">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::special::gamma::Gamma;
+
+<span class="kw">let </span>a: f64 = <span class="number">0.5_f64</span>;
+<span class="kw">let </span>x: f64 = <span class="number">0.3_f64</span>;
+
+<span class="kw">let </span>gamma_u: f64 = a.gamma_u(x);</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.gamma_ur" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#129">source</a><h4 class="code-header">fn <a href="#tymethod.gamma_ur" class="fn">gamma_ur</a>(self, x: Self) -&gt; Self</h4></section></summary><div class="docblock"><p>Upper incomplete regularized gamma function</p>
+<div class="example-wrap"><pre class="language-math"><code>Q(a,x)=\frac{\Gamma(a,x)}{\Gamma(a)}
+</code></pre></div>
+<p>Fore more information:
+<a href="https://en.wikipedia.org/wiki/Incomplete_gamma_function#Regularized_Gamma_functions_and_Poisson_random_variables">https://en.wikipedia.org/wiki/Incomplete_gamma_function#Regularized_Gamma_functions_and_Poisson_random_variables</a></p>
+<h5 id="arguments-4"><a href="#arguments-4">Arguments</a></h5>
+<ul>
+<li><code>self</code></li>
+<li><code>x</code></li>
+</ul>
+<h5 id="example-3"><a href="#example-3">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::special::gamma::Gamma;
+
+<span class="kw">let </span>a: f64 = <span class="number">0.5_f64</span>;
+<span class="kw">let </span>x: f64 = <span class="number">0.3_f64</span>;
+<span class="kw">let </span>gamma_ur: f64 = a.gamma_ur(x);</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.gamma_l" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#154">source</a><h4 class="code-header">fn <a href="#tymethod.gamma_l" class="fn">gamma_l</a>(self, x: Self) -&gt; Self</h4></section></summary><div class="docblock"><p>Lower incomplete gamma function</p>
+<div class="example-wrap"><pre class="language-math"><code>\gamma(a,x) = \int_0^x t^{a-1}\,\mathrm{e}^{-t}\,{\rm d}t
+</code></pre></div>
+<p>Fore more information:
+<a href="https://en.wikipedia.org/wiki/Incomplete_gamma_function#Regularized_Gamma_functions_and_Poisson_random_variables">https://en.wikipedia.org/wiki/Incomplete_gamma_function#Regularized_Gamma_functions_and_Poisson_random_variables</a></p>
+<h5 id="arguments-5"><a href="#arguments-5">Arguments</a></h5>
+<ul>
+<li><code>self</code></li>
+<li><code>x</code></li>
+</ul>
+<h5 id="example-4"><a href="#example-4">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::special::gamma::Gamma;
+
+<span class="kw">let </span>a: f64 = <span class="number">0.5_f64</span>;
+<span class="kw">let </span>x: f64 = <span class="number">0.3_f64</span>;
+<span class="kw">let </span>gamma_l: f64 = a.gamma_l(x);</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.gamma_lr" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#179">source</a><h4 class="code-header">fn <a href="#tymethod.gamma_lr" class="fn">gamma_lr</a>(self, x: Self) -&gt; Self</h4></section></summary><div class="docblock"><p>Lower regularized incomplete gamma function</p>
+<div class="example-wrap"><pre class="language-math"><code>P(a,x)=\frac{\gamma(a,x)}{\Gamma(a)}=1-Q(a,x)
+</code></pre></div>
+<p>Fore more information:
+<a href="https://en.wikipedia.org/wiki/Incomplete_gamma_function#Regularized_Gamma_functions_and_Poisson_random_variables">https://en.wikipedia.org/wiki/Incomplete_gamma_function#Regularized_Gamma_functions_and_Poisson_random_variables</a></p>
+<h5 id="arguments-6"><a href="#arguments-6">Arguments</a></h5>
+<ul>
+<li><code>self</code></li>
+<li><code>x</code></li>
+</ul>
+<h5 id="example-5"><a href="#example-5">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::special::gamma::Gamma;
+
+<span class="kw">let </span>a: f64 = <span class="number">0.5_f64</span>;
+<span class="kw">let </span>x: f64 = <span class="number">0.3_f64</span>;
+<span class="kw">let </span>gamma_lr: f64 = a.gamma_lr(x);</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.gamma_ur_inv" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#205">source</a><h4 class="code-header">fn <a href="#tymethod.gamma_ur_inv" class="fn">gamma_ur_inv</a>(self, p: Self) -&gt; Self</h4></section></summary><div class="docblock"><p>Inverse of the upper incomplete regularized gamma function</p>
+<div class="example-wrap"><pre class="language-math"><code>Q^{-1}(q,x)
+</code></pre></div>
+<p>Fore more information:
+<a href="https://en.wikipedia.org/wiki/Incomplete_gamma_function#Regularized_Gamma_functions_and_Poisson_random_variables">https://en.wikipedia.org/wiki/Incomplete_gamma_function#Regularized_Gamma_functions_and_Poisson_random_variables</a></p>
+<h5 id="arguments-7"><a href="#arguments-7">Arguments</a></h5>
+<ul>
+<li><code>q</code></li>
+<li><code>x</code></li>
+</ul>
+<h5 id="example-6"><a href="#example-6">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::special::gamma;
+
+<span class="kw">let </span>a: f64 = <span class="number">0.5_f64</span>;
+<span class="kw">let </span>x: f64 = <span class="number">0.3_f64</span>;
+<span class="kw">let </span>q = gamma::gamma_ur(a, x);
+<span class="kw">let </span>x_s: f64 = gamma::gamma_ur_inv(a, q);</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.gamma_lr_inv" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#231">source</a><h4 class="code-header">fn <a href="#tymethod.gamma_lr_inv" class="fn">gamma_lr_inv</a>(self, p: Self) -&gt; Self</h4></section></summary><div class="docblock"><p>Inverse of the lower incomplete regularized gamma function</p>
+<div class="example-wrap"><pre class="language-math"><code>P^{-1}(a,p)
+</code></pre></div>
+<p>Fore more information:
+<a href="https://en.wikipedia.org/wiki/Incomplete_gamma_function#Regularized_Gamma_functions_and_Poisson_random_variables">https://en.wikipedia.org/wiki/Incomplete_gamma_function#Regularized_Gamma_functions_and_Poisson_random_variables</a></p>
+<h5 id="arguments-8"><a href="#arguments-8">Arguments</a></h5>
+<ul>
+<li><code>a</code></li>
+<li><code>x</code></li>
+</ul>
+<h5 id="example-7"><a href="#example-7">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::special::gamma;
+
+<span class="kw">let </span>a: f64 = <span class="number">0.5_f64</span>;
+<span class="kw">let </span>x: f64 = <span class="number">0.3_f64</span>;
+<span class="kw">let </span>p = gamma::gamma_lr(a, x);
+<span class="kw">let </span>x_s: f64 = gamma::gamma_lr_inv(a, p);</code></pre></div>
+</div></details></div><h2 id="foreign-impls" class="small-section-header">Implementations on Foreign Types<a href="#foreign-impls" class="anchor">§</a></h2><details class="rustdoc-toggle implementors-toggle"><summary><section id="impl-Gamma-for-f64" class="impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#590">source</a><a href="#impl-Gamma-for-f64" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.Gamma.html" title="trait mathru::special::gamma::Gamma">Gamma</a> for <a class="primitive" href="https://doc.rust-lang.org/1.67.1/std/primitive.f64.html">f64</a></h3></section></summary><div class="impl-items"><details class="rustdoc-toggle method-toggle" open><summary><section id="method.gamma_ur_inv" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#590">source</a><a href="#method.gamma_ur_inv" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.gamma_ur_inv" class="fn">gamma_ur_inv</a>(self, q: Self) -&gt; Self</h4></section></summary><div class="docblock"><p>Computation of the Incomplete Gamma Function Ratios and their Inverse
+ARMIDO R. DIDONATO and ALFRED H. MORRIS, JR. U.S. Naval Surface Weapons Center
+ACM Transactions on Mathematical Software, Vol. 12, No. 4, December 1986</p>
+</div></details><section id="method.gamma" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#590">source</a><a href="#method.gamma" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.gamma" class="fn">gamma</a>(self) -&gt; Self</h4></section><section id="method.ln_gamma" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#590">source</a><a href="#method.ln_gamma" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.ln_gamma" class="fn">ln_gamma</a>(self) -&gt; Self</h4></section><section id="method.digamma" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#590">source</a><a href="#method.digamma" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.digamma" class="fn">digamma</a>(self) -&gt; Self</h4></section><section id="method.gamma_u" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#590">source</a><a href="#method.gamma_u" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.gamma_u" class="fn">gamma_u</a>(self, x: Self) -&gt; Self</h4></section><section id="method.gamma_ur" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#590">source</a><a href="#method.gamma_ur" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.gamma_ur" class="fn">gamma_ur</a>(self, x: Self) -&gt; Self</h4></section><section id="method.gamma_l" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#590">source</a><a href="#method.gamma_l" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.gamma_l" class="fn">gamma_l</a>(self, x: Self) -&gt; Self</h4></section><section id="method.gamma_lr" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#590">source</a><a href="#method.gamma_lr" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.gamma_lr" class="fn">gamma_lr</a>(self, x: Self) -&gt; Self</h4></section><section id="method.gamma_lr_inv" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#590">source</a><a href="#method.gamma_lr_inv" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.gamma_lr_inv" class="fn">gamma_lr_inv</a>(self, q: Self) -&gt; Self</h4></section></div></details><details class="rustdoc-toggle implementors-toggle"><summary><section id="impl-Gamma-for-f32" class="impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#591">source</a><a href="#impl-Gamma-for-f32" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.Gamma.html" title="trait mathru::special::gamma::Gamma">Gamma</a> for <a class="primitive" href="https://doc.rust-lang.org/1.67.1/std/primitive.f32.html">f32</a></h3></section></summary><div class="impl-items"><details class="rustdoc-toggle method-toggle" open><summary><section id="method.gamma_ur_inv-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#591">source</a><a href="#method.gamma_ur_inv-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.gamma_ur_inv" class="fn">gamma_ur_inv</a>(self, q: Self) -&gt; Self</h4></section></summary><div class="docblock"><p>Computation of the Incomplete Gamma Function Ratios and their Inverse
+ARMIDO R. DIDONATO and ALFRED H. MORRIS, JR. U.S. Naval Surface Weapons Center
+ACM Transactions on Mathematical Software, Vol. 12, No. 4, December 1986</p>
+</div></details><section id="method.gamma-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#591">source</a><a href="#method.gamma-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.gamma" class="fn">gamma</a>(self) -&gt; Self</h4></section><section id="method.ln_gamma-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#591">source</a><a href="#method.ln_gamma-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.ln_gamma" class="fn">ln_gamma</a>(self) -&gt; Self</h4></section><section id="method.digamma-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#591">source</a><a href="#method.digamma-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.digamma" class="fn">digamma</a>(self) -&gt; Self</h4></section><section id="method.gamma_u-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#591">source</a><a href="#method.gamma_u-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.gamma_u" class="fn">gamma_u</a>(self, x: Self) -&gt; Self</h4></section><section id="method.gamma_ur-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#591">source</a><a href="#method.gamma_ur-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.gamma_ur" class="fn">gamma_ur</a>(self, x: Self) -&gt; Self</h4></section><section id="method.gamma_l-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#591">source</a><a href="#method.gamma_l-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.gamma_l" class="fn">gamma_l</a>(self, x: Self) -&gt; Self</h4></section><section id="method.gamma_lr-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#591">source</a><a href="#method.gamma_lr-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.gamma_lr" class="fn">gamma_lr</a>(self, x: Self) -&gt; Self</h4></section><section id="method.gamma_lr_inv-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/special/gamma.rs.html#591">source</a><a href="#method.gamma_lr_inv-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.gamma_lr_inv" class="fn">gamma_lr_inv</a>(self, q: Self) -&gt; Self</h4></section></div></details><h2 id="implementors" class="small-section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"></div><script src="../../../implementors/mathru/special/gamma/trait.Gamma.js" data-ignore-extern-crates="std" async></script></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="mathru" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.1 (d5a82bbd2 2023-02-07) (built from a source tarball)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

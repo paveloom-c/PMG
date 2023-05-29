@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["dms2rad","Convert a degrees-minutes-seconds angle to radians"]]};

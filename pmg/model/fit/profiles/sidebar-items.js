@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["POINTS_N","Number of points in a profile"]],"enum":[["ProfileType","Type of a profile"]],"struct":[["ProfilePoint","A point on the profile"]],"type":[["Profile","A profile"]]};

@@ -1,0 +1,129 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="mathru"><meta name="keywords" content="rust, rustlang, rust-lang, mathru"><title>mathru - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../mathru/index.html"><div class="logo-container"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../mathru/index.html"><div class="logo-container"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></div></a><h2 class="location"><a href="#">Crate mathru</a></h2><div class="sidebar-elems"><ul class="block"><li class="version">Version 0.14.0</li><li><a id="all-types" href="all.html">All Items</a></li></ul><section><ul class="block"><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Crate <a class="mod" href="#">mathru</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="srclink" href="../src/mathru/lib.rs.html#1-160">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="mathru"><a href="#mathru">mathru</a></h2>
+<p>A crate that provides  mathematics functions implemented entirely in Rust.</p>
+<h3 id="usage"><a href="#usage">Usage</a></h3>
+<p>The library usage is described well in the API documentation - including
+example code.</p>
+<p>Add this to your <code>Cargo.toml</code>:</p>
+<div class="example-wrap"><pre class="language-toml"><code>[dependencies]
+mathru = &quot;0.14&quot;
+</code></pre></div>
+<p>Then it is ready to be used:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code> <span class="kw">use </span>mathru::algebra::linear::{Vector, Matrix};
+ <span class="kw">use </span>mathru::algebra::linear::matrix::{Substitute};
+
+ <span class="comment">// Compute the LU decomposition of a 2x2 matrix
+ </span><span class="kw">let </span>a: Matrix&lt;f64&gt; = Matrix::new(<span class="number">2</span>, <span class="number">2</span>, <span class="macro">vec!</span>[<span class="number">1.0</span>, <span class="number">2.0</span>, -<span class="number">3.0</span>, -<span class="number">7.0</span>]);
+ <span class="kw">let </span>b: Vector&lt;f64&gt; = <span class="macro">vector!</span>[<span class="number">1.0</span>; <span class="number">3.0</span>];
+
+ <span class="kw">let </span>(l, u, p): (Matrix&lt;f64&gt;, Matrix&lt;f64&gt;, Matrix&lt;f64&gt;) = a.dec_lu().unwrap().lup();
+
+ <span class="kw">let </span>b_hat = <span class="kw-2">&amp;</span>p * <span class="kw-2">&amp;</span>b;
+
+ <span class="kw">let </span>y = u.substitute_backward(b_hat).unwrap();
+
+ <span class="kw">let </span>x = p * l.substitute_forward(y).unwrap();
+
+ <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, x);</code></pre></div>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::vector;
+<span class="kw">use </span>mathru::algebra::linear::{Vector, Matrix};
+<span class="kw">use </span>mathru::statistics::distrib::{Distribution, Normal};
+<span class="kw">use </span>mathru::optimization::{Optim, LevenbergMarquardt};
+
+
+<span class="comment">//y = a + b * exp(c * t) = f(t)
+</span><span class="kw">pub struct </span>Example
+{
+   x: Vector&lt;f64&gt;,
+   y: Vector&lt;f64&gt;
+}
+
+<span class="kw">impl </span>Example
+{
+    <span class="kw">pub fn </span>new(x: Vector&lt;f64&gt;, y: Vector&lt;f64&gt;) -&gt; Example
+    {
+        Example
+        {
+            x,
+            y
+        }
+    }
+
+    <span class="kw">pub fn </span>function(x: f64, beta: <span class="kw-2">&amp;</span>Vector&lt;f64&gt;) -&gt; f64
+    {
+        <span class="kw">let </span>beta_0: f64 = beta[<span class="number">0</span>];
+        <span class="kw">let </span>beta_1: f64 = beta[<span class="number">1</span>];
+        <span class="kw">let </span>beta_2: f64 = beta[<span class="number">2</span>];
+        <span class="kw">let </span>f_x: f64 = beta_0 + beta_1 * (beta_2 * x).exp();
+
+        <span class="kw">return </span>f_x;
+    }
+}
+
+<span class="kw">impl </span>Optim&lt;f64&gt; <span class="kw">for </span>Example
+{
+    <span class="comment">// y(x_i) - f(x_i)
+    </span><span class="kw">fn </span>eval(<span class="kw-2">&amp;</span><span class="self">self</span>, beta: <span class="kw-2">&amp;</span>Vector&lt;f64&gt;) -&gt; Vector&lt;f64&gt;
+    {
+        <span class="kw">let </span>f_x = <span class="self">self</span>.x.clone().apply(<span class="kw-2">&amp;</span>|x: <span class="kw-2">&amp;</span>f64| Example::function(<span class="kw-2">*</span>x, beta));
+        <span class="kw">let </span>r: Vector&lt;f64&gt; = <span class="kw-2">&amp;</span><span class="self">self</span>.y - <span class="kw-2">&amp;</span>f_x;
+        <span class="kw">return </span><span class="macro">vector!</span>[r.dotp(<span class="kw-2">&amp;</span>r)];
+    }
+
+    <span class="kw">fn </span>jacobian(<span class="kw-2">&amp;</span><span class="self">self</span>, beta: <span class="kw-2">&amp;</span>Vector&lt;f64&gt;) -&gt; Matrix&lt;f64&gt;
+    {
+        <span class="kw">let </span>(x_m, _x_n) = <span class="self">self</span>.x.dim();
+        <span class="kw">let </span>(beta_m, _beta_n) = beta.dim();
+
+        <span class="kw">let </span><span class="kw-2">mut </span>jacobian_f: Matrix&lt;f64&gt; = Matrix::zero(x_m, beta_m);
+
+        <span class="kw">let </span>f_x = <span class="self">self</span>.x.clone().apply(<span class="kw-2">&amp;</span>|x: <span class="kw-2">&amp;</span>f64| Example::function(<span class="kw-2">*</span>x, beta));
+        <span class="kw">let </span>residual: Vector&lt;f64&gt; = <span class="kw-2">&amp;</span><span class="self">self</span>.y - <span class="kw-2">&amp;</span>f_x;
+
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..x_m
+        {
+            <span class="kw">let </span>beta_1: f64 = beta[<span class="number">1</span>];
+            <span class="kw">let </span>beta_2: f64 = beta[<span class="number">2</span>];
+
+            <span class="kw">let </span>x_i: f64 = <span class="self">self</span>.x[i];
+
+            jacobian_f[[i, <span class="number">0</span>]] = <span class="number">1.0</span>;
+            jacobian_f[[i, <span class="number">1</span>]] = (beta_2 * x_i).exp();
+            jacobian_f[[i, <span class="number">2</span>]] = beta_1 * x_i * (beta_2 * x_i).exp();
+           }
+
+           <span class="kw">let </span>jacobian: Matrix&lt;f64&gt; = (residual.transpose() * jacobian_f * -<span class="number">2.0</span>).into();
+        <span class="kw">return </span>jacobian;
+    }
+}
+
+
+
+
+<span class="kw">let </span>num_samples: usize = <span class="number">100</span>;
+<span class="kw">let </span>noise: Normal&lt;f64&gt; = Normal::new(<span class="number">0.0</span>, <span class="number">0.05</span>);
+<span class="kw">let </span><span class="kw-2">mut </span>t_vec: Vec&lt;f64&gt; = Vec::with_capacity(num_samples);
+<span class="comment">// Start time
+</span><span class="kw">let </span>t_0 = <span class="number">0.0f64</span>;
+<span class="comment">// End time
+</span><span class="kw">let </span>t_1 = <span class="number">5.0f64</span>;
+<span class="kw">let </span><span class="kw-2">mut </span>y_vec: Vec&lt;f64&gt; = Vec::with_capacity(num_samples);
+<span class="comment">// True function parameters
+</span><span class="kw">let </span>beta: Vector&lt;f64&gt; = <span class="macro">vector!</span>[<span class="number">0.5</span>; <span class="number">5.0</span>; -<span class="number">1.0</span>];
+<span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..num_samples
+{
+    <span class="kw">let </span>t_i: f64 = (t_1 - t_0) / (num_samples <span class="kw">as </span>f64) * (i <span class="kw">as </span>f64);
+    <span class="comment">//Add some noise
+    </span>y_vec.push(Example::function(t_i, <span class="kw-2">&amp;</span>beta) + noise.random());
+    t_vec.push(t_i);
+}
+<span class="kw">let </span>t: Vector&lt;f64&gt; = Vector::new_column(t_vec.clone());
+<span class="kw">let </span>y: Vector&lt;f64&gt; = Vector::new_column(y_vec.clone());
+<span class="kw">let </span>example_function = Example::new(t, y);
+<span class="kw">let </span>optim: LevenbergMarquardt&lt;f64&gt; = LevenbergMarquardt::new(<span class="number">100</span>, <span class="number">0.3</span>, <span class="number">0.95</span>);
+<span class="kw">let </span>beta_0: Vector&lt;f64&gt; = <span class="macro">vector!</span>[-<span class="number">1.5</span>; <span class="number">1.0</span>; -<span class="number">2.0</span>];
+<span class="kw">let </span>beta_opt: Vector&lt;f64&gt; = optim.minimize(<span class="kw-2">&amp;</span>example_function, <span class="kw-2">&amp;</span>beta_0).unwrap().arg();
+<span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, beta_opt);
+</code></pre></div>
+</div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="algebra/index.html" title="mathru::algebra mod">algebra</a></div><div class="item-right docblock-short">Algebra</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="analysis/index.html" title="mathru::analysis mod">analysis</a></div><div class="item-right docblock-short">Analysis</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="elementary/index.html" title="mathru::elementary mod">elementary</a></div><div class="item-right docblock-short">Elementary functions</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="optimization/index.html" title="mathru::optimization mod">optimization</a></div><div class="item-right docblock-short">Optimization</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="special/index.html" title="mathru::special mod">special</a></div><div class="item-right docblock-short">Special functions</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="statistics/index.html" title="mathru::statistics mod">statistics</a></div><div class="item-right docblock-short">Statistics</div></div></div><h2 id="macros" class="small-section-header"><a href="#macros">Macros</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.abs_diff_eq.html" title="mathru::abs_diff_eq macro">abs_diff_eq</a></div><div class="item-right docblock-short">Approximate equality using the absolute difference.</div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.abs_diff_ne.html" title="mathru::abs_diff_ne macro">abs_diff_ne</a></div><div class="item-right docblock-short">Approximate inequality using the absolute difference.</div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.assert_abs_diff_eq.html" title="mathru::assert_abs_diff_eq macro">assert_abs_diff_eq</a></div><div class="item-right docblock-short">An assertion that delegates to abs_diff_eq!, and panics with a helpful error on failure.</div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.assert_abs_diff_ne.html" title="mathru::assert_abs_diff_ne macro">assert_abs_diff_ne</a></div><div class="item-right docblock-short">An assertion that delegates to <a href="macro.abs_diff_ne.html" title="abs_diff_ne!"><code>abs_diff_ne!</code></a>, and panics with a helpful error on failure.</div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.assert_relative_eq.html" title="mathru::assert_relative_eq macro">assert_relative_eq</a></div><div class="item-right docblock-short">An assertion that delegates to relative_eq!, and panics with a helpful error on failure.</div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.assert_relative_ne.html" title="mathru::assert_relative_ne macro">assert_relative_ne</a></div><div class="item-right docblock-short">An assertion that delegates to <a href="macro.relative_ne.html" title="relative_ne!"><code>relative_ne!</code></a>, and panics with a helpful error on failure.</div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.matrix.html" title="mathru::matrix macro">matrix</a></div><div class="item-right docblock-short">Macro to construct matrices</div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.relative_eq.html" title="mathru::relative_eq macro">relative_eq</a></div><div class="item-right docblock-short">Approximate equality using both the absolute difference and relative based comparisons.</div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.relative_ne.html" title="mathru::relative_ne macro">relative_ne</a></div><div class="item-right docblock-short">Approximate inequality using both the absolute difference and relative based comparisons.</div></div><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.vector.html" title="mathru::vector macro">vector</a></div><div class="item-right docblock-short">Macro to construct vectors</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="mathru" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.1 (d5a82bbd2 2023-02-07) (built from a source tarball)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

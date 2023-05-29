@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["erf","Error Function"],["erfc","Complementary error function"],["erfcinv","Inverse complementary error function"],["erfinv","Inverse error function"]],"trait":[["Error","Provides error, also called the Gauss error function related functions"]]};

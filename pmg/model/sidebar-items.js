@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["fit","Modules related to fitting"],["io","IO related"],["objects","Data objects"],["params","Model parameters"],["sample_description","Sample description"]],"struct":[["Model","Model of the Galaxy"]]};

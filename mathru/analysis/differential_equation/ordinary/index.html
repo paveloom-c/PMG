@@ -1,0 +1,64 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Ordinary differential equation"><meta name="keywords" content="rust, rustlang, rust-lang, ordinary"><title>mathru::analysis::differential_equation::ordinary - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../mathru/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../mathru/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></div></a><h2 class="location"><a href="#">Module ordinary</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#traits">Traits</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Module <a href="../../../index.html">mathru</a>::<wbr><a href="../../index.html">analysis</a>::<wbr><a href="../index.html">differential_equation</a>::<wbr><a class="mod" href="#">ordinary</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="srclink" href="../../../../src/mathru/analysis/differential_equation/ordinary/mod.rs.html#1-100">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Ordinary differential equation</p>
+<p>Fore more information:<br>
+<a href="https://en.wikipedia.org/wiki/Ordinary_differential_equation">https://en.wikipedia.org/wiki/Ordinary_differential_equation</a></p>
+<p>Because ODE higher order can always be reduced to a system of first order
+ODEs,  the implemented algorithms only support to solve first order ODEs.</p>
+<div class="example-wrap"><pre class="language-math"><code>\frac{dy}{dt}=f(t, y)
+</code></pre></div>
+<p>Solves an ODE using the Runge-Kutta-Dormand-Prince algorithm.</p>
+<p><a href="https://en.wikipedia.org/wiki/Dormand-Prince_method">https://en.wikipedia.org/wiki/Dormand-Prince_method</a></p>
+<h2 id="example"><a href="#example">Example</a></h2>
+<p>For this example, we want to solve the following ordinary differential
+equation:</p>
+<div class="example-wrap"><pre class="language-math"><code>\frac{dy}{dt} = ay = f(t, y)
+</code></pre></div>
+<p>The initial condition is $y(0) = 0.5$ and we solve it in the interval
+$\lbrack 0, 2\rbrack$ The following equation is the closed solution for
+this ODE:</p>
+<div class="example-wrap"><pre class="language-math"><code>y(t) = C a e^{at}
+</code></pre></div>
+<p>$C$ is a parameter and depends on the initial condition $y(t_{0})$</p>
+<div class="example-wrap"><pre class="language-math"><code>C = \frac{y(t_{0})}{ae^{at_{0}}}
+</code></pre></div>
+<p>In this example, we set $a=2$</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::{
+    algebra::linear::Vector,
+    analysis::differential_equation::ordinary::{ExplicitODE, ExplicitInitialValueProblem, ExplicitInitialValueProblemBuilder, solver::explicit::runge_kutta::adaptive::{DormandPrince54, ProportionalControl}},
+};
+
+<span class="kw">pub struct </span>Ode
+{
+}
+
+<span class="kw">impl </span>ExplicitODE&lt;f64&gt; <span class="kw">for </span>Ode
+{
+   <span class="kw">fn </span>ode(<span class="kw-2">&amp;</span><span class="self">self</span>, _x: <span class="kw-2">&amp;</span>f64, y: <span class="kw-2">&amp;</span>Vector&lt;f64&gt;) -&gt; Vector&lt;f64&gt;
+   {
+       y * <span class="kw-2">&amp;</span><span class="number">2.0f64
+   </span>}
+}
+
+<span class="kw">let </span>ode = Ode{};
+
+<span class="kw">let </span>problem = ExplicitInitialValueProblemBuilder::new(
+    <span class="kw-2">&amp;</span>ode,
+    <span class="number">0.0</span>,
+    <span class="macro">vector!</span>[<span class="number">0.5</span>]
+).t_end(<span class="number">2.0</span>)
+.build();
+
+<span class="kw">let </span>h_0: f64 = <span class="number">0.1</span>;
+<span class="kw">let </span>fac: f64 = <span class="number">0.9</span>;
+<span class="kw">let </span>fac_min: f64 = <span class="number">0.01</span>;
+<span class="kw">let </span>fac_max: f64 = <span class="number">2.0</span>;
+<span class="kw">let </span>n_max: u32 = <span class="number">500</span>;
+<span class="kw">let </span>abs_tol: f64 = <span class="number">10e-8</span>;
+<span class="kw">let </span>rel_tol: f64 = <span class="number">10e-6</span>;
+
+<span class="kw">let </span>solver: ProportionalControl&lt;f64&gt; = ProportionalControl::new(n_max, h_0, fac, fac_min, fac_max, abs_tol, rel_tol);
+
+<span class="comment">// Solve the ODE
+</span><span class="kw">let </span>(t, y): (Vec&lt;f64&gt;, Vec&lt;Vector&lt;f64&gt;&gt;) = solver.solve(<span class="kw-2">&amp;</span>problem, <span class="kw-2">&amp;</span>DormandPrince54::default()).unwrap();
+</code></pre></div>
+</div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="problem/index.html" title="mathru::analysis::differential_equation::ordinary::problem mod">problem</a></div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="solver/index.html" title="mathru::analysis::differential_equation::ordinary::solver mod">solver</a></div></div></div><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.ExplicitInitialValueProblem.html" title="mathru::analysis::differential_equation::ordinary::ExplicitInitialValueProblem struct">ExplicitInitialValueProblem</a></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.ExplicitInitialValueProblemBuilder.html" title="mathru::analysis::differential_equation::ordinary::ExplicitInitialValueProblemBuilder struct">ExplicitInitialValueProblemBuilder</a></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.ImplicitInitialValueProblem.html" title="mathru::analysis::differential_equation::ordinary::ImplicitInitialValueProblem struct">ImplicitInitialValueProblem</a></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.ImplicitInitialValueProblemBuilder.html" title="mathru::analysis::differential_equation::ordinary::ImplicitInitialValueProblemBuilder struct">ImplicitInitialValueProblemBuilder</a></div></div></div><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.ExplicitODE.html" title="mathru::analysis::differential_equation::ordinary::ExplicitODE trait">ExplicitODE</a></div><div class="item-right docblock-short">Explicit ordinary differential equation</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.ImplicitODE.html" title="mathru::analysis::differential_equation::ordinary::ImplicitODE trait">ImplicitODE</a></div><div class="item-right docblock-short">Implicit ordinary differential equation</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="mathru" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.1 (d5a82bbd2 2023-02-07) (built from a source tarball)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

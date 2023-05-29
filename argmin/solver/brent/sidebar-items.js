@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["BrentOpt","Brent’s method"],["BrentRoot","Brent’s method"]]};

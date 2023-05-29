@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["FrozenOuterOptimizationProblem","A problem for the outer optimization, but with a frozen parameter"]]};

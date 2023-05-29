@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["FourDimensionalProblem","Four-dimensional problem"],["MultiDimensionalOutliers",""],["OneDimensionalOutliers",""],["OneDimensionalProblem",""],["ThreeDimensionalProblem","Three-dimensional problem"]]};

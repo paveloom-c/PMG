@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["compute_relative_discrepancy","Compute the relative discrepancy from a triplet"],["prepare_inner_problem","Prepare the inner problem"]],"struct":[["InnerOptimizationProblem","A problem for the inner optimization"],["Triple","A triple of the discrepancy"]],"type":[["Triples","Triples of the discrepancies"]]};

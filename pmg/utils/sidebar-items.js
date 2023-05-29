@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["cast","Try to cast the number to a generic floating-point number"],["dms2rad","Convert a degrees-minutes-seconds angle to radians"],["finite_diff","Finite differences"],["hms2rad","Convert an hours-minutes-seconds angle to radians"],["str2vec","Parse a string for a vector of floats"]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["f21","Hypergeometric function"]],"trait":[["Hypergeometric",""]]};

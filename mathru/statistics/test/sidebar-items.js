@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["ChiSquare","Chi-Square Test"],["G","G-Test"],["T","T-Test"]],"trait":[["Test",""]]};

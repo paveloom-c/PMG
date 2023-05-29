@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["CubicSplineConstraint",""]],"struct":[["CubicSpline","Piecewise polynomial of degree 3"]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["GaussLegendre","Gauss Legendre quadrature"],["RootWeight",""]]};

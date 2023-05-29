@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["abstr","Abstract algebra"],["linear","Linear algebra"]]};

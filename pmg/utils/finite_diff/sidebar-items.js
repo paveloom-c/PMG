@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["central_diff","Compute the central difference"],["forward_diff","Compute the forward difference"],["mod_and_calc_vec","Change the parameter and compute the function for a vector"]],"trait":[["FiniteDiff","A subset of the `finitediff`s `FiniteDiff` trait made generic"]]};

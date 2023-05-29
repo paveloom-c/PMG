@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["binom","Binomial coefficient"],["comb",""],["factorial","Factorial"],["perm",""]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["beta","Provides the beta and related functions"],["error","Provides the error and related functions"],["gamma","Provides gamma related functions"],["hypergeometric","Hypergeometric functions"]]};

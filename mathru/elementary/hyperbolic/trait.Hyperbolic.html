@@ -1,0 +1,220 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Hyperbolic functions"><meta name="keywords" content="rust, rustlang, rust-lang, Hyperbolic"><title>Hyperbolic in mathru::elementary::hyperbolic - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../mathru/index.html"><div class="logo-container"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../mathru/index.html"><div class="logo-container"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></div></a><h2 class="location"><a href="#">Hyperbolic</a></h2><div class="sidebar-elems"><section><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.arcosh">arcosh</a></li><li><a href="#tymethod.arcoth">arcoth</a></li><li><a href="#tymethod.arcsch">arcsch</a></li><li><a href="#tymethod.arsech">arsech</a></li><li><a href="#tymethod.arsinh">arsinh</a></li><li><a href="#tymethod.artanh">artanh</a></li><li><a href="#tymethod.cosh">cosh</a></li><li><a href="#tymethod.coth">coth</a></li><li><a href="#tymethod.csch">csch</a></li><li><a href="#tymethod.sech">sech</a></li><li><a href="#tymethod.sinh">sinh</a></li><li><a href="#tymethod.tanh">tanh</a></li></ul><h3><a href="#foreign-impls">Implementations on Foreign Types</a></h3><ul class="block"><li><a href="#impl-Hyperbolic-for-f32">f32</a></li><li><a href="#impl-Hyperbolic-for-f64">f64</a></li></ul><h3><a href="#implementors">Implementors</a></h3></section><h2><a href="index.html">In mathru::elementary::hyperbolic</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Trait <a href="../../index.html">mathru</a>::<wbr><a href="../index.html">elementary</a>::<wbr><a href="index.html">hyperbolic</a>::<wbr><a class="trait" href="#">Hyperbolic</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="srclink" href="../../../src/mathru/elementary/hyperbolic.rs.html#10-46">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><div class="item-decl"><pre class="rust trait"><code>pub trait Hyperbolic {
+    fn <a href="#tymethod.sinh" class="fn">sinh</a>(self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.cosh" class="fn">cosh</a>(self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.tanh" class="fn">tanh</a>(self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.coth" class="fn">coth</a>(self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.sech" class="fn">sech</a>(self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.csch" class="fn">csch</a>(self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.arsinh" class="fn">arsinh</a>(self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.arcosh" class="fn">arcosh</a>(self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.artanh" class="fn">artanh</a>(self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.arcoth" class="fn">arcoth</a>(self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.arsech" class="fn">arsech</a>(self) -&gt; Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.arcsch" class="fn">arcsch</a>(self) -&gt; Self;
+}</code></pre></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Hyperbolic functions</p>
+<p><a href="https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions">https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions</a></p>
+</div></details><h2 id="required-methods" class="small-section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.sinh" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#12">source</a><h4 class="code-header">fn <a href="#tymethod.sinh" class="fn">sinh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic sine</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.cosh" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#15">source</a><h4 class="code-header">fn <a href="#tymethod.cosh" class="fn">cosh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic cosine</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.tanh" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#18">source</a><h4 class="code-header">fn <a href="#tymethod.tanh" class="fn">tanh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic tangens</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.coth" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#21">source</a><h4 class="code-header">fn <a href="#tymethod.coth" class="fn">coth</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic cotangens</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.sech" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#24">source</a><h4 class="code-header">fn <a href="#tymethod.sech" class="fn">sech</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic secant</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.csch" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#27">source</a><h4 class="code-header">fn <a href="#tymethod.csch" class="fn">csch</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic cosecant</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.arsinh" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#30">source</a><h4 class="code-header">fn <a href="#tymethod.arsinh" class="fn">arsinh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Inverse hyperbolic  sine</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.arcosh" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#33">source</a><h4 class="code-header">fn <a href="#tymethod.arcosh" class="fn">arcosh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Inverse hyperbolic cosine</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.artanh" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#36">source</a><h4 class="code-header">fn <a href="#tymethod.artanh" class="fn">artanh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Inverse hyperbolic tangens</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.arcoth" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#39">source</a><h4 class="code-header">fn <a href="#tymethod.arcoth" class="fn">arcoth</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Inverse hyperbolic cosecant</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.arsech" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#42">source</a><h4 class="code-header">fn <a href="#tymethod.arsech" class="fn">arsech</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Inverse hyperbolic secant</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="tymethod.arcsch" class="method has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#45">source</a><h4 class="code-header">fn <a href="#tymethod.arcsch" class="fn">arcsch</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Inverse hyperbolic cosecant</p>
+</div></details></div><h2 id="foreign-impls" class="small-section-header">Implementations on Foreign Types<a href="#foreign-impls" class="anchor">§</a></h2><details class="rustdoc-toggle implementors-toggle"><summary><section id="impl-Hyperbolic-for-f32" class="impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#256">source</a><a href="#impl-Hyperbolic-for-f32" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.Hyperbolic.html" title="trait mathru::elementary::hyperbolic::Hyperbolic">Hyperbolic</a> for <a class="primitive" href="https://doc.rust-lang.org/1.67.1/std/primitive.f32.html">f32</a></h3></section></summary><div class="impl-items"><details class="rustdoc-toggle method-toggle" open><summary><section id="method.sinh" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#256">source</a><a href="#method.sinh" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.sinh" class="fn">sinh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic sine</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.cosh" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#256">source</a><a href="#method.cosh" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.cosh" class="fn">cosh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic cosine</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.tanh" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#256">source</a><a href="#method.tanh" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.tanh" class="fn">tanh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic tangens</p>
+<h5 id="arguments"><a href="#arguments">Arguments</a></h5>
+<ul>
+<li><code>self</code> :</li>
+</ul>
+<h5 id="example"><a href="#example">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::elementary::Hyperbolic;
+
+<span class="kw">let </span>x: f64 = <span class="number">0.0_f64</span>;
+
+<span class="kw">let </span>f: f64 = x.tanh();</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.coth" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#256">source</a><a href="#method.coth" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.coth" class="fn">coth</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic cotangens</p>
+<h5 id="arguments-1"><a href="#arguments-1">Arguments</a></h5>
+<ul>
+<li><code>self</code> : != 0.0</li>
+</ul>
+<h5 id="panic"><a href="#panic">Panic</a></h5>
+<p>iff self == 0.0</p>
+<h5 id="example-1"><a href="#example-1">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::elementary::Hyperbolic;
+
+<span class="kw">let </span>x: f64 = <span class="number">1.0_f64</span>;
+
+<span class="kw">let </span>f: f64 = x.coth();</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.sech" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#256">source</a><a href="#method.sech" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.sech" class="fn">sech</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic secant</p>
+<h5 id="arguments-2"><a href="#arguments-2">Arguments</a></h5>
+<ul>
+<li><code>self</code> :</li>
+</ul>
+<h5 id="example-2"><a href="#example-2">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::elementary::Hyperbolic;
+
+<span class="kw">let </span>x: f64 = <span class="number">0.0_f64</span>;
+
+<span class="kw">let </span>f: f64 = x.sech();</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.csch" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#256">source</a><a href="#method.csch" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.csch" class="fn">csch</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic cosecant</p>
+<h5 id="arguments-3"><a href="#arguments-3">Arguments</a></h5>
+<ul>
+<li><code>self</code> : != 0.0</li>
+</ul>
+<h5 id="panics"><a href="#panics">Panics</a></h5>
+<p>if  self == 0</p>
+<h5 id="example-3"><a href="#example-3">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::elementary::Hyperbolic;
+
+<span class="kw">let </span>x: f64 = <span class="number">1.0_f64</span>;
+
+<span class="kw">let </span>f: f64 = x.csch();</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.arsinh" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#256">source</a><a href="#method.arsinh" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.arsinh" class="fn">arsinh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic inverse sine</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.arcosh" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#256">source</a><a href="#method.arcosh" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.arcosh" class="fn">arcosh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic inverse cosine</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.artanh" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#256">source</a><a href="#method.artanh" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.artanh" class="fn">artanh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic inverse tangens</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.arcoth" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#256">source</a><a href="#method.arcoth" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.arcoth" class="fn">arcoth</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic inverse cotan</p>
+<h5 id="arguments-4"><a href="#arguments-4">Arguments</a></h5>
+<ul>
+<li><code>self</code>  -1.0 &gt; self, self &gt; 1.0</li>
+</ul>
+<h5 id="panics-1"><a href="#panics-1">Panics</a></h5>
+<p>if  -1.0 &lt;= self &amp;&amp; self &lt;= 1.0</p>
+<h5 id="example-4"><a href="#example-4">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::{
+    algebra::abstr::Field,
+    elementary::{Exponential, Hyperbolic},
+};
+
+<span class="kw">let </span>x: f64 = <span class="number">2.0_f64</span>;
+<span class="kw">let </span>f: f64 = x.arcoth();</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.arsech" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#256">source</a><a href="#method.arsech" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.arsech" class="fn">arsech</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic inverse secant</p>
+<h5 id="arguments-5"><a href="#arguments-5">Arguments</a></h5>
+<ul>
+<li><code>self</code>  0.0 &lt; self &lt;= 1.0</li>
+</ul>
+<h5 id="panics-2"><a href="#panics-2">Panics</a></h5>
+<p>if  0.0 &gt;= self || self &gt; 1.0</p>
+<h5 id="example-5"><a href="#example-5">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::elementary::{Exponential, Hyperbolic};
+
+<span class="kw">let </span>x: f64 = <span class="number">0.5_f64</span>;
+<span class="kw">let </span>f: f64 = x.arsech();
+<span class="kw">let </span>g: f64 = (<span class="number">1.0 </span>/ x).arcosh();</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.arcsch" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#256">source</a><a href="#method.arcsch" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.arcsch" class="fn">arcsch</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic inverse cosecant</p>
+<h5 id="arguments-6"><a href="#arguments-6">Arguments</a></h5>
+<ul>
+<li><code>self</code>  &lt;&gt; 0.0</li>
+</ul>
+<h5 id="panics-3"><a href="#panics-3">Panics</a></h5>
+<p>iff self = 0.0</p>
+<h5 id="example-6"><a href="#example-6">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::{
+    algebra::abstr::Field,
+    elementary::{Exponential, Hyperbolic},
+};
+
+<span class="kw">let </span>x: f64 = <span class="number">2.0_f64</span>;
+<span class="kw">let </span>f: f64 = x.arcsch();</code></pre></div>
+</div></details></div></details><details class="rustdoc-toggle implementors-toggle"><summary><section id="impl-Hyperbolic-for-f64" class="impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#257">source</a><a href="#impl-Hyperbolic-for-f64" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.Hyperbolic.html" title="trait mathru::elementary::hyperbolic::Hyperbolic">Hyperbolic</a> for <a class="primitive" href="https://doc.rust-lang.org/1.67.1/std/primitive.f64.html">f64</a></h3></section></summary><div class="impl-items"><details class="rustdoc-toggle method-toggle" open><summary><section id="method.sinh-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#257">source</a><a href="#method.sinh-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.sinh" class="fn">sinh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic sine</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.cosh-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#257">source</a><a href="#method.cosh-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.cosh" class="fn">cosh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic cosine</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.tanh-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#257">source</a><a href="#method.tanh-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.tanh" class="fn">tanh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic tangens</p>
+<h5 id="arguments-7"><a href="#arguments-7">Arguments</a></h5>
+<ul>
+<li><code>self</code> :</li>
+</ul>
+<h5 id="example-7"><a href="#example-7">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::elementary::Hyperbolic;
+
+<span class="kw">let </span>x: f64 = <span class="number">0.0_f64</span>;
+
+<span class="kw">let </span>f: f64 = x.tanh();</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.coth-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#257">source</a><a href="#method.coth-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.coth" class="fn">coth</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic cotangens</p>
+<h5 id="arguments-8"><a href="#arguments-8">Arguments</a></h5>
+<ul>
+<li><code>self</code> : != 0.0</li>
+</ul>
+<h5 id="panic-1"><a href="#panic-1">Panic</a></h5>
+<p>iff self == 0.0</p>
+<h5 id="example-8"><a href="#example-8">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::elementary::Hyperbolic;
+
+<span class="kw">let </span>x: f64 = <span class="number">1.0_f64</span>;
+
+<span class="kw">let </span>f: f64 = x.coth();</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.sech-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#257">source</a><a href="#method.sech-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.sech" class="fn">sech</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic secant</p>
+<h5 id="arguments-9"><a href="#arguments-9">Arguments</a></h5>
+<ul>
+<li><code>self</code> :</li>
+</ul>
+<h5 id="example-9"><a href="#example-9">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::elementary::Hyperbolic;
+
+<span class="kw">let </span>x: f64 = <span class="number">0.0_f64</span>;
+
+<span class="kw">let </span>f: f64 = x.sech();</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.csch-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#257">source</a><a href="#method.csch-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.csch" class="fn">csch</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic cosecant</p>
+<h5 id="arguments-10"><a href="#arguments-10">Arguments</a></h5>
+<ul>
+<li><code>self</code> : != 0.0</li>
+</ul>
+<h5 id="panics-4"><a href="#panics-4">Panics</a></h5>
+<p>if  self == 0</p>
+<h5 id="example-10"><a href="#example-10">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::elementary::Hyperbolic;
+
+<span class="kw">let </span>x: f64 = <span class="number">1.0_f64</span>;
+
+<span class="kw">let </span>f: f64 = x.csch();</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.arsinh-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#257">source</a><a href="#method.arsinh-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.arsinh" class="fn">arsinh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic inverse sine</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.arcosh-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#257">source</a><a href="#method.arcosh-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.arcosh" class="fn">arcosh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic inverse cosine</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.artanh-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#257">source</a><a href="#method.artanh-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.artanh" class="fn">artanh</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic inverse tangens</p>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.arcoth-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#257">source</a><a href="#method.arcoth-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.arcoth" class="fn">arcoth</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic inverse cotan</p>
+<h5 id="arguments-11"><a href="#arguments-11">Arguments</a></h5>
+<ul>
+<li><code>self</code>  -1.0 &gt; self, self &gt; 1.0</li>
+</ul>
+<h5 id="panics-5"><a href="#panics-5">Panics</a></h5>
+<p>if  -1.0 &lt;= self &amp;&amp; self &lt;= 1.0</p>
+<h5 id="example-11"><a href="#example-11">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::{
+    algebra::abstr::Field,
+    elementary::{Exponential, Hyperbolic},
+};
+
+<span class="kw">let </span>x: f64 = <span class="number">2.0_f64</span>;
+<span class="kw">let </span>f: f64 = x.arcoth();</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.arsech-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#257">source</a><a href="#method.arsech-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.arsech" class="fn">arsech</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic inverse secant</p>
+<h5 id="arguments-12"><a href="#arguments-12">Arguments</a></h5>
+<ul>
+<li><code>self</code>  0.0 &lt; self &lt;= 1.0</li>
+</ul>
+<h5 id="panics-6"><a href="#panics-6">Panics</a></h5>
+<p>if  0.0 &gt;= self || self &gt; 1.0</p>
+<h5 id="example-12"><a href="#example-12">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::elementary::{Exponential, Hyperbolic};
+
+<span class="kw">let </span>x: f64 = <span class="number">0.5_f64</span>;
+<span class="kw">let </span>f: f64 = x.arsech();
+<span class="kw">let </span>g: f64 = (<span class="number">1.0 </span>/ x).arcosh();</code></pre></div>
+</div></details><details class="rustdoc-toggle method-toggle" open><summary><section id="method.arcsch-1" class="method trait-impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#257">source</a><a href="#method.arcsch-1" class="anchor">§</a><h4 class="code-header">fn <a href="#tymethod.arcsch" class="fn">arcsch</a>(self) -&gt; Self</h4></section></summary><div class="docblock"><p>Hyperbolic inverse cosecant</p>
+<h5 id="arguments-13"><a href="#arguments-13">Arguments</a></h5>
+<ul>
+<li><code>self</code>  &lt;&gt; 0.0</li>
+</ul>
+<h5 id="panics-7"><a href="#panics-7">Panics</a></h5>
+<p>iff self = 0.0</p>
+<h5 id="example-13"><a href="#example-13">Example</a></h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mathru::{
+    algebra::abstr::Field,
+    elementary::{Exponential, Hyperbolic},
+};
+
+<span class="kw">let </span>x: f64 = <span class="number">2.0_f64</span>;
+<span class="kw">let </span>f: f64 = x.arcsch();</code></pre></div>
+</div></details></div></details><h2 id="implementors" class="small-section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"><section id="impl-Hyperbolic-for-Complex%3CT%3E" class="impl has-srclink"><a class="srclink rightside" href="../../../src/mathru/elementary/hyperbolic.rs.html#259-343">source</a><a href="#impl-Hyperbolic-for-Complex%3CT%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; <a class="trait" href="trait.Hyperbolic.html" title="trait mathru::elementary::hyperbolic::Hyperbolic">Hyperbolic</a> for <a class="struct" href="../../algebra/abstr/struct.Complex.html" title="struct mathru::algebra::abstr::Complex">Complex</a>&lt;T&gt;<span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;T: <a class="trait" href="../../algebra/abstr/trait.Real.html" title="trait mathru::algebra::abstr::Real">Real</a>,</span></h3></section></div><script src="../../../implementors/mathru/elementary/hyperbolic/trait.Hyperbolic.js" data-ignore-extern-crates="std" async></script></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="mathru" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.1 (d5a82bbd2 2023-02-07) (built from a source tarball)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

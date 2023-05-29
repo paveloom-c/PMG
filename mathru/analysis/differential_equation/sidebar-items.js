@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["ordinary","Ordinary differential equation"]]};

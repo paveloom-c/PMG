@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["beta","Beta function"],["beta_inc","Incomplete beta function"],["beta_inc_reg","Incomplete regularized beta function"]],"trait":[["Beta","Provides beta, also called the Euler integral of the first kind related functions"]]};

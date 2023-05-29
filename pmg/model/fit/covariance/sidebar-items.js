@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["compute_hessian","Compute the Hessian at the best point"]]};

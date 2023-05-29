@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["diff","Evaluates the derivative of `f` at `x0`"],["grad","Evaluates the gradient of `f` at `x0`"]],"struct":[["F","A generic forward differentiation `Dual` number."]],"type":[["F1","First order dual number with `f64`."],["FT","First order dual number."]]};

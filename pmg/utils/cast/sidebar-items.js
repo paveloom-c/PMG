@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["cast","Try to cast the number to a generic floating-point number"]]};

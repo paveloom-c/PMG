@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["runge_kutta",""]],"struct":[["BDF","Backward differentiation formula"]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["DESCRIPTIONS","Descriptions of the fields"],["N_MAX","Maximum degree of the model supported"],["PARAMS_N","Number of the optimized parameters"],["PARAMS_NAMES","Names of the optimized parameters"]],"struct":[["Params","Model parameters"]]};
