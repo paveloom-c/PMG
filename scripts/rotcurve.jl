@@ -138,7 +138,14 @@ push!(PGFPlotsX.CUSTOM_PREAMBLE, """
   BoldFont=*tb,
   BoldItalicFont=*tx,
 ]
-\\usepackage[main=russian,english]{babel}""")
+\\usepackage[main=russian,english]{babel}
+\\pgfplotsset{
+  /pgfplots/layers/custom/.define layer set={
+    axis background,axis grid,pre main,main,axis ticks,axis lines,
+    axis tick labels,axis descriptions,axis foreground
+  }{/pgfplots/layers/standard},
+}
+""")
 
 # Choose a color scheme
 colors = ColorSchemes.tol_bright
@@ -262,6 +269,7 @@ function scatter(
     # Create a plot
     p = @pgf Axis(
         {
+            set_layers = "custom",
             xlabel = xlabel,
             ylabel = ylabel,
             xmax = x_max,
@@ -281,7 +289,6 @@ function scatter(
             tick_label_style = {font = "\\small"},
             tick_style = {line_width = 0.4, color = "black"},
             axis_line_style = {line_width = 1},
-            axis_on_top = true,
             "axis_lines*" = "left",
             legend_image_post_style = {mark_size = 2, line_width = 0.4},
             legend_pos = "outer north east",
@@ -363,7 +370,6 @@ function scatter(
                 )
             end,
         ),
-        [raw"\node[font=\fontsize{1}{0}\selectfont] at ", Coordinate(R_0, θ_sun), raw"{$\odot$};"],
         Legend(keys),
     ])
     # Add the error lines if additional data sets are specified
@@ -379,6 +385,10 @@ function scatter(
             ))
         end
     end
+    # Add a Sun symbol
+    push!(p, @pgf [
+        raw"\node[font=\fontsize{1}{0}\selectfont] at ", Coordinate(R_0, θ_sun), raw"{$\odot$};"
+    ])
     return p
 end
 

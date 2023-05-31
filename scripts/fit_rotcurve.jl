@@ -155,7 +155,14 @@ push!(PGFPlotsX.CUSTOM_PREAMBLE, """
   BoldFont=*tb,
   BoldItalicFont=*tx,
 ]
-\\usepackage[main=russian,english]{babel}""")
+\\usepackage[main=russian,english]{babel}
+\\pgfplotsset{
+  /pgfplots/layers/custom/.define layer set={
+    axis background,axis grid,pre main,main,axis ticks,axis lines,
+    axis tick labels,axis descriptions,axis foreground
+  }{/pgfplots/layers/standard},
+}
+""")
 
 # Choose a color scheme
 colors = ColorSchemes.tol_bright
@@ -319,6 +326,7 @@ function plot(
     # Create a plot
     p = @pgf Axis(
         {
+            set_layers = "custom",
             xlabel = xlabel,
             ylabel = ylabel,
             xmax = x_max,
@@ -338,7 +346,6 @@ function plot(
             tick_label_style = {font = "\\small"},
             tick_style = {line_width = 0.4, color = "black"},
             axis_line_style = {line_width = 1},
-            axis_on_top = true,
             "axis_lines*" = "left",
             legend_image_post_style = {mark_size = 2, line_width = 0.4},
             legend_pos = "outer north east",
@@ -407,12 +414,12 @@ function plot(
         ),
         Plot(
             {
+                line_width = 0.15,
                 color = colors[1],
                 mark = "none"
             },
             fit_table,
         ),
-        [raw"\node[font=\fontsize{1}{0}\selectfont] at ", Coordinate(R_0, θ_sun), raw"{$\odot$};"],
         Legend(keys),
     ])
     # Add the error lines if additional data sets are specified
@@ -433,6 +440,7 @@ function plot(
         push!(p, @pgf [
             Plot(
                 {
+                    line_width = 0.15,
                     color = colors[3],
                     mark = "none"
                 },
@@ -443,6 +451,7 @@ function plot(
             ),
             Plot(
                 {
+                    line_width = 0.15,
                     color = colors[3],
                     mark = "none"
                 },
@@ -481,6 +490,10 @@ function plot(
             meta=[L"\pm\sigma_\theta"];
         ),
     ))
+    # Add the Sun symbol
+    push!(p, @pgf [
+        raw"\node[font=\fontsize{1}{0}\selectfont] at ", Coordinate(R_0, θ_sun), raw"{$\odot$};"
+    ])
     return p
 end
 
