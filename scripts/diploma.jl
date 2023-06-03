@@ -1,4 +1,4 @@
-# This script generates tables from the results
+# This script generates tables from the results for the diploma
 
 "Parse the string, taking more arguments if it's quoted"
 function parse_string(i)::String
@@ -46,7 +46,7 @@ YELLOW = "\e[33m"
 if "--help" in ARGS
     println("""
         $(YELLOW)USAGE:$(RESET)
-        { julia --project=. | ./julia.bash } diploma/tables.jl -i <INPUT_DIR>
+        { julia --project=. | ./julia.bash } scripts/diploma.jl -i <INPUT_DIR>
 
         $(YELLOW)OPTIONS:$(RESET)
             $(GREEN)-i <INPUT_DIR>$(RESET)    Input directory"""

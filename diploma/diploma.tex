@@ -294,7 +294,7 @@
 В предположении чисто кругового вращения модельная величина гелиоцентрической лучевой скорости данного объекта, $ V_{r,\text{mod}} $, в общем случае определяется выражениями
 %
 \begin{align}
-  V_{r,\text{mod}} &= V_{r,rot} + V_{r,\odot},\\
+  V_{r,\text{mod}} &= V_{r,\text{rot}} + V_{r,\odot},\\
   \label{eq:v_r_rot}
   V_{r,\text{rot}} &= (\omega - \omega_0) R_0 \sin{l} \cos{b},\\
   V_{r,\odot} &= -u_\odot \cos{l} \cos{b} - v_\odot \sin{l} \cos{b} - w_\odot \sin{b},
@@ -347,7 +347,7 @@
 \begin{align}
   k \mu_{b,\text{mod}} &= k \mu_{b,\text{rot}} + k \mu_{b,\odot},\\
   k \mu_{b,\text{rot}} &= \left[ 2 A \Delta R - \sum_{i=2}^n \frac{\theta_i}{i!} (\Delta R)^i \right] \frac{R_0}{R r} \sin{l} \sin{b},\\
-  k \mu_{b,\odot} &= (u_\odot \cos{l} \sin{b} + u_\odot \sin{l} \sin{b} - w_\odot \cos{b}) / r,
+  k \mu_{b,\odot} &= (u_\odot \cos{l} \sin{b} + u_\odot \sin{l} \sin{b} - w_\odot \cos{b}) / r.
 \end{align}
 
 \hyperlink{toc}{\subsection{Формулы редукции в случае мазеров}}
@@ -692,7 +692,7 @@ $\Lambda$-параметризация удобнее при выражении 
 \begin{align}
   \nonumber
   L = \prod_{j = 1}^N & \frac{1}{\sqrt{2 \pi} (\sigma_{V_r})_j} \exp{\left\{ \frac{[ V_{r,j} - V_{r,\text{mod}} (\varpi_{0,j}) ]^2}{2 (\sigma_{V_r})_j^2} \right\}} \frac{1}{\sqrt{2 \pi} (\sigma_{\mu_l'})_j} \exp{\left\{ \frac{[ \mu_{l,j}' - \mu_{l,\text{mod}}' (\varpi_{0,j}) ]^2}{2 (\sigma_{\mu_l'})_j^2} \right\}} \times {}\\
-  {} \times {} & \frac{1}{\sqrt{2 \pi} (\sigma_{\mu_b})_j} \exp{\left\{ \frac{[ \mu_{b,j} - \mu_{b,\text{mod}} (\varpi_{0,j}) ]^2}{2 (\sigma_{\mu_b})_j^2} \right\}} \frac{1}{\sqrt{2 \pi} \sigma_{\varpi,j}} \exp{\left\{ \frac{(\varpi_j - \varpi_{0,j})^2}{2 \sigma_{\varpi,j}^2} \right\}}
+  {} \times {} & \frac{1}{\sqrt{2 \pi} (\sigma_{\mu_b})_j} \exp{\left\{ \frac{[ \mu_{b,j} - \mu_{b,\text{mod}} (\varpi_{0,j}) ]^2}{2 (\sigma_{\mu_b})_j^2} \right\}} \frac{1}{\sqrt{2 \pi} \sigma_{\varpi,j}} \exp{\left\{ \frac{(\varpi_j - \varpi_{0,j})^2}{2 \sigma_{\varpi,j}^2} \right\}},
 \end{align}
 %
 где $ V_{r,j} $, $ \mu_{l,j}' $, $ \mu_{b,j} $ и $ \varpi_j $ --- каталожные (измеренные) значения $ V_r $, $ \mu_l' $, $ \mu_b $ и $ \varpi $ для $j$-го объекта; $ \varpi_{0,j} $ --- приведенное значение параллакса $j$-го объекта. Итоговые дисперсии скоростных характеристик для $j$-го объекта представляют собой суммы двух составляющих:
@@ -728,9 +728,9 @@ $\Lambda$-параметризация удобнее при выражении 
   \end{aligned}\\
   &= \mathcal{L}^{(0)} + \mathcal{L}^{(1)}(\mathbf{a}),
 \end{align}
-}
+}%
 %
-где $ L^{(0)} = 4 N \ln{\sqrt{2 \pi}} + \sum_{j=1}^N \ln{\sigma_{\varpi,j}} = \text{const} $, $ \mathbf{a} = (R_0, \omega_0, A, \theta_2, \ldots, \theta_n, u_\odot, v_\odot, w_\odot, \sigma_R, \sigma_\theta, \sigma_Z) $ --- вектор параметров модели. Решение --- точечная оценка вектора $ \mathbf{a} $ --- для фиксированных модели и выборки дается минимизацией логарифмической функции правдоподобия:
+где $ \mathcal{L}^{(0)} = 4 N \ln{\sqrt{2 \pi}} + \sum_{j=1}^N \ln{\sigma_{\varpi,j}} = \text{const} $, $ \mathbf{a} = (R_0, \omega_0, A, \theta_2, \ldots, \theta_n, u_\odot, v_\odot, w_\odot, \sigma_R, \sigma_\theta, \sigma_Z) $ --- вектор параметров модели. Решение --- точечная оценка вектора $ \mathbf{a} $ --- для фиксированных модели и выборки дается минимизацией логарифмической функции правдоподобия:
 %
 \begin{equation}
   \label{eq:L_1}

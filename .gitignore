@@ -9,6 +9,9 @@ result
 *.zip
 diploma/*.pdf
 diploma/tables
+presentation/*.pdf
+presentation/*.txt
+presentation/tables
 public
 results*
 target

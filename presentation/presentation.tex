@@ -1,0 +1,213 @@
+\documentclass{beamer}
+\special{pdf:minorversion 6}
+
+\usepackage{fontspec}
+\defaultfontfeatures{Ligatures={TeX}}
+\setmainfont{cmun}[
+  Extension=.otf,
+  UprightFont=*rm,
+  ItalicFont=*ti,
+  BoldFont=*bx,
+  BoldItalicFont=*bi,
+]
+\setsansfont{cmun}[
+  Extension=.otf,
+  UprightFont=*ss,
+  ItalicFont=*si,
+  BoldFont=*sx,
+  BoldItalicFont=*so,
+]
+\setmonofont{cmun}[
+  Extension=.otf,
+  UprightFont=*btl,
+  ItalicFont=*bto,
+  BoldFont=*tb,
+  BoldItalicFont=*tx,
+]
+\usepackage[main=russian,english]{babel}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{gensymb}
+
+\usepackage{hyperref}
+\hypersetup{pdfstartview={FitH}}
+
+\usepackage{booktabs}
+\usepackage{makecell}
+
+\usepackage[justification=justified, format=plain]{caption}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{subfig}
+\graphicspath{ {../results/} }
+\DeclareGraphicsExtensions{.pdf}
+\captionsetup[table]{name=Табл.}
+\captionsetup{labelsep=period}
+
+\title{Пространственно-кинематическое моделирование плоской подсистемы Галактики методом наибольшего правдоподобия}
+\subtitle{Выпускная квалификационная работа}
+\author{Соболев Павел Леонидович\\Научный руководитель: Никифоров И. И.}
+
+\date{6 июня 2023}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{caption}[numbered]
+\usefonttheme[onlymath]{serif}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Цель}
+Корректность:
+\begin{itemize}
+  \item использование трехмерного поля скоростей;
+  \item определение остаточного движения Солнца;
+  \item учет вклада природной дисперсии;
+  \item учет случайных ошибок гелиоцентрических расстояний;
+  \item оптимизация порядка модели;
+  \item использование гибкого алгоритма для определения выбросов по невязкам.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Актуальность}
+\begin{enumerate}
+  \item Фундаментальность. От значения $ R_0 $ зависят, например:
+  \begin{itemize}
+    \item абсолютный размер нашей Галактики и её светимость;
+    \item величина линейной скорости вращения Галактики $ \theta_0 $ на $ R_0 $;
+    \item кривая вращения Галактики.
+  \end{itemize}
+  \item Вопрос получения достаточно точных оценок параметров. В последних обзорах средняя оценка $ R_0 $ расположена около 8 кпк.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+  \centering
+  \includegraphics[scale=1.15]{All/objects/Plots by type/XY (errors)}
+  \caption{Распределение объектов каталога в плоскости Галактики}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+  \centering
+  \includegraphics[scale=1.15]{All/objects/Plots by type/XZ (errors)}
+  \caption{Распределение объектов каталога в плоскости, ортогональной плоскости Галактики.}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Функция правдоподобия}
+\vspace{-2em}
+\begin{align}
+  \nonumber
+  L = \prod_{j = 1}^N & \frac{1}{\sqrt{2 \pi} (\sigma_{V_r})_j} \exp{\left\{ \frac{[ V_{r,j} - V_{r,\mathrm{mod}} (\varpi_{0,j}) ]^2}{2 (\sigma_{V_r})_j^2} \right\}} \times {}\\
+  \nonumber
+  {} \times {} & \frac{1}{\sqrt{2 \pi} (\sigma_{\mu_l'})_j} \exp{\left\{ \frac{[ \mu_{l,j}' - \mu_{l,\mathrm{mod}}' (\varpi_{0,j}) ]^2}{2 (\sigma_{\mu_l'})_j^2} \right\}} \times {}\\
+  \nonumber
+  {} \times {} & \frac{1}{\sqrt{2 \pi} (\sigma_{\mu_b})_j} \exp{\left\{ \frac{[ \mu_{b,j} - \mu_{b,\mathrm{mod}} (\varpi_{0,j}) ]^2}{2 (\sigma_{\mu_b})_j^2} \right\}} \times {}\\
+  {} \times {} & \frac{1}{\sqrt{2 \pi} \sigma_{\varpi,j}} \exp{\left\{ \frac{(\varpi_j - \varpi_{0,j})^2}{2 \sigma_{\varpi,j}^2} \right\}}.
+\end{align}
+\end{frame}
+
+\begin{frame}
+\frametitle{Логарифмическая функция правдоподобия}
+\vspace{-2em}
+\begin{align}
+  \nonumber
+  \mathcal{L} &\equiv -\ln{L} = 4 N \ln{\sqrt{2 \pi}}\\
+  \nonumber
+  &+ \sum_{j=1}^N \left[ \ln{(\sigma_{V_r})_j} + \ln{(\sigma_{\mu_l'})_j} + \ln{(\sigma_{\mu_b})_j} + \ln{\sigma_{\varpi,j}} \right] + {}\\
+  \nonumber
+  &+ \frac{1}{2} \sum_{j=1}^N \min_{\varpi_{0,j}} \left\{ \frac{[ V_{r,j} - V_{r,\mathrm{mod}}(\varpi_{0,j}) ]^2}{(\sigma_{V_r})_j^2} + \frac{[ \mu_{l,j}' - \mu_{l,\mathrm{mod}}'(\varpi_{0,j}) ]^2}{(\sigma_{\mu_l'})_j^2} + {} \right.\\
+  \nonumber
+  &+ \left. \frac{[ \mu_{b,j} - \mu_{b,\mathrm{mod}}(\varpi_{0,j}) ]^2}{(\sigma_{\mu_b})_j^2} + \frac{( \varpi_j - \varpi_{0,j} )^2}{\sigma_{\varpi,j}^2} \vphantom{\frac{[ \mu_{l,j}' - \mu_{l,\mathrm{mod}}'(\varpi_{0,j}) ]^2}{(\sigma_{\mu_l'})_j^2}} \right\} = {}\\
+  &= \mathcal{L}^{(0)} + \mathcal{L}^{(1)}(\mathbf{a}),
+\end{align}
+%
+где $ \mathcal{L}^{(0)} = 4 N \ln{\sqrt{2 \pi}} + \sum_{j=1}^N \ln{\sigma_{\varpi,j}} = \mathrm{const} $, $ \mathbf{a} = (R_0, \omega_0, A, \theta_2, \ldots, \theta_n, u_\odot, v_\odot, w_\odot, \sigma_R, \sigma_\theta, \sigma_Z) $ --- вектор параметров модели. Решение --- точечная оценка вектора $ \mathbf{a} $ --- дается минимизацией функции $ \mathcal{L}^{(1)}(\mathbf{a}) $.
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.75]{HMSFRs/n = 3/Inner profiles/29}
+  \includegraphics[trim={0.51cm 0 0 0},clip,scale=0.75]{HMSFRs/n = 3/Inner profiles/61}
+  \caption{Примеры профилей внутренней целевой функции, построенные по итоговым параметрам модели (выборка HMSFRs, $ n_\mathrm{o} = 3 $).}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\vspace{-0.6em}
+\input{tables/hmsfrs.tex}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+  \centering
+  \includegraphics[scale=1.27]{HMSFRs/n = 3/Fitted rotation curve (errors)}
+  \caption{Модельная кривая вращения (выборка HMSFRs, $ n_\mathrm{o} = 3 $).}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+  \centering
+  \includegraphics[scale=1.1]{HMSFRs/n = 3/Conditional profile of R_0}
+  \caption{Профиль целевой функции, построенный при фиксированном параметре $ R_0 $ и остальных свободных (выборка HMSFRs, $ n_\mathrm{o} = 3 $).}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+  \centering
+  \includegraphics[scale=1.15]{HMSFRs/L_1}
+  \caption{Зависимость значений целевой функции $ \mathcal{L}^{(1)} $ от порядка модели для выборки HMSFRs.}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+  \centering
+  \includegraphics[scale=1.15]{HMSFRs/sigma_theta}
+  \caption{Зависимость значений азимутальной компоненты эллипсоида скоростей $ \sigma_\theta $ от порядка модели для выборки HMSFRs.}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+  \centering
+  \subfloat{{\includegraphics[scale=1.1]{HMSFRs/n = 3/Parallaxes (under 1 mas)}}}
+  \caption{Соотношение исходных и приведенных параллаксов (в пределах 1 мсд, выборка HMSFRs, $ n_\mathrm{o} = 3$).}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\vspace{-0.6em}
+\input{tables/hmsfrs_di.tex}
+\end{frame}
+
+\begin{frame}
+\frametitle{Заключение}
+\begin{enumerate}
+  \item Создан новый каталог мазеров, содержащий наиболее полный на текущий момент набор кинематических данных (276 объектов).
+  \item Разработан и реализован алгоритм пространственно-кинематического моделирования, учитывающий случайные ошибки гелиоцентрических расстояний.
+  \item Выведена оценка расстояния от Солнца до центра Галактики $ R_0 = 7.92 \pm 0.12 $ кпк. Найдены статистически точные оценки для ряда фундаментальных параметров Галактики.
+  \item Систематического смещения параллаксов не обнаружено: среднее смещение $ \Delta\varpi $ составляет $ −0.95 \pm 1.00 $ мксд. Неопределенности параллаксов мазеров завышены примерно на $ 1/5 $.
+  \item Продемонстрирована необходимость учитывать неопределенность расстояний.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\centering\Huge
+Спасибо за внимание!
+\end{frame}
+
+\end{document}
