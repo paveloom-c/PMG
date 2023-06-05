@@ -29,6 +29,7 @@ INPUT_DIR = ""
 OUTPUT_DIR = ""
 POSTFIX = ""
 NO_DISTANCE_ERRORS = false
+ALTERNATIVE_STYLE = false
 
 # Parse the options
 for i in eachindex(ARGS)
@@ -76,6 +77,10 @@ for i in eachindex(ARGS)
     if ARGS[i] == "--no-distance-errors"
         global NO_DISTANCE_ERRORS = true
     end
+    # Use an alternative style
+    if ARGS[i] == "--alt-style"
+        global ALTERNATIVE_STYLE = true
+    end
 end
 
 # Prepare color codes
@@ -95,7 +100,8 @@ if "--help" in ARGS
             $(GREEN)-i <INPUT_DIR>$(RESET)         Input directory
             $(GREEN)-o <OUTPUT_DIR>$(RESET)        Output directory
             $(GREEN)--postfix <POSTFIX>$(RESET)    A postfix for the names of output files
-            $(GREEN)--no-distance-errors$(RESET)   Don't plot distance errors"""
+            $(GREEN)--no-distance-errors$(RESET)   Don't plot distance errors
+            $(GREEN)--alt-style$(RESET)            Use an alternative style"""
     )
     exit(1)
 end
@@ -414,7 +420,7 @@ function plot(
         ),
         Plot(
             {
-                line_width = 0.15,
+                line_width = ALTERNATIVE_STYLE ? 0.4 : 0.15,
                 color = colors[1],
                 mark = "none"
             },
@@ -440,7 +446,7 @@ function plot(
         push!(p, @pgf [
             Plot(
                 {
-                    line_width = 0.15,
+                    line_width = ALTERNATIVE_STYLE ? 0.4 : 0.15,
                     color = colors[3],
                     mark = "none"
                 },
@@ -451,7 +457,7 @@ function plot(
             ),
             Plot(
                 {
-                    line_width = 0.15,
+                    line_width = ALTERNATIVE_STYLE ? 0.4 : 0.15,
                     color = colors[3],
                     mark = "none"
                 },

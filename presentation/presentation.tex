@@ -40,7 +40,7 @@
 \usepackage{float}
 \usepackage{graphicx}
 \usepackage{subfig}
-\graphicspath{ {../results/} }
+\graphicspath{{results}{../results/}}
 \DeclareGraphicsExtensions{.pdf}
 \captionsetup[table]{name=Табл.}
 \captionsetup{labelsep=period}
@@ -51,13 +51,19 @@
 
 \date{6 июня 2023}
 
-\setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{caption}[numbered]
+\setbeamertemplate{navigation symbols}{}
 \usefonttheme[onlymath]{serif}
+
+\setbeamertemplate{footline}{
+  \begin{beamercolorbox}[sep=2ex]{}
+    \hfill\llap{\insertframenumber}%
+  \end{beamercolorbox}%
+}
 
 \begin{document}
 
-\begin{frame}
+\begin{frame}[plain]
 \titlepage
 \end{frame}
 
@@ -88,16 +94,17 @@
 \end{frame}
 
 \begin{frame}
+\vspace{1em}
 \begin{figure}
   \centering
   \includegraphics[scale=1.15]{All/objects/Plots by type/XY (errors)}
-  \caption{Распределение объектов каталога в плоскости Галактики}
+  \caption{Распределение объектов каталога в плоскости Галактики.}
 \end{figure}
 \end{frame}
 
 \begin{frame}
 \frametitle{Функция правдоподобия}
-\vspace{-2em}
+\vspace{-1em}
 \begin{align}
   \nonumber
   L = \prod_{j = 1}^N & \frac{1}{\sqrt{2 \pi} (\sigma_{V_r})_j} \exp{\left\{ \frac{[ V_{r,j} - V_{r,\mathrm{mod}} (\varpi_{0,j}) ]^2}{2 (\sigma_{V_r})_j^2} \right\}} \times {}\\
@@ -128,6 +135,7 @@
 \end{frame}
 
 \begin{frame}
+\vspace{2em}
 \begin{figure}
   \centering
   \includegraphics[scale=0.75]{HMSFRs/n = 3/Inner profiles/29}
@@ -142,6 +150,7 @@
 \end{frame}
 
 \begin{frame}
+\vspace{0.5em}
 \begin{figure}
   \centering
   \includegraphics[scale=1.27]{HMSFRs/n = 3/Fitted rotation curve (errors)}
@@ -150,6 +159,7 @@
 \end{frame}
 
 \begin{frame}
+\vspace{1em}
 \begin{figure}
   \centering
   \includegraphics[scale=1.1]{HMSFRs/n = 3/Conditional profile of R_0}
@@ -158,11 +168,12 @@
 \end{frame}
 
 \begin{frame}
+\vspace{2em}
 \begin{figure}
   \centering
   \includegraphics[scale=0.79]{HMSFRs/L_1}
   \includegraphics[scale=0.79]{HMSFRs/sigma_theta}
-  \caption{Зависимость значений целевой функции $ \mathcal{L}^{(1)} $ и азимутальной компоненты эллипсоида скоростей $ \sigma_\theta $ от порядка модели для выборки HMSFRs.}
+  \caption{Зависимости значений целевой функции $ \mathcal{L}^{(1)} $ и азимутальной компоненты эллипсоида скоростей $ \sigma_\theta $ от порядка модели для выборки HMSFRs.}
 \end{figure}
 \end{frame}
 
@@ -185,14 +196,38 @@
   \item Создан новый каталог мазеров, содержащий наиболее полный на текущий момент набор кинематических данных (276 объектов).
   \item Разработан и реализован алгоритм пространственно-кинематического моделирования, учитывающий случайные ошибки гелиоцентрических расстояний.
   \item Выведена оценка расстояния от Солнца до центра Галактики $ R_0 = 7.92 \pm 0.12 $ кпк. Найдены статистически точные оценки для ряда фундаментальных параметров Галактики.
-  \item Систематического смещения параллаксов не обнаружено: среднее смещение $ \Delta\varpi $ составляет $ −0.95 \pm 1.00 $ мксд. Неопределенности параллаксов мазеров завышены примерно на $ 1/5 $.
+  \item Систематического смещения параллаксов не обнаружено: среднее смещение $ \Delta\varpi $ составляет $ −0.95 \pm 1.00 $ мксд. Каталожные неопределенности параллаксов мазеров завышены примерно на $ 1/5 $.
   \item Продемонстрирована необходимость учитывать неопределенность расстояний.
 \end{enumerate}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[plain]
+\vspace{2em}
 \centering\Huge
 Спасибо за внимание!
+\end{frame}
+
+\begin{frame}
+\vspace{-0.6em}
+\input{tables/solar_sc.tex}
+\end{frame}
+
+\begin{frame}
+\vspace{0.5em}
+\begin{figure}
+  \centering
+  \includegraphics[scale=1.22]{Near the solar circle (self-consistency check, iter 2)/n = 1/Fitted rotation curve (errors)}
+  \caption{Модельная кривая вращения (выборка мазеров вблизи солнечного круга, $ n_\mathrm{o} = 1 $).}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\vspace{0.5em}
+\begin{figure}
+  \centering
+  \includegraphics[scale=1.18]{HMSFRs/n = 3/Odd objects (XY) (errors)}
+  \caption{Распределение объектов с несколькими локальными минимумами на профилях внутренней целевой функции (выборка HMSFRs, n = 3) в плоскости Галактики.}
+\end{figure}
 \end{frame}
 
 \end{document}

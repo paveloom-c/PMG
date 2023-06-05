@@ -28,6 +28,7 @@ PLOT_TEST = false
 INPUT_DIR = ""
 OUTPUT_DIR = ""
 POSTFIX = ""
+ALTERNATIVE_STYLE = false
 
 # Parse the options
 for i in eachindex(ARGS)
@@ -67,6 +68,10 @@ for i in eachindex(ARGS)
             exit(1)
         end
     end
+    # Use an alternative style
+    if ARGS[i] == "--alt-style"
+        global ALTERNATIVE_STYLE = true
+    end
 end
 
 # Prepare color codes
@@ -83,7 +88,8 @@ if "--help" in ARGS
             $(GREEN)-n$(RESET)                     Degree of the polynomial of the rotation curve
             $(GREEN)-i <INPUT_DIR>$(RESET)         Input directory
             $(GREEN)-o <OUTPUT_DIR>$(RESET)        Output directory
-            $(GREEN)--postfix <POSTFIX>$(RESET)    A postfix for the names of output files"""
+            $(GREEN)--postfix <POSTFIX>$(RESET)    A postfix for the names of output files
+            $(GREEN)--alt-style$(RESET)            Use an alternative style"""
     )
     exit(1)
 end
@@ -154,11 +160,13 @@ CURRENT_DIR = @__DIR__
 ROOT_DIR = dirname(CURRENT_DIR)
 INPUT_DIR = isabspath(INPUT_DIR) ? joinpath(INPUT_DIR, "n = $(N)") : joinpath(ROOT_DIR, INPUT_DIR, "n = $(N)")
 OUTPUT_DIR = isabspath(OUTPUT_DIR) ? joinpath(OUTPUT_DIR, "n = $(N)") : joinpath(ROOT_DIR, OUTPUT_DIR, "n = $(N)")
-INNER_PROFILES_DIR = joinpath(OUTPUT_DIR, "Inner profiles")
+INPUT_INNER_PROFILES_DIR = joinpath(INPUT_DIR, "Inner profiles")
+OUTPUT_INNER_PROFILES_DIR = joinpath(OUTPUT_DIR, "Inner profiles")
 PARALLAXES_DATA_PATH = joinpath(INPUT_DIR, "parallaxes.dat")
 
 # Make sure the needed directories exist
 mkpath(OUTPUT_DIR)
+mkpath(OUTPUT_INNER_PROFILES_DIR)
 
 println(pad, "> Plotting the inner profiles...")
 
@@ -207,7 +215,7 @@ function plot(x, y, xlabel, ylabel, par_r, par)
             {
                 dashed,
                 no_marks,
-                color = colors[3]
+                color = ALTERNATIVE_STYLE ? colors[5] : colors[3]
             },
             par,
         ),
@@ -235,7 +243,7 @@ for object in parallaxes_data
     end
 
     number = object.i
-    profile_path = joinpath(INNER_PROFILES_DIR, "$(number).dat")
+    profile_path = joinpath(INPUT_INNER_PROFILES_DIR, "$(number).dat")
     profile_data = CSV.File(profile_path, delim=' ', comment="#")
 
     push!(tasks, @spawn begin
@@ -250,7 +258,7 @@ for object in parallaxes_data
             object.par_r,
             object.par,
         )
-        pgfsave(joinpath(INNER_PROFILES_DIR, "$(number).pdf"), p)
+        pgfsave(joinpath(OUTPUT_INNER_PROFILES_DIR, "$(number).pdf"), p)
     end)
 
     task_count += 1

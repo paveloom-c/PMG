@@ -27,6 +27,7 @@ N = nothing
 INPUT_DIR = ""
 OUTPUT_DIR = ""
 POSTFIX = ""
+ALTERNATIVE_STYLE = false
 
 # Parse the options
 for i in eachindex(ARGS)
@@ -66,6 +67,10 @@ for i in eachindex(ARGS)
             exit(1)
         end
     end
+    # Use an alternative style
+    if ARGS[i] == "--alt-style"
+        global ALTERNATIVE_STYLE = true
+    end
 end
 
 # Prepare color codes
@@ -83,7 +88,8 @@ if "--help" in ARGS
             $(GREEN)-n$(RESET)                     Degree of the polynomial of the rotation curve
             $(GREEN)-i <INPUT_DIR>$(RESET)         Input directory
             $(GREEN)-o <OUTPUT_DIR>$(RESET)        Output directory
-            $(GREEN)--postfix <POSTFIX>$(RESET)    A postfix for the names of output files"""
+            $(GREEN)--postfix <POSTFIX>$(RESET)    A postfix for the names of output files
+            $(GREEN)--alt-style$(RESET)            Use an alternative style"""
     )
     exit(1)
 end
@@ -250,7 +256,7 @@ function scatter(
                 legend_style = { line_width = 1, name = "leg" },
                 mark_size = 0.5,
                 clip_mode = "individual",
-                line_width = 0.15,
+                line_width = ALTERNATIVE_STYLE ? 0.4 : 0.15,
                 "scatter/classes" = {
                     a = {mark = marks[1], color = colors[1]},
                     b = {mark = marks[2], color = colors[2]},

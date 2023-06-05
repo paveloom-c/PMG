@@ -11,6 +11,7 @@ diploma/*.pdf
 diploma/tables
 presentation/*.pdf
 presentation/*.txt
+presentation/figures
 presentation/tables
 public
 results*

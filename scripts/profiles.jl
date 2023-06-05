@@ -26,6 +26,7 @@ N = nothing
 INPUT_DIR = ""
 OUTPUT_DIR = ""
 POSTFIX = ""
+ALTERNATIVE_STYLE = false
 
 # Parse the options
 for i in eachindex(ARGS)
@@ -65,6 +66,10 @@ for i in eachindex(ARGS)
             exit(1)
         end
     end
+    # Use an alternative style
+    if ARGS[i] == "--alt-style"
+        global ALTERNATIVE_STYLE = true
+    end
 end
 
 # Prepare color codes
@@ -82,7 +87,8 @@ if "--help" in ARGS
             $(GREEN)-n$(RESET)                     Degree of the polynomial of the rotation curve
             $(GREEN)-i <INPUT_DIR>$(RESET)         Input directory
             $(GREEN)-o <OUTPUT_DIR>$(RESET)        Output directory
-            $(GREEN)--postfix <POSTFIX>$(RESET)    A postfix for the names of output files"""
+            $(GREEN)--postfix <POSTFIX>$(RESET)    A postfix for the names of output files
+            $(GREEN)--alt-style$(RESET)            Use an alternative style"""
     )
     exit(1)
 end
@@ -277,7 +283,7 @@ if isfile(FIT_PARAMS_DATA_PATH)
                 {
                     dashed,
                     no_marks,
-                    color = colors[2]
+                    color = colors[2],
                 },
                 Coordinates([
                     (fit_param, y_min + 0.04 * (y_max - y_min)),
@@ -290,7 +296,7 @@ if isfile(FIT_PARAMS_DATA_PATH)
                 {
                     dashed,
                     no_marks,
-                    color = colors[3]
+                    color = ALTERNATIVE_STYLE ? colors[5] : colors[3],
                 },
                 Coordinates([
                     (fit_param_p, y_min + 0.04 * (y_max - y_min)),
@@ -301,7 +307,7 @@ if isfile(FIT_PARAMS_DATA_PATH)
                 {
                     dashed,
                     no_marks,
-                    color = colors[3]
+                    color = ALTERNATIVE_STYLE ? colors[5] : colors[3],
                 },
                 Coordinates([
                     (fit_param_m, y_min + 0.04 * (y_max - y_min)),

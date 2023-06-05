@@ -14,6 +14,44 @@
 
 Alternatively, you can download the results [here](https://drive.google.com/drive/folders/1L1lBVWZ8CMjjaifdMDBWdDOBWnpum_8D?usp=sharing) or [here](https://drive.google.com/drive/folders/1JsSwkPIN456PfPQSLpdbH9Gq_FcpahEo?usp=sharing).
 
+### To compile the diploma
+
+1. Prepare the tables:
+
+```bash
+./julia.bash scripts/diploma.jl -i results
+```
+
+2. Compile the document:
+
+```bash
+tectonic -X compile diploma/diploma.tex
+```
+
+### To compile the presentation
+
+1. Prepare the tables:
+
+```bash
+./julia.bash scripts/presentation.jl -i results
+```
+
+2. Prepare the plots:
+
+```bash
+"${JULIA}" "${FIT_ROTCURVE}" -s -o "'${P_HMSFRS}'" -i "'$R_HMSFRS'" -n "${N_BEST_HMSFRS}" --alt-style
+"${JULIA}" "${FIT_ROTCURVE}" -s -o "'${P_SOLAR_SC_2}'" -i "'$R_SOLAR_SC_2'" -n "${N_BEST_SOLAR}" --alt-style
+"${JULIA}" "${PARALLAXES}" -i "'${R_HMSFRS}'" -o "'${P_HMSFRS}'" -n "${N_BEST_HMSFRS}" --alt-style
+"${JULIA}" "${PROFILES}" -i "'${R_HMSFRS}'" -o "'${P_HMSFRS}'" -n "${N_BEST_HMSFRS}" --alt-style
+"${JULIA}" "${INNER_PROFILES}" -i "'${R_HMSFRS}'" -o "'${P_HMSFRS}'" -n "${N_BEST_HMSFRS}" --alt-style
+```
+
+3. Compile the document:
+
+```bash
+tectonic -X compile presentation/presentation.tex
+```
+
 ### Notices
 
 #### Mirrors
