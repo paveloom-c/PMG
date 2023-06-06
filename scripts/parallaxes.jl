@@ -256,7 +256,7 @@ function scatter(
                 legend_style = { line_width = 1, name = "leg" },
                 mark_size = 0.5,
                 clip_mode = "individual",
-                line_width = ALTERNATIVE_STYLE ? 0.4 : 0.15,
+                line_width = 0.15,
                 "scatter/classes" = {
                     a = {mark = marks[1], color = colors[1]},
                     b = {mark = marks[2], color = colors[2]},
@@ -292,9 +292,23 @@ function scatter(
             Plot({ no_marks, color = colors[2]}, Expression("x + $(x_mean) + $(sigma_x_mean)")),
             [raw"\label{sigma_x_mean}"],
             Plot({ no_marks, color = colors[2]}, Expression("x + $(x_mean) - $(sigma_x_mean)")),
-            Plot({ no_marks, color = colors[1]}, Expression("x + $(x_mean) + $(sigma_stroke)")),
+            Plot(
+                {
+                    no_marks,
+                    color = colors[1],
+                    line_width = ALTERNATIVE_STYLE ? 0.4 : 0.15,
+                },
+                Expression("x + $(x_mean) + $(sigma_stroke)"),
+            ),
             [raw"\label{sigma_stroke}"],
-            Plot({ no_marks, color = colors[1]}, Expression("x + $(x_mean) - $(sigma_stroke)")),
+            Plot(
+                {
+                    no_marks,
+                    color = colors[1],
+                    line_width = ALTERNATIVE_STYLE ? 0.4 : 0.15,
+                },
+                Expression("x + $(x_mean) - $(sigma_stroke)"),
+            ),
         ),
         raw"""
         \node [draw,fill=white,line width=1,below,outer sep=1cm] at (leg) {\shortstack[l]{
