@@ -1,0 +1,17 @@
+name: pmg
+services:
+  site:
+    build: .
+    develop:
+      watch:
+        - path: landing
+          action: rebuild
+    restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+networks:
+  traefik:
+    external: true
