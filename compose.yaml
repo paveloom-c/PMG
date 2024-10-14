@@ -2,6 +2,7 @@ name: pmg
 services:
   site:
     build: .
+    image: ghcr.io/paveloom-c/pmg:latest
     develop:
       watch:
         - path: landing
